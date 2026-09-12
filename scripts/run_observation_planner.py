@@ -20,6 +20,7 @@ def run():
     parser.add_argument("--equipment", type=str, default="skywatcher-skyliner-200p", help="Equipment slug (matches equipment/<slug>.md)")
     parser.add_argument("--date", type=str, default="2026-09-12", help="Observation date (YYYY-MM-DD)")
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory (defaults to observations/<location>-<date>)")
+    parser.add_argument("--force", action="store_true", default=False, help="Force regenerate shared cached charts")
     parser.add_argument("--pdf", action="store_true", default=False, help="Generate printable PDF outputs (STARGAZING_PLAN.pdf and chart PDFs). Default is False (EPUB and Markdown only).")
 
     args = parser.parse_args()
@@ -63,10 +64,13 @@ def run():
     cmd_charts = [
         python_bin,
         os.path.join(SCRIPT_DIR, "generate_charts.py"),
-        "--output-dir", output_dir
+        "--output-dir", output_dir,
+        "--equipment", args.equipment
     ]
     if args.pdf:
         cmd_charts.append("--pdf")
+    if args.force:
+        cmd_charts.append("--force")
     subprocess.run(cmd_charts, env=env, check=True)
 
     # Step 3: Build Master Plan PDF (On-demand)

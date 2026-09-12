@@ -148,7 +148,7 @@ Dvigrad lies at the floor of the Draga valley, where nocturnal cold-air drainage
 All maps and finder charts are generated in high-resolution vector PDF, PNG, and e-reader EPUB formats:
 
 - 📱 **Standalone E-Reader Field Book (EPUB)**:  
-  [STARGAZING_FIELD_GUIDE.epub](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/STARGAZING_FIELD_GUIDE.epub) *(Interactive, cross-linked e-book for Kindle, Kobo, Boox & tablets)*
+  [dvigrad-2026-09-12.epub](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/dvigrad-2026-09-12.epub) *(Interactive, cross-linked e-book for PocketBook, Kindle, Kobo, Boox & tablets)*
 - 📄 **Printable 2-Page Master Field Guide (PDF)**:  
   [STARGAZING_PLAN.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/STARGAZING_PLAN.pdf) *(Formatted for 1 single double-sided A4 sheet)*
 - 🗺️ **Full Night Sky Planisphere (All Horizons & Constellations)**:  

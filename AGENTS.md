@@ -13,11 +13,18 @@ All stargazing assets and sessions are organized into structured directories:
 │   └── <location-slug>.md      # Reusable observing site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
 │   └── <equipment-slug>.md     # Reusable optical equipment profiles (aperture, FL, eyepieces)
+├── shared/
+│   └── <object-slug>/          # Shared, cross-session reusable charts cache
+│       ├── context.png         # Universal constellation orientation chart (mag <= 6.5)
+│       ├── widefield_<equip>.png # Wide-field star hopping chart (mag <= 8.5)
+│       ├── eyepiece_dossier_<equip>.png # Eyepiece simulation & dossier graphic
+│       └── chart_<equip>.png   # Full A4 master finder chart (and .pdf)
 ├── observations/
 │   └── <location>-<YYYY-MM-DD>/# Observation session packages
+│       ├── targets.md          # Plain text target manifest for fast regeneration
 │       ├── STARGAZING_PLAN.md  # Complete observation guide markdown
 │       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (1 double-sided A4 sheet)
-│       ├── STARGAZING_FIELD_GUIDE.epub # Standalone, indexed e-book for e-readers
+│       ├── <location>-<date>.epub # Standalone, indexed e-book for e-readers
 │       ├── full_sky_map.pdf    # All-sky planisphere (PDF vector)
 │       ├── full_sky_map.png    # High-resolution planisphere image
 │       └── charts/             # Dedicated finder charts (PDF + PNG)
@@ -52,9 +59,14 @@ All stargazing assets and sessions are organized into structured directories:
 
 ### Rule 2.3: Stargazing Plan Generation (`stargazing-planner` skill)
 - Always activate the `stargazing-planner` skill to calculate ephemerides and curate an optimal, customized observation portfolio.
-- **Dwell-Time Budgeting & Clustering**:
-  - Plan **6 to 8 primary anchor targets** for a 2.5-hour darkness session (budgeting 15–20 min dwell time per target for finding, eyepiece switching, and dark-adapted averted vision).
+- **User Find-Time Interview & Dwell-Time Budgeting**:
+  - During initial invocation, interview the user on how long it usually takes them to locate an object (or assess their skill level) to calibrate target volume:
+    - **Beginner / Starters** (~25–30 min dwell/acquisition): Plan **4 to 6 primary anchor targets** for a 2.5-hour darkness session.
+    - **Intermediate** (~15–20 min dwell/acquisition): Plan **6 to 8 primary anchor targets** + 3 to 6 adjacent bonus hopping targets.
+    - **Advanced / Seasoned** (~10–15 min dwell/acquisition): Plan **8 to 10 primary targets** + 4 to 8 adjacent bonus hopping targets.
+    - Formula: `Primary Targets = floor((Darkness Window Minutes - 30 min Setup/Breaks) / Target Find+Dwell Minutes)`.
   - Annotate **3 to 6 adjacent bonus neighbor targets** (e.g. M56 near M57, M71 near M27, M103 near Double Cluster) that can be hopped opportunistically from the same constellation field (see `tutorials/session-target-budgeting-and-hopping.md`).
+  - Save the target portfolio into `observations/<session>/targets.md` (plain text markdown manifest) for reproducible rebuilds.
 - **Difficulty Rating Calibration**:
   - Calibrate object difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog `catalogs/messier_difficulty_ratings.md`.
 - **E-Reader Catalog Ergonomics**:
@@ -69,27 +81,31 @@ All stargazing assets and sessions are organized into structured directories:
 - Store all outputs in `observations/<location-slug>-<YYYY-MM-DD>/`.
 - **Primary Deliverables (Default)**:
   - **Master Markdown Plan (`STARGAZING_PLAN.md`)**: Complete observation guide with Mermaid timelines and interactive links.
-  - **Standalone E-Reader Field Book (`<session-folder>.epub` / `STARGAZING_FIELD_GUIDE.epub`)**: Compiles the entire session (site profile, twilight schedule, full-sky planisphere, target catalog, and all screen-optimized finder charts) into a single, fully indexed EPUB.
-  - **Finder Charts (High-Resolution PNGs)**: Both A4 landscape master charts and PocketBook Era screen-optimized multi-page assets.
+  - **Standalone E-Reader Field Book (`<session-folder>.epub`)**: Compiles the entire session (site profile, twilight schedule, full-sky planisphere, target catalog, and all screen-optimized finder charts) into a single, fully indexed EPUB. Redundant duplicate EPUB filenames are prohibited.
+  - **Finder Charts (High-Resolution PNGs) & Shared Cross-Session Cache (`shared/`)**: Both A4 landscape master charts and PocketBook Era screen-optimized multi-page assets:
+    - `shared/<object>/context.png`: Universal constellation context chart (mag $\le 6.5$), location-agnostic.
+    - `shared/<object>/widefield_<equipment>.png`: Wide-field star hopping chart (mag $\le 8.5$) cached per telescope model.
+    - `shared/<object>/eyepiece_dossier_<equipment>.png`: Eyepiece simulation & technical dossier graphic. Ephemeris details (session-specific transit time/altitude) are decoupled to text hop instructions/markdown guide, allowing graphic to be 100% reusable across dates and locations.
+    - `shared/<object>/chart_<equipment>.png` (and `.pdf`): Master A4 chart.
 - **On-Demand Deliverables (PDF Mode, via `--pdf` flag or user request)**:
   - **Master Guide Plan (`STARGAZING_PLAN.pdf`)**: Format strictly as a **2-page document** in **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`, printable on **1 single double-sided A4 sheet**). Page 1: Header, site profile box, optical config box, moon status banner, timeline Gantt chart, twilight schedule table. Page 2: Curated target catalog table, practical field protocols box, sky charts directory table. Zero hopping text duplication.
-  - **All-Sky Planisphere (`full_sky_map.pdf`)**: Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
+  - **All-Sky Planisphere (`full_sky_map.pdf`)**: Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`), maintaining a 1:1 circular aspect ratio with shortened cardinal labels (`N`, `S`, `E`, `W`).
   - **Finder Charts (`charts/chart_<N>_*.pdf`)**: Format strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`, `bbox_inches='tight'` prohibited).
 - **Finder Chart Rendering Standards (Toner-Saver Negative B/W Edition)**:
   - **Viewport A**: Wide-Field Star-Hopping Chart (Upright naked-eye / finder: N ↑, E ←). Star density rendered down to **visual magnitude 8.5** (cutting out noise and clutter) with a dedicated star dot size to magnitude legend printed in the bottom corner.
   - **Viewport B**: Telescope Eyepiece Simulation in **Toner-Saver Negative** (pure white background `#ffffff`, black stars, grey DSO contours, pre-inverted 180°: N ↓, E →).
   - **Viewport C**: Target Dossier & Star-Hopping Instructions.
   - Full B/W printer compatibility with solid, dashed, and dash-dot Telrad reticles.
-- **Standalone E-Reader Field Book (`<session-folder>.epub` / `STARGAZING_FIELD_GUIDE.epub`)**:
+- **Standalone E-Reader Field Book (`<session-folder>.epub`)**:
   - Compiles the entire session into a single, fully indexed EPUB.
   - **PocketBook Era Hardware & 12px Zoom Optimization**: Calibrated for 7.0" Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 aspect ratio) at **12px font zoom**.
   - **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target lives in a single document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`.chart-page`, `.instructions-page` using `break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
     - **Page 1 (Eyepiece & Dossier)**: Side-by-side Viewport B (eyepiece simulation, inverted 180°) and Viewport C (target dossier with eyepiece quick reference integrated directly inside graphic, omitting trailing HTML callouts).
-    - **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.2`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
+    - **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.5`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
     - **Page 3 (Wide-Field Finder Chart)**: Screen-fitted Viewport A wide-field chart with stars to **mag 8.5**, Telrad rings, hop badges, and magnitude key. Redundant intermediate headers and tips are dropped so the chart fills the entire screen.
     - **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target.
   - **Dynamic Naming & Series Metadata**:
-    - Named after the observation directory (e.g. `dvigrad-2026-09-12.epub`), with backward-compatible symlink to `STARGAZING_FIELD_GUIDE.epub`.
+    - Named after the observation directory (e.g. `dvigrad-2026-09-12.epub`).
     - Auto-discovers past sessions in `observations/` to calculate and increment the series index (`calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, `pocketbook:font-size="12px"`).
 
 ### Rule 2.5: Educational Tutorials & Field Craft

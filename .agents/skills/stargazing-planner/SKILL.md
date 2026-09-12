@@ -21,8 +21,15 @@ All session assets follow a standardized repository layout:
 │   └── <location-slug>.md      # Reusable site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
 │   └── <equipment-slug>.md     # Reusable optics profiles (aperture, FL, eyepieces, inversion)
+├── shared/
+│   └── <object-slug>/          # Shared, cross-session reusable charts cache
+│       ├── context.png         # Universal constellation orientation chart (mag <= 6.5)
+│       ├── widefield_<equip>.png # Wide-field star hopping chart (mag <= 8.5)
+│       ├── eyepiece_dossier_<equip>.png # Eyepiece simulation & dossier graphic
+│       └── chart_<equip>.png   # Full A4 master finder chart (and .pdf)
 ├── observations/
 │   └── <location>-<YYYY-MM-DD>/# Observation session packages
+│       ├── targets.md          # Plain text target manifest for fast regeneration
 │       ├── STARGAZING_PLAN.md  # Complete observation guide (Primary deliverable)
 │       ├── <location>-<date>.epub # Standalone, indexed e-book for e-readers (Primary deliverable)
 │       ├── full_sky_map.png    # High-res planisphere image
@@ -71,9 +78,15 @@ Calculate for the observing date and location:
 - **Moon Ephemeris**: Phase illumination percentage, moonrise, and moonset times. True dark-sky observing requires $\text{Alt}_\text{Moon} \le 0^\circ$.
 
 ### Step 3.2: Target Curation & Session Budgeting Rules
-Select 6 to 8 primary anchor showpiece objects and 3 to 6 adjacent bonus neighbor targets meeting these criteria:
-1. **Dwell-Time Budgeting**: Budget 15–20 minutes of dwell time per primary anchor target (accounting for acquisition, eyepiece steps, dark adaptation, and visual integration). A 2.5-hour darkness session realistically supports **6 to 8 primary targets**. (See [tutorials/session-target-budgeting-and-hopping.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/session-target-budgeting-and-hopping.md)).
-2. **Anchor + Neighbor Clustering**: Group targets into spatial clusters so observers can easily hop to nearby bonus objects from the same constellation field (e.g. M56 near M57, M71 near M27, M103 near the Double Cluster / Ruchbah).
+During initial session planning or skill invocation, ask the user about their experience level or how long it usually takes them to find an object. Adjust the dwell-time formula and target count accordingly:
+- **Beginner / Starters** (~25–30 min per target including acquisition): Plan **4 to 6 primary anchor targets** for a 2.5-hour darkness session.
+- **Intermediate** (~15–20 min per target): Plan **6 to 8 primary anchor targets** + 3 to 6 adjacent bonus hopping targets.
+- **Advanced / Seasoned** (~10–15 min per target): Plan **8 to 10 primary targets** + 4 to 8 adjacent bonus hopping targets.
+Formula: `Primary Targets = floor((Darkness Window Minutes - 30 min Setup/Breaks) / Target Find+Dwell Minutes)`.
+
+Target Curation Criteria:
+1. **Target Manifest (`targets.md`)**: Save the curated targets into `observations/<session>/targets.md` (plain text markdown list with object slug, common name, constellation, difficulty rating, recommended magnification, and hops). This file serves as the reproducible source of truth for chart rendering and EPUB/PDF rebuilds.
+2. **Anchor + Neighbor Clustering**: Group targets into spatial clusters so observers can easily hop to nearby bonus objects from the same constellation field (e.g. M56 near M57, M71 near M27, M103 near the Double Cluster / Ruchbah). (See [tutorials/session-target-budgeting-and-hopping.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/session-target-budgeting-and-hopping.md)).
 3. **Difficulty Rating Calibration**: Assign difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog [catalogs/messier_difficulty_ratings.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/catalogs/messier_difficulty_ratings.md) (from Michael Swanson's *NexStar User Guide II*).
 4. **Horizon Obstruction Hard Floor**: All targets must be at **Altitude $\ge 15^\circ$** (preferably $\ge 20^\circ$) to clear local valley/tree obstructions and atmospheric extinction.
 5. **Meridian Timing**: Schedule targets within $\pm 1.5$ hours of their highest nightly transit.
@@ -97,18 +110,27 @@ Select 6 to 8 primary anchor showpiece objects and 3 to 6 adjacent bonus neighbo
    - **GitHub Mermaid Compatibility**: All timelines, schedules, workflows, and decision trees must be implemented using **Mermaid code blocks** (` ```mermaid `) for native, high-resolution rendering in GitHub web and mobile previews.
    - Format observation schedules as Mermaid `gantt` charts or `flowchart LR` process pipelines. Quote labels containing parentheses or brackets.
 2. **Standalone E-Reader Field Book (`<session-slug>.epub`)**:
-   - Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book named dynamically after the session folder (e.g. `dvigrad-2026-09-12.epub`, with backward-compatible copy to `STARGAZING_FIELD_GUIDE.epub`).
+   - Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book named dynamically after the session folder (e.g. `dvigrad-2026-09-12.epub`). Do not generate redundant duplicate EPUB files.
    - **PocketBook Era Hardware & 12px Zoom Optimization**: Optimized for 7.0" E-Ink Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 portrait aspect ratio) at **12px font zoom**.
    - **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, and `pocketbook:font-size="12px"`.
    - **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp toner-saver negative charts, and responsive styling.
    - **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target is stored in a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
      1. **Page 1 (Eyepiece & Dossier)**: Viewport B (Eyepiece simulation, inverted 180°) and Viewport C (Target Dossier) rendered side-by-side in landscape 4:3 ratio (`_eyepiece_dossier.png`). Eyepiece quick reference notes are integrated directly inside the dossier graphic, eliminating trailing HTML callouts.
-     2. **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.2`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
+     2. **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.5`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
      3. **Page 3 (Wide-Field Finder Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to visual **magnitude 8.5** (cutting out noise and clutter), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
      4. **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target or catalog.
+   - **E-Reader Catalog Ergonomics**: In the curated target catalog table, place the `Finder Chart` link column inward (before `Recommended Eyepiece`) rather than on the right edge, preventing accidental page-turn touch gestures on e-readers. Replace coordinate columns with difficulty ratings.
    - **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (PocketBook, Kindle, Kobo, Boox, Tolino).
-3. **High-Resolution Finder Chart PNGs**:
+3. **High-Resolution Finder Chart PNGs & Shared Asset Caching (`shared/<object-slug>/`)**:
    - Master A4 landscape PNGs and dedicated PocketBook Era screen-optimized multi-page PNG assets saved in `charts/`.
+   - **Shared Cross-Session Cache (`shared/`)**:
+     - `shared/<object>/context.png`: Universal constellation context chart (mag $\le 6.5$), location-agnostic.
+     - `shared/<object>/widefield_<equipment>.png`: Wide-field star hopping chart (mag $\le 8.5$) cached per telescope model.
+     - `shared/<object>/eyepiece_dossier_<equipment>.png`: Eyepiece simulation & technical dossier graphic. Ephemeris details (session-specific transit time/altitude) are decoupled and placed in markdown/text instructions, allowing the graphic to be 100% reusable across dates and locations.
+     - `shared/<object>/chart_<equipment>.png` (and `.pdf`): Master A4 chart.
+     - On subsequent runs or future sessions, existing charts are copied instantly (`[CACHE HIT]`), drastically reducing generation time.
+4. **All-Sky Planisphere (`full_sky_map.png` / `full_sky_map.pdf`)**:
+   - Strictly maintains a 1:1 circular aspect ratio with clean, shortened cardinal direction labels (`N`, `S`, `E`, `W`).
 
 #### On-Demand Deliverables (PDF Mode, via `--pdf` flag or user request)
 1. **Master Plan PDF (`STARGAZING_PLAN.pdf`)**:
@@ -116,7 +138,7 @@ Select 6 to 8 primary anchor showpiece objects and 3 to 6 adjacent bonus neighbo
      - **Page 1**: Title, location profile box, telescope configuration box, moon verdict banner, observation timeline Gantt chart, twilight schedule table.
      - **Page 2**: Curated Target Catalog table (referencing charts), Practical Field Protocols box, and Sky Charts Directory table.
      - **Zero Step-by-Step Hop Duplication**: Omit detailed hop text from the master plan—star-hopping instructions live on the dedicated charts.
-2. **All-Sky Planisphere (`full_sky_map.pdf`)**:
+2. **All-Sky Planisphere PDF (`full_sky_map.pdf`)**:
    - Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
 3. **Printable Finder Charts (`charts/chart_<N>_<name>.pdf`)**:
    - Formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`).

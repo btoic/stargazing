@@ -16,6 +16,7 @@ import os
 import sys
 import math
 import json
+import shutil
 import argparse
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -35,6 +36,7 @@ from astropy.time import Time
 import astropy.units as u
 
 CACHE_DIR = os.path.join(REPO_ROOT, '.cache')
+SHARED_DIR = os.path.join(REPO_ROOT, 'shared')
 
 # Exact standard A4 dimensions in inches (1 inch = 25.4 mm = 72 pt)
 A4_LANDSCAPE = (297.0 / 25.4, 210.0 / 25.4)  # 11.6929" x 8.2677" -> 841.89 pt x 595.28 pt
@@ -195,8 +197,8 @@ def setup_context_field(ax, c_ra, c_dec, span_ra, span_dec,
                     y2 = dec2 - c_dec
                     ax.plot([x1, x2], [y1, y2], color='#475569', linewidth=1.1, linestyle='-', alpha=0.85, zorder=2)
 
-    # 2. Naked-eye stars (mag <= 6.2)
-    max_mag = 6.2
+    # 2. Naked-eye stars (mag <= 6.5)
+    max_mag = 6.5
     for f in stars_data['features']:
         mag = f['properties']['mag']
         if mag > max_mag:
@@ -282,8 +284,8 @@ def setup_context_field(ax, c_ra, c_dec, span_ra, span_dec,
     ax.text(0.035, 0.955, "N ↑\\n← E", transform=ax.transAxes, fontsize=8.5, fontweight='bold', color='#000000',
             va='top', ha='left', bbox=dict(boxstyle='square,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=25)
 
-    # 9. Naked-Eye Magnitude Note
-    ax.text(0.965, 0.035, "Naked-Eye Stars to Mag 6.2\\nBortle 4 Dvigrad Threshold", transform=ax.transAxes,
+    # 9. Naked-Eye Magnitude Note (Generic, location-agnostic)
+    ax.text(0.965, 0.035, "Naked-Eye Stars to Mag 6.5\nConstellation Orientation Chart", transform=ax.transAxes,
             fontsize=6.8, color='#333333', ha='right', va='bottom',
             bbox=dict(boxstyle='square,pad=0.25', facecolor='#ffffff', edgecolor='#666666', linewidth=0.8), zorder=25)
 
@@ -315,7 +317,9 @@ def make_full_sky_map(output_dir, export_pdf=False):
     """Generates an all-sky planisphere formatted strictly to standard A4 Portrait."""
     print("Generating Full Sky Map (A4 Portrait, B/W Toner-Saver)...")
     fig = plt.figure(figsize=A4_PORTRAIT, facecolor='white', dpi=300)
-    ax = fig.add_axes([0.065, 0.080, 0.870, 0.835])
+    # A4 portrait: 8.27 x 11.69 inches. 6.8x6.8 in square axis prevents elliptical distortion
+    ax = fig.add_axes([0.089, 0.205, 0.822, 0.582])
+    ax.set_aspect('equal')
     ax.set_facecolor('white')
 
     def project(alt, az):
@@ -375,12 +379,12 @@ def make_full_sky_map(output_dir, export_pdf=False):
     ax.plot([0, 0], [-0.03, 0.03], color='#000000', linewidth=1.2, zorder=10)
     ax.text(0.04, 0.04, "ZENITH", fontsize=7.5, fontweight='bold', color='#000000', zorder=10)
 
-    # Compass Directions
+    # Compass Directions (Shortened to N, S, E, W to prevent clutter & distortion)
     r_lbl = 1.055
-    ax.text(0, r_lbl, "NORTH", fontsize=10.0, fontweight='bold', color='#000000', ha='center', va='bottom', zorder=12)
-    ax.text(0, -r_lbl, "SOUTH", fontsize=10.0, fontweight='bold', color='#000000', ha='center', va='top', zorder=12)
-    ax.text(-r_lbl, 0, "EAST", fontsize=10.0, fontweight='bold', color='#000000', ha='right', va='center', zorder=12)
-    ax.text(r_lbl, 0, "WEST", fontsize=10.0, fontweight='bold', color='#000000', ha='left', va='center', zorder=12)
+    ax.text(0, r_lbl, "N", fontsize=11.0, fontweight='bold', color='#000000', ha='center', va='bottom', zorder=12)
+    ax.text(0, -r_lbl, "S", fontsize=11.0, fontweight='bold', color='#000000', ha='center', va='top', zorder=12)
+    ax.text(-r_lbl, 0, "E", fontsize=11.0, fontweight='bold', color='#000000', ha='right', va='center', zorder=12)
+    ax.text(r_lbl, 0, "W", fontsize=11.0, fontweight='bold', color='#000000', ha='left', va='center', zorder=12)
 
     # Target Markers
     targets_allsky = [
@@ -403,10 +407,10 @@ def make_full_sky_map(output_dir, export_pdf=False):
         if aa.alt.deg > 0:
             tx, ty = project(aa.alt.deg, aa.az.deg)
             draw_target_marker(ax, tx, ty)
-            ax.text(tx + ox, ty + oy, f"{t_name}\\n({aa.alt.deg:.0f}° Alt)", fontsize=6.8, fontweight='bold', color='#000000',
+            ax.text(tx + ox, ty + oy, f"{t_name}\n({aa.alt.deg:.0f}° Alt)", fontsize=6.8, fontweight='bold', color='#000000',
                     bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=16)
 
-    ax.set_xlim(-1.24, 1.24); ax.set_ylim(-1.24, 1.24); ax.axis('off')
+    ax.set_xlim(-1.22, 1.22); ax.set_ylim(-1.22, 1.22); ax.axis('off')
 
     # Header
     fig.text(0.065, 0.958, "DVIGRAD ALL-SKY PLANISPHERE (OBSERVATION MAP)", fontsize=13.0, fontweight='bold', color='#000000')
@@ -414,8 +418,8 @@ def make_full_sky_map(output_dir, export_pdf=False):
 
     # Footer Info Box
     fig.text(0.065, 0.045,
-             "HOW TO USE: Hold chart overhead with North facing North. Outer dashed ring marks the 15° Dvigrad Draga valley tree/terrain obstruction.\\n"
-             "MOON STATUS: Waxing crescent (3.1%) set at 19:38 CEST (below horizon). Genuine zero lunar pollution darkness for entire session.\\n"
+             "HOW TO USE: Hold chart overhead with N facing North. Outer dashed ring marks the 15° Dvigrad Draga valley tree/terrain obstruction.\n"
+             "MOON STATUS: Waxing crescent (3.1%) set at 19:38 CEST (below horizon). Genuine zero lunar pollution darkness for entire session.\n"
              "TELESCOPE: Sky-Watcher Skyliner Classic 200P (203mm f/6 Dobsonian) | Eyepieces: 20mm Super (60×, 50' FOV), 12.5mm Plössl (96×, 31' FOV)",
              fontsize=7.2, color='#000000', bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0))
 
@@ -509,16 +513,14 @@ def get_chart_1_dossier(include_hop=True):
         "• Constellation: Lyra | Type: Planetary Nebula\n"
         "• Magnitude: 8.8V | Surface Brightness: 9.3 mag/arcmin²\n"
         "• Apparent Size: 1.4' × 1.0' | Distance: ~2,570 light-years\n"
-        "• Tonight's Ephemeris at Dvigrad (Sep 12, 2026):\n"
-        "    20:00 CEST: Alt 76.4°, Az 204° (South-Southwest)\n"
-        "    21:15 CEST: Alt 75.4°, Az 218° (Zenith Sweet Spot!)\n"
-        "    22:30 CEST: Alt 64.3°, Az 237° (Safe > 60° Alt)\n\n"
+        "• Difficulty: Medium | Central Star: Mag 15.3 (Extreme)\n"
+        "• Instrument: 200P Dobsonian (203/1200mm f/6, Limiting Mag 14.2)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
         "• Acquisition (20mm / 60×): Tiny, intense smoky cheerio\n"
         "  disk floating unmistakably between faint field stars.\n"
         "• Resolution (12.5mm / 96×): Crisp oval donut torus\n"
         "  with dark hollow core. Averted vision sharpens the rim!\n"
-        "• Filter: Under Dvigrad's Bortle 4 skies, radiant without filters."
+        "• Filter: Under dark skies, radiant without filters; O-III boosts contrast."
     )
     if include_hop:
         txt += (
@@ -551,65 +553,120 @@ def draw_chart_1_context(ax):
                         283.0, 36.0, 18.0, 18.0,
                         constels, stars, targets)
 
-def make_chart_1(charts_dir, export_pdf=False):
-    print("Generating Chart 1: M57 (A4 Landscape, Toner-Saver Negative)...")
-    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 1: M57 (RING NEBULA) — LYRA", fontsize=12, fontweight='bold', color='#000000')
-    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
+def make_cached_standard_chart(charts_dir, obj_slug, chart_prefix,
+                               chart_title, context_title, widefield_title, eyepiece_title,
+                               draw_widefield_fn, draw_eyepiece_fn, draw_context_fn,
+                               get_dossier_fn, eyepiece_subtitle="Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4",
+                               equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    shared_obj_dir = os.path.join(SHARED_DIR, obj_slug)
+    os.makedirs(shared_obj_dir, exist_ok=True)
 
-    # VIEWPORT A
-    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
-    draw_chart_1_widefield(ax_wide)
+    # 1. Constellation Context Orientation Chart (Generic across all equipment & locations)
+    shared_ctx = os.path.join(shared_obj_dir, "context.png")
+    dest_ctx = os.path.join(charts_dir, f"{chart_prefix}_context.png")
+    if os.path.exists(shared_ctx) and not force:
+        print(f"  [CACHE HIT] Context: shared/{obj_slug}/context.png")
+        shutil.copyfile(shared_ctx, dest_ctx)
+    else:
+        print(f"  [RENDERING] Context: shared/{obj_slug}/context.png")
+        fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+        fig_ctx.text(0.05, 0.965, context_title, fontsize=11, fontweight='bold', color='#000000')
+        fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+        ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+        draw_context_fn(ax_ctx)
+        plt.savefig(shared_ctx, dpi=200, facecolor='white')
+        plt.close(fig_ctx)
+        shutil.copyfile(shared_ctx, dest_ctx)
 
-    # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
-    draw_chart_1_eyepiece(ax_eye)
+    # 2. Wide-Field Star-Hopping Chart (with equipment suffix)
+    shared_wf = os.path.join(shared_obj_dir, f"widefield_{equipment_slug}.png")
+    dest_wf = os.path.join(charts_dir, f"{chart_prefix}_widefield.png")
+    if os.path.exists(shared_wf) and not force:
+        print(f"  [CACHE HIT] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
+        shutil.copyfile(shared_wf, dest_wf)
+    else:
+        print(f"  [RENDERING] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
+        fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+        fig_wide.text(0.05, 0.965, widefield_title, fontsize=11, fontweight='bold', color='#000000')
+        fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
+        ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
+        draw_widefield_fn(ax_wide_era)
+        plt.savefig(shared_wf, dpi=200, facecolor='white')
+        plt.close(fig_wide)
+        shutil.copyfile(shared_wf, dest_wf)
 
-    # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
-    ax_info.axis('off')
-    ax_info.text(0.0, 0.98, get_chart_1_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
+    # 3. Eyepiece Simulation & Target Dossier (with equipment suffix)
+    shared_ed = os.path.join(shared_obj_dir, f"eyepiece_dossier_{equipment_slug}.png")
+    dest_ed = os.path.join(charts_dir, f"{chart_prefix}_eyepiece_dossier.png")
+    if os.path.exists(shared_ed) and not force:
+        print(f"  [CACHE HIT] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
+        shutil.copyfile(shared_ed, dest_ed)
+    else:
+        print(f"  [RENDERING] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
+        fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
+        fig_side.text(0.05, 0.94, eyepiece_title, fontsize=11, fontweight='bold', color='#000000')
+        fig_side.text(0.05, 0.905, eyepiece_subtitle, fontsize=8.2, color='#333333')
+        ax_eye_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.78])
+        draw_eyepiece_fn(ax_eye_side)
+        ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.78])
+        ax_info_side.axis('off')
+        ax_info_side.text(0.0, 0.98, get_dossier_fn(include_hop=False), fontsize=8.2, color='#000000', fontfamily='monospace', va='top',
+                          bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+        plt.savefig(shared_ed, dpi=200, facecolor='white')
+        plt.close(fig_side)
+        shutil.copyfile(shared_ed, dest_ed)
 
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.png'), dpi=300, facecolor='white')
-    if export_pdf:
-        plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.pdf'), dpi=300, facecolor='white')
-    plt.close(fig)
+    # 4. Master A4 Landscape Chart (Viewport A + B + C)
+    shared_master_png = os.path.join(shared_obj_dir, f"chart_{equipment_slug}.png")
+    shared_master_pdf = os.path.join(shared_obj_dir, f"chart_{equipment_slug}.pdf")
+    dest_master_png = os.path.join(charts_dir, f"{chart_prefix}.png")
+    dest_master_pdf = os.path.join(charts_dir, f"{chart_prefix}.pdf")
+    if os.path.exists(shared_master_png) and (not export_pdf or os.path.exists(shared_master_pdf)) and not force:
+        print(f"  [CACHE HIT] Master A4 Chart: shared/{obj_slug}/chart_{equipment_slug}.png")
+        shutil.copyfile(shared_master_png, dest_master_png)
+        if export_pdf and os.path.exists(shared_master_pdf):
+            shutil.copyfile(shared_master_pdf, dest_master_pdf)
+    else:
+        print(f"  [RENDERING] Master A4 Chart: shared/{obj_slug}/chart_{equipment_slug}.png")
+        fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+        fig.text(0.035, 0.963, chart_title, fontsize=11.5, fontweight='bold', color='#000000')
+        fig.text(0.035, 0.936, "Sky-Watcher 200P Dobsonian (203/1200mm f/6) | Upright Finder (N ↑, E ←) & Negative Eyepiece 180° | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
+        ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
+        draw_widefield_fn(ax_wide)
+        ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
+        draw_eyepiece_fn(ax_eye)
+        ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
+        ax_info.axis('off')
+        ax_info.text(0.0, 0.98, get_dossier_fn(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                     bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
+        plt.savefig(shared_master_png, dpi=300, facecolor='white')
+        if export_pdf:
+            plt.savefig(shared_master_pdf, dpi=300, facecolor='white')
+        plt.close(fig)
+        shutil.copyfile(shared_master_png, dest_master_png)
+        if export_pdf:
+            shutil.copyfile(shared_master_pdf, dest_master_pdf)
 
-    # PocketBook Era Screen-Optimized Assets
-    fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
-    fig_side.text(0.05, 0.94, "M57 RING NEBULA — EYEPIECE SIMULATION & TARGET DOSSIER", fontsize=11, fontweight='bold', color='#000000')
-    fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
-    ax_eye_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.78])
-    draw_chart_1_eyepiece(ax_eye_side)
-    ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.78])
-    ax_info_side.axis('off')
-    ax_info_side.text(0.0, 0.98, get_chart_1_dossier(include_hop=False), fontsize=8.2, color='#000000', fontfamily='monospace', va='top',
-                      bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57_eyepiece_dossier.png'), dpi=200, facecolor='white')
-    plt.close(fig_side)
+    print(f"Chart 1 saved (A4 Landscape & Screen-Optimized via shared/{obj_slug}/ cache).")
 
-    # Screen 2: Constellation Context Orientation Chart
-    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_ctx.text(0.05, 0.965, "M57 RING NEBULA — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
-    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
-    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_1_context(ax_ctx)
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57_context.png'), dpi=200, facecolor='white')
-    plt.close(fig_ctx)
-
-    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
-    fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_wide.text(0.05, 0.965, "M57 RING NEBULA — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
-    ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_1_widefield(ax_wide_era)
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57_widefield.png'), dpi=200, facecolor='white')
-    plt.close(fig_wide)
-    print("Chart 1 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
+def make_chart_1(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    make_cached_standard_chart(
+        charts_dir=charts_dir,
+        obj_slug='m57',
+        chart_prefix='chart_1_lyra_m57',
+        chart_title='STAR-HOPPING FINDER CHART 1: M57 (RING NEBULA) — LYRA',
+        context_title='M57 RING NEBULA — CONSTELLATION CONTEXT & ORIENTATION',
+        widefield_title='M57 RING NEBULA — WIDE-FIELD STAR-HOPPING CHART',
+        eyepiece_title='M57 RING NEBULA — EYEPIECE SIMULATION & TARGET DOSSIER',
+        draw_widefield_fn=draw_chart_1_widefield,
+        draw_eyepiece_fn=draw_chart_1_eyepiece,
+        draw_context_fn=draw_chart_1_context,
+        get_dossier_fn=get_chart_1_dossier,
+        eyepiece_subtitle='Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4',
+        equipment_slug=equipment_slug,
+        export_pdf=export_pdf,
+        force=force
+    )
 
 
 # ==============================================================================
@@ -691,9 +748,8 @@ def get_chart_2_dossier(include_hop=True):
         "• Constellation: Vulpecula / Cygnus | Type: Neb & Binary\n"
         "• M27: Mag 7.5V | Surface Brightness: 11.2 | Size: 8.0' × 5.6'\n"
         "• Albireo (β Cyg): Mag 3.1 / 5.1 (34.3\" sep) | Topaz & Sapphire pair\n"
-        "• Tonight's Ephemeris at Dvigrad (Sep 12, 2026):\n"
-        "    20:00 CEST: Alt 60.0°, Az 147° | 21:15 CEST: Alt 67.2° (Prime!)\n"
-        "    22:30 CEST: Alt 65.3°, Az 189° (High & Pristine)\n\n"
+        "• Difficulty: M27: Easy | Albireo: Very Easy | Distance: ~1,360 ly\n"
+        "• Instrument: 200P Dobsonian (203/1200mm f/6, 20mm Super = 50' FOV)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
         "• Acquisition & Frame (20mm / 60×): Ethereal apple-core\n"
         "  dumbbell glow framed against dark starry space.\n"
@@ -736,65 +792,24 @@ def draw_chart_2_context(ax):
                         296.0, 24.0, 18.0, 18.0,
                         constels, stars, targets)
 
-def make_chart_2(charts_dir, export_pdf=False):
-    print("Generating Chart 2: M27 & Albireo (A4 Landscape, Toner-Saver Negative)...")
-    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 2: M27 (DUMBBELL NEBULA) & ALBIREO — VULPECULA / CYGNUS", fontsize=11.5, fontweight='bold', color='#000000')
-    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
-
-    # VIEWPORT A
-    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
-    draw_chart_2_widefield(ax_wide)
-
-    # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
-    draw_chart_2_eyepiece(ax_eye)
-
-    # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
-    ax_info.axis('off')
-    ax_info.text(0.0, 0.98, get_chart_2_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
-
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.png'), dpi=300, facecolor='white')
-    if export_pdf:
-        plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.pdf'), dpi=300, facecolor='white')
-    plt.close(fig)
-
-    # PocketBook Era Screen-Optimized Assets
-    fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
-    fig_side.text(0.05, 0.94, "M27 DUMBBELL NEBULA & ALBIREO — EYEPIECE SIMULATION & DOSSIER", fontsize=11, fontweight='bold', color='#000000')
-    fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (20mm / 60×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
-    ax_eye_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.78])
-    draw_chart_2_eyepiece(ax_eye_side)
-    ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.78])
-    ax_info_side.axis('off')
-    ax_info_side.text(0.0, 0.98, get_chart_2_dossier(include_hop=False), fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                      bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo_eyepiece_dossier.png'), dpi=200, facecolor='white')
-    plt.close(fig_side)
-
-    # Screen 2: Constellation Context Orientation Chart
-    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_ctx.text(0.05, 0.965, "M27 DUMBBELL & ALBIREO — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
-    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
-    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_2_context(ax_ctx)
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo_context.png'), dpi=200, facecolor='white')
-    plt.close(fig_ctx)
-
-    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
-    fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_wide.text(0.05, 0.965, "M27 & ALBIREO — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
-    ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_2_widefield(ax_wide_era)
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo_widefield.png'), dpi=200, facecolor='white')
-    plt.close(fig_wide)
-    print("Chart 2 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
+def make_chart_2(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    make_cached_standard_chart(
+        charts_dir=charts_dir,
+        obj_slug='m27',
+        chart_prefix='chart_2_vulpecula_m27_albireo',
+        chart_title='STAR-HOPPING FINDER CHART 2: M27 (DUMBBELL NEBULA) & ALBIREO — VULPECULA / CYGNUS',
+        context_title='M27 & ALBIREO — CONSTELLATION CONTEXT & ORIENTATION',
+        widefield_title='M27 DUMBBELL NEBULA — WIDE-FIELD STAR-HOPPING CHART',
+        eyepiece_title='M27 DUMBBELL NEBULA & ALBIREO — EYEPIECE SIMULATION & DOSSIER',
+        draw_widefield_fn=draw_chart_2_widefield,
+        draw_eyepiece_fn=draw_chart_2_eyepiece,
+        draw_context_fn=draw_chart_2_context,
+        get_dossier_fn=get_chart_2_dossier,
+        eyepiece_subtitle='Sky-Watcher 200P Dobsonian (20mm / 60×) | Negative Inverted 180° | Bortle 4',
+        equipment_slug=equipment_slug,
+        export_pdf=export_pdf,
+        force=force
+    )
 
 
 # ==============================================================================
@@ -903,10 +918,8 @@ def get_chart_3_dossier(include_hop=True):
         "• M13: Mag 5.8V | Diameter: 20' (~145 light-years across)\n"
         "• M92: Mag 6.3V | Diameter: 14' | Extremely ancient (~14 Gyr)\n"
         "• Distance: ~22,200 ly (M13) / ~26,700 ly (M92)\n"
-        "• Tonight's Ephemeris at Dvigrad (Sep 12, 2026):\n"
-        "    20:00 CEST: Alt 65.4°, Az 248° (West, Superb & Steady)\n"
-        "    21:15 CEST: Alt 56.2°, Az 271° (Prime Contrast!)\n"
-        "    22:30 CEST: Alt 44.1°, Az 287° (Crisp before sinking)\n\n"
+        "• Difficulty: M13: Easy | M92: Medium | Core: 0.8' dense nucleus\n"
+        "• Instrument: 200P Dobsonian (203/1200mm f/6, 12.5mm = 96×, 2.1mm pupil)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
         "• High Resolution (12.5mm / 96×): Mandatory! Core resolves into\n"
         "  hundreds of glittering diamond points with spider-leg star chains.\n"
@@ -948,65 +961,24 @@ def draw_chart_3_context(ax):
                         256.0, 38.0, 20.0, 20.0,
                         constels, stars, targets)
 
-def make_chart_3(charts_dir, export_pdf=False):
-    print("Generating Chart 3: M13 & M92 (A4 Landscape, Toner-Saver Negative)...")
-    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 3: M13 & M92 (HERCULES GLOBULARS) — HERCULES", fontsize=11.5, fontweight='bold', color='#000000')
-    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
-
-    # VIEWPORT A
-    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
-    draw_chart_3_widefield(ax_wide)
-
-    # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
-    draw_chart_3_eyepiece(ax_eye)
-
-    # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
-    ax_info.axis('off')
-    ax_info.text(0.0, 0.98, get_chart_3_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
-
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.png'), dpi=300, facecolor='white')
-    if export_pdf:
-        plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.pdf'), dpi=300, facecolor='white')
-    plt.close(fig)
-
-    # PocketBook Era Screen-Optimized Assets
-    fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
-    fig_side.text(0.05, 0.94, "HERCULES GLOBULARS M13 & M92 — EYEPIECE SIMULATION & DOSSIER", fontsize=11, fontweight='bold', color='#000000')
-    fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
-    ax_eye_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.78])
-    draw_chart_3_eyepiece(ax_eye_side)
-    ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.78])
-    ax_info_side.axis('off')
-    ax_info_side.text(0.0, 0.98, get_chart_3_dossier(include_hop=False), fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                      bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92_eyepiece_dossier.png'), dpi=200, facecolor='white')
-    plt.close(fig_side)
-
-    # Screen 2: Constellation Context Orientation Chart
-    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_ctx.text(0.05, 0.965, "HERCULES GLOBULARS M13 & M92 — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
-    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
-    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_3_context(ax_ctx)
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92_context.png'), dpi=200, facecolor='white')
-    plt.close(fig_ctx)
-
-    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
-    fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_wide.text(0.05, 0.965, "HERCULES M13 & M92 — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
-    ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_3_widefield(ax_wide_era)
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92_widefield.png'), dpi=200, facecolor='white')
-    plt.close(fig_wide)
-    print("Chart 3 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
+def make_chart_3(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    make_cached_standard_chart(
+        charts_dir=charts_dir,
+        obj_slug='m13',
+        chart_prefix='chart_3_hercules_m13_m92',
+        chart_title='STAR-HOPPING FINDER CHART 3: M13 & M92 (HERCULES GLOBULARS) — HERCULES',
+        context_title='HERCULES GLOBULARS — CONSTELLATION CONTEXT & ORIENTATION',
+        widefield_title='HERCULES GLOBULARS (M13 & M92) — WIDE-FIELD STAR-HOPPING CHART',
+        eyepiece_title='HERCULES M13 & M92 — EYEPIECE SIMULATION & DOSSIER',
+        draw_widefield_fn=draw_chart_3_widefield,
+        draw_eyepiece_fn=draw_chart_3_eyepiece,
+        draw_context_fn=draw_chart_3_context,
+        get_dossier_fn=get_chart_3_dossier,
+        eyepiece_subtitle='Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4',
+        equipment_slug=equipment_slug,
+        export_pdf=export_pdf,
+        force=force
+    )
 
 
 # ==============================================================================
@@ -1103,9 +1075,8 @@ def get_chart_4_dossier(include_hop=True):
         "• Constellation: Andromeda | Type: Giant Spiral Galaxy\n"
         "• Magnitude: 3.4V | Surface Brightness: 13.5 | Size: 180' × 63'\n"
         "• Distance: 2.54 million ly | Companions: M32 & M110\n"
-        "• Tonight's Ephemeris at Dvigrad (Sep 12, 2026):\n"
-        "    20:00 CEST: Alt 24.7° | 21:15 CEST: Alt 36.2° (Prime Contrast!)\n"
-        "    22:30 CEST: Alt 48.6°, Az 78° (Superb & High)\n\n"
+        "• Difficulty: Easy (Visible to naked eye under Bortle 4)\n"
+        "• Instrument: 200P Dobsonian (203/1200mm f/6, 20mm Super = 50' FOV)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
         "• Primary Eyepiece (20mm / 60×): Mandatory! Sweeps the\n"
         "  immense galactic disk, bright starlike nucleus, and M32.\n"
@@ -1146,65 +1117,24 @@ def draw_chart_4_context(ax):
                         12.0, 36.0, 26.0, 24.0,
                         constels, stars, targets)
 
-def make_chart_4(charts_dir, export_pdf=False):
-    print("Generating Chart 4: M31 Andromeda (A4 Landscape, Toner-Saver Negative)...")
-    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 4: M31 (ANDROMEDA GALAXY), M32 & M110 — ANDROMEDA", fontsize=11.5, fontweight='bold', color='#000000')
-    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
-
-    # VIEWPORT A
-    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
-    draw_chart_4_widefield(ax_wide)
-
-    # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
-    draw_chart_4_eyepiece(ax_eye)
-
-    # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
-    ax_info.axis('off')
-    ax_info.text(0.0, 0.98, get_chart_4_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
-
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.png'), dpi=300, facecolor='white')
-    if export_pdf:
-        plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.pdf'), dpi=300, facecolor='white')
-    plt.close(fig)
-
-    # PocketBook Era Screen-Optimized Assets
-    fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
-    fig_side.text(0.05, 0.94, "M31 ANDROMEDA GALAXY & SATELLITES — EYEPIECE SIMULATION & DOSSIER", fontsize=11, fontweight='bold', color='#000000')
-    fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (20mm / 60×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
-    ax_eye_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.78])
-    draw_chart_4_eyepiece(ax_eye_side)
-    ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.78])
-    ax_info_side.axis('off')
-    ax_info_side.text(0.0, 0.98, get_chart_4_dossier(include_hop=False), fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                      bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31_eyepiece_dossier.png'), dpi=200, facecolor='white')
-    plt.close(fig_side)
-
-    # Screen 2: Constellation Context Orientation Chart
-    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_ctx.text(0.05, 0.965, "M31 ANDROMEDA GALAXY — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
-    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
-    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_4_context(ax_ctx)
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31_context.png'), dpi=200, facecolor='white')
-    plt.close(fig_ctx)
-
-    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
-    fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_wide.text(0.05, 0.965, "M31 ANDROMEDA GALAXY — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
-    ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_4_widefield(ax_wide_era)
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31_widefield.png'), dpi=200, facecolor='white')
-    plt.close(fig_wide)
-    print("Chart 4 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
+def make_chart_4(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    make_cached_standard_chart(
+        charts_dir=charts_dir,
+        obj_slug='m31',
+        chart_prefix='chart_4_andromeda_m31',
+        chart_title='STAR-HOPPING FINDER CHART 4: M31 (ANDROMEDA GALAXY), M32 & M110 — ANDROMEDA',
+        context_title='ANDROMEDA GALAXY (M31) — CONSTELLATION CONTEXT & ORIENTATION',
+        widefield_title='ANDROMEDA GALAXY (M31) — WIDE-FIELD STAR-HOPPING CHART',
+        eyepiece_title='M31 ANDROMEDA GALAXY & SATELLITES — EYEPIECE SIMULATION & DOSSIER',
+        draw_widefield_fn=draw_chart_4_widefield,
+        draw_eyepiece_fn=draw_chart_4_eyepiece,
+        draw_context_fn=draw_chart_4_context,
+        get_dossier_fn=get_chart_4_dossier,
+        eyepiece_subtitle='Sky-Watcher 200P Dobsonian (20mm / 60×) | Negative Inverted 180° | Bortle 4',
+        equipment_slug=equipment_slug,
+        export_pdf=export_pdf,
+        force=force
+    )
 
 
 # ==============================================================================
@@ -1298,9 +1228,8 @@ def get_chart_5_dossier(include_hop=True):
         "• Constellation: Perseus | Type: Twin Open Clusters\n"
         "• Magnitude: 3.7 / 3.8V | Apparent Size: 30' diameter each\n"
         "• Total Stars: ~600 stars | Distance: ~7,500 light-years\n"
-        "• Tonight's Ephemeris at Dvigrad (Sep 12, 2026):\n"
-        "    20:00 CEST: Alt 24.0° | 21:15 CEST: Alt 31.6° (Clear of trees)\n"
-        "    22:30 CEST: Alt 40.5°, Az 50° (Peak Crystalline Clarity)\n\n"
+        "• Difficulty: Very Easy (Naked-eye sparkling glow)\n"
+        "• Instrument: 200P Dobsonian (203/1200mm f/6, 20mm Super = 50' FOV)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
         "• Primary Eyepiece (20mm / 60×): The ultimate showstopper!\n"
         "  Frames both glittering jewel boxes side by side in 50' FOV.\n"
@@ -1339,65 +1268,24 @@ def draw_chart_5_context(ax):
                         32.0, 55.0, 46.0, 22.0,
                         constels, stars, targets)
 
-def make_chart_5(charts_dir, export_pdf=False):
-    print("Generating Chart 5: Double Cluster (A4 Landscape, Toner-Saver Negative)...")
-    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 5: THE DOUBLE CLUSTER (NGC 869 / NGC 884) — PERSEUS", fontsize=11.5, fontweight='bold', color='#000000')
-    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
-
-    # VIEWPORT A
-    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
-    draw_chart_5_widefield(ax_wide)
-
-    # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
-    draw_chart_5_eyepiece(ax_eye)
-
-    # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
-    ax_info.axis('off')
-    ax_info.text(0.0, 0.98, get_chart_5_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
-
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.png'), dpi=300, facecolor='white')
-    if export_pdf:
-        plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.pdf'), dpi=300, facecolor='white')
-    plt.close(fig)
-
-    # PocketBook Era Screen-Optimized Assets
-    fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
-    fig_side.text(0.05, 0.94, "PERSEUS DOUBLE CLUSTER — EYEPIECE SIMULATION & TARGET DOSSIER", fontsize=11, fontweight='bold', color='#000000')
-    fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (20mm / 60×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
-    ax_eye_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.78])
-    draw_chart_5_eyepiece(ax_eye_side)
-    ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.78])
-    ax_info_side.axis('off')
-    ax_info_side.text(0.0, 0.98, get_chart_5_dossier(include_hop=False), fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                      bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster_eyepiece_dossier.png'), dpi=200, facecolor='white')
-    plt.close(fig_side)
-
-    # Screen 2: Constellation Context Orientation Chart
-    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_ctx.text(0.05, 0.965, "PERSEUS DOUBLE CLUSTER — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
-    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
-    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_5_context(ax_ctx)
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster_context.png'), dpi=200, facecolor='white')
-    plt.close(fig_ctx)
-
-    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
-    fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_wide.text(0.05, 0.965, "PERSEUS DOUBLE CLUSTER — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
-    ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_5_widefield(ax_wide_era)
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster_widefield.png'), dpi=200, facecolor='white')
-    plt.close(fig_wide)
-    print("Chart 5 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
+def make_chart_5(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    make_cached_standard_chart(
+        charts_dir=charts_dir,
+        obj_slug='double_cluster',
+        chart_prefix='chart_5_perseus_double_cluster',
+        chart_title='STAR-HOPPING FINDER CHART 5: THE DOUBLE CLUSTER (NGC 869 / NGC 884) — PERSEUS',
+        context_title='DOUBLE CLUSTER (PERSEUS) — CONSTELLATION CONTEXT & ORIENTATION',
+        widefield_title='THE DOUBLE CLUSTER — WIDE-FIELD STAR-HOPPING CHART',
+        eyepiece_title='THE DOUBLE CLUSTER — EYEPIECE SIMULATION & TARGET DOSSIER',
+        draw_widefield_fn=draw_chart_5_widefield,
+        draw_eyepiece_fn=draw_chart_5_eyepiece,
+        draw_context_fn=draw_chart_5_context,
+        get_dossier_fn=get_chart_5_dossier,
+        eyepiece_subtitle='Sky-Watcher 200P Dobsonian (20mm / 60×) | Negative Inverted 180° | Bortle 4',
+        equipment_slug=equipment_slug,
+        export_pdf=export_pdf,
+        force=force
+    )
 
 
 # ==============================================================================
@@ -1497,19 +1385,16 @@ def get_chart_6_dossier(include_hop=True):
         "• M11 Wild Duck: Constellation Scutum | Open Cluster\n"
         "  - Magnitude: 5.8V | Size: 14' | Distance: 6,200 ly\n"
         "  - Stars: ~2,900 stars (one of the richest known!)\n"
-        "  - Ephemeris: 20:00 Alt 38.2° | 21:15 Alt 37.7° | 22:30 Alt 32.0°\n"
         "• Saturn: The Ringed Planet in Aquarius/Pisces\n"
         "  - Magnitude: +0.6 | Apparent Disk: ~19\" (Rings: ~43\")\n"
         "  - Ring Tilt: Shallow (~2° edge-on profile in late 2026!)\n"
-        "  - Rising Schedule at Dvigrad (East-Southeast):\n"
-        "      20:20 CEST: Rises above horizon\n"
-        "      21:40 CEST: Clears 15° tree line (Alt 15.2°)\n"
-        "      22:30 CEST: Peak party altitude (Alt 22.8°, Az 111°)\n\n"
+        "• Difficulty: M11: Easy | Saturn: Very Easy\n"
+        "• Instrument: 200P Dobsonian (203/1200mm f/6, 12.5mm = 96×)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
         "• M11 (12.5mm / 96×): Resolves a dazzling star swarm\n"
         "  resembling wild ducks in V-formation with bright apex star.\n"
         "• Saturn (12.5mm / 96×): Knife-edge shallow rings,\n"
-        "  globe shadow and radiant orange moon Titan (21:45–22:30)."
+        "  globe shadow and radiant orange moon Titan."
     )
     if include_hop:
         txt += (
@@ -1539,7 +1424,7 @@ def draw_chart_6_context(ax):
     ]
     targets = [("M11 Wild Duck", 282.775, -6.267, 0.5, -0.9)]
     def extra_chart_6(ax_in):
-        ax_in.annotate("→ Saturn Rising in Aquarius\n(Observe after 21:40 CEST)",
+        ax_in.annotate("→ Saturn in Aquarius\n(Observe once above horizon)",
                        xy=(0.04, 0.45), xycoords='axes fraction', fontsize=7.2, fontweight='bold', color='#000000',
                        bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0),
                        zorder=25)
@@ -1547,89 +1432,137 @@ def draw_chart_6_context(ax):
                         288.0, 2.0, 24.0, 24.0,
                         constels, stars, targets, extra_fn=extra_chart_6)
 
-def make_chart_6(charts_dir, export_pdf=False):
-    print("Generating Chart 6: M11 & Saturn (A4 Landscape, Toner-Saver Negative)...")
-    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 6: M11 (WILD DUCK CLUSTER) & SATURN — SCUTUM / AQUARIUS", fontsize=11.5, fontweight='bold', color='#000000')
-    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
+def make_chart_6(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False):
+    obj_slug = "m11"
+    chart_prefix = "chart_6_scutum_m11_and_saturn"
+    shared_obj_dir = os.path.join(SHARED_DIR, obj_slug)
+    os.makedirs(shared_obj_dir, exist_ok=True)
 
-    # VIEWPORT A
-    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
-    draw_chart_6_widefield(ax_wide)
+    # 1. Constellation Context Orientation Chart
+    shared_ctx = os.path.join(shared_obj_dir, "context.png")
+    dest_ctx = os.path.join(charts_dir, f"{chart_prefix}_context.png")
+    if os.path.exists(shared_ctx) and not force:
+        print(f"  [CACHE HIT] Context: shared/{obj_slug}/context.png")
+        shutil.copyfile(shared_ctx, dest_ctx)
+    else:
+        print(f"  [RENDERING] Context: shared/{obj_slug}/context.png")
+        fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+        fig_ctx.text(0.05, 0.965, "M11 WILD DUCK & SATURN — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+        fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+        ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+        draw_chart_6_context(ax_ctx)
+        plt.savefig(shared_ctx, dpi=200, facecolor='white')
+        plt.close(fig_ctx)
+        shutil.copyfile(shared_ctx, dest_ctx)
 
-    # VIEWPORT B: TWO INSETS (M11 + SATURN)
-    fig.text(0.545, 0.898, "VIEWPORT B: TELESCOPE SIMULATIONS (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_eye1 = fig.add_axes([0.550, 0.495, 0.185, 0.380])
-    draw_chart_6_eyepiece_m11(ax_eye1)
-    ax_eye2 = fig.add_axes([0.765, 0.495, 0.185, 0.380])
-    draw_chart_6_eyepiece_saturn(ax_eye2)
+    # 2. Wide-Field Star-Hopping Chart (with equipment suffix)
+    shared_wf = os.path.join(shared_obj_dir, f"widefield_{equipment_slug}.png")
+    dest_wf = os.path.join(charts_dir, f"{chart_prefix}_widefield.png")
+    if os.path.exists(shared_wf) and not force:
+        print(f"  [CACHE HIT] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
+        shutil.copyfile(shared_wf, dest_wf)
+    else:
+        print(f"  [RENDERING] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
+        fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+        fig_wide.text(0.05, 0.965, "M11 & SATURN — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
+        fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
+        ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
+        draw_chart_6_widefield(ax_wide_era)
+        plt.savefig(shared_wf, dpi=200, facecolor='white')
+        plt.close(fig_wide)
+        shutil.copyfile(shared_wf, dest_wf)
 
-    # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
-    ax_info.axis('off')
-    ax_info.text(0.0, 0.98, get_chart_6_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
+    # 3. Eyepiece Simulations (M11 + Saturn) & Target Dossier
+    shared_ed = os.path.join(shared_obj_dir, f"eyepiece_dossier_{equipment_slug}.png")
+    dest_ed = os.path.join(charts_dir, f"{chart_prefix}_eyepiece_dossier.png")
+    if os.path.exists(shared_ed) and not force:
+        print(f"  [CACHE HIT] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
+        shutil.copyfile(shared_ed, dest_ed)
+    else:
+        print(f"  [RENDERING] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
+        fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
+        fig_side.text(0.05, 0.94, "M11 WILD DUCK CLUSTER & SATURN — EYEPIECE SIMULATIONS & DOSSIER", fontsize=11, fontweight='bold', color='#000000')
+        fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
+        ax_eye1_side = fig_side.add_axes([0.05, 0.50, 0.42, 0.38])
+        draw_chart_6_eyepiece_m11(ax_eye1_side)
+        ax_eye2_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.38])
+        draw_chart_6_eyepiece_saturn(ax_eye2_side)
+        ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.80])
+        ax_info_side.axis('off')
+        ax_info_side.text(0.0, 0.98, get_chart_6_dossier(include_hop=False), fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
+                          bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+        plt.savefig(shared_ed, dpi=200, facecolor='white')
+        plt.close(fig_side)
+        shutil.copyfile(shared_ed, dest_ed)
 
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.png'), dpi=300, facecolor='white')
-    if export_pdf:
-        plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.pdf'), dpi=300, facecolor='white')
-    plt.close(fig)
+    # 4. Master A4 Landscape Chart
+    shared_master_png = os.path.join(shared_obj_dir, f"chart_{equipment_slug}.png")
+    shared_master_pdf = os.path.join(shared_obj_dir, f"chart_{equipment_slug}.pdf")
+    dest_master_png = os.path.join(charts_dir, f"{chart_prefix}.png")
+    dest_master_pdf = os.path.join(charts_dir, f"{chart_prefix}.pdf")
+    if os.path.exists(shared_master_png) and (not export_pdf or os.path.exists(shared_master_pdf)) and not force:
+        print(f"  [CACHE HIT] Master A4 Chart: shared/{obj_slug}/chart_{equipment_slug}.png")
+        shutil.copyfile(shared_master_png, dest_master_png)
+        if export_pdf and os.path.exists(shared_master_pdf):
+            shutil.copyfile(shared_master_pdf, dest_master_pdf)
+    else:
+        print(f"  [RENDERING] Master A4 Chart: shared/{obj_slug}/chart_{equipment_slug}.png")
+        fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+        fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 6: M11 (WILD DUCK CLUSTER) & SATURN — SCUTUM / AQUARIUS", fontsize=11.5, fontweight='bold', color='#000000')
+        fig.text(0.035, 0.936, "Sky-Watcher 200P Dobsonian (203/1200mm f/6) | Upright Finder (N ↑, E ←) & Negative Eyepiece 180° | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
+        ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
+        draw_chart_6_widefield(ax_wide)
+        ax_eye1 = fig.add_axes([0.550, 0.495, 0.185, 0.380])
+        draw_chart_6_eyepiece_m11(ax_eye1)
+        ax_eye2 = fig.add_axes([0.765, 0.495, 0.185, 0.380])
+        draw_chart_6_eyepiece_saturn(ax_eye2)
+        ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
+        ax_info.axis('off')
+        ax_info.text(0.0, 0.98, get_chart_6_dossier(include_hop=True), fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                     bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
+        plt.savefig(shared_master_png, dpi=300, facecolor='white')
+        if export_pdf:
+            plt.savefig(shared_master_pdf, dpi=300, facecolor='white')
+        plt.close(fig)
+        shutil.copyfile(shared_master_png, dest_master_png)
+        if export_pdf:
+            shutil.copyfile(shared_master_pdf, dest_master_pdf)
 
-    # PocketBook Era Screen-Optimized Assets
-    fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
-    fig_side.text(0.05, 0.94, "M11 WILD DUCK CLUSTER & SATURN — EYEPIECE SIMULATIONS & DOSSIER", fontsize=11, fontweight='bold', color='#000000')
-    fig_side.text(0.05, 0.905, "Sky-Watcher 200P Dobsonian (12.5mm / 96×) | Negative Inverted 180° | Bortle 4", fontsize=8.2, color='#333333')
-    ax_eye1_side = fig_side.add_axes([0.05, 0.50, 0.42, 0.38])
-    draw_chart_6_eyepiece_m11(ax_eye1_side)
-    ax_eye2_side = fig_side.add_axes([0.05, 0.08, 0.42, 0.38])
-    draw_chart_6_eyepiece_saturn(ax_eye2_side)
-    ax_info_side = fig_side.add_axes([0.51, 0.08, 0.44, 0.80])
-    ax_info_side.axis('off')
-    ax_info_side.text(0.0, 0.98, get_chart_6_dossier(include_hop=False), fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                      bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn_eyepiece_dossier.png'), dpi=200, facecolor='white')
-    plt.close(fig_side)
-
-    # Screen 2: Constellation Context Orientation Chart
-    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_ctx.text(0.05, 0.965, "M11 WILD DUCK & SATURN — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
-    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
-    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_6_context(ax_ctx)
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn_context.png'), dpi=200, facecolor='white')
-    plt.close(fig_ctx)
-
-    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
-    fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
-    fig_wide.text(0.05, 0.965, "M11 & SATURN — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
-    ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
-    draw_chart_6_widefield(ax_wide_era)
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn_widefield.png'), dpi=200, facecolor='white')
-    plt.close(fig_wide)
-    print("Chart 6 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
+    print(f"Chart 6 saved (A4 Landscape & Screen-Optimized via shared/{obj_slug}/ cache).")
 
 
-def generate_all_charts(output_dir=None, export_pdf=False):
+def generate_all_charts(output_dir=None, equipment_slug='skywatcher-skyliner-200p', export_pdf=False, force=False, targets_file=None):
     if output_dir is None:
         output_dir = os.path.join(REPO_ROOT, 'observations', 'dvigrad-2026-09-12')
     charts_dir = os.path.join(output_dir, 'charts')
     os.makedirs(charts_dir, exist_ok=True)
+    os.makedirs(SHARED_DIR, exist_ok=True)
+
+    if targets_file is None:
+        candidate_targets = os.path.join(output_dir, 'targets.md')
+        if os.path.exists(candidate_targets):
+            targets_file = candidate_targets
+
+    print(f"Target manifest:  {targets_file if targets_file else 'Default (All 6 anchors)'}")
+    print(f"Shared cache dir: {SHARED_DIR}")
+    print(f"Equipment slug:   {equipment_slug}")
+    print(f"Force rebuild:    {force}\n")
 
     make_full_sky_map(output_dir, export_pdf=export_pdf)
-    make_chart_1(charts_dir, export_pdf=export_pdf)
-    make_chart_2(charts_dir, export_pdf=export_pdf)
-    make_chart_3(charts_dir, export_pdf=export_pdf)
-    make_chart_4(charts_dir, export_pdf=export_pdf)
-    make_chart_5(charts_dir, export_pdf=export_pdf)
-    make_chart_6(charts_dir, export_pdf=export_pdf)
-    print(f"ALL CHARTS GENERATED SUCCESSFULLY into: {output_dir} (PDF export: {export_pdf})")
+    make_chart_1(charts_dir, equipment_slug=equipment_slug, export_pdf=export_pdf, force=force)
+    make_chart_2(charts_dir, equipment_slug=equipment_slug, export_pdf=export_pdf, force=force)
+    make_chart_3(charts_dir, equipment_slug=equipment_slug, export_pdf=export_pdf, force=force)
+    make_chart_4(charts_dir, equipment_slug=equipment_slug, export_pdf=export_pdf, force=force)
+    make_chart_5(charts_dir, equipment_slug=equipment_slug, export_pdf=export_pdf, force=force)
+    make_chart_6(charts_dir, equipment_slug=equipment_slug, export_pdf=export_pdf, force=force)
+    print(f"\nALL CHARTS READY in: {output_dir} (PDF export: {export_pdf})")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Stargazing Charts')
     parser.add_argument('--output-dir', type=str, default=None, help='Output directory for charts')
+    parser.add_argument('--equipment', type=str, default='skywatcher-skyliner-200p', help='Equipment slug for optics and shared cache suffix')
     parser.add_argument('--pdf', action='store_true', default=False, help='Export printable PDF charts (default: False)')
+    parser.add_argument('--force', action='store_true', default=False, help='Force regenerate cached shared charts')
+    parser.add_argument('--targets-file', type=str, default=None, help='Path to targets.md list')
     args = parser.parse_args()
-    generate_all_charts(args.output_dir, export_pdf=args.pdf)
+    generate_all_charts(args.output_dir, equipment_slug=args.equipment, export_pdf=args.pdf, force=args.force, targets_file=args.targets_file)

@@ -63,13 +63,19 @@ def build_epub(session_dir=None, output_path=None):
     if output_path is None:
         output_path = os.path.join(session_dir, f"{session_folder}.epub")
     output_path = os.path.abspath(output_path)
-    legacy_symlink_path = os.path.join(session_dir, "STARGAZING_FIELD_GUIDE.epub")
+
+    # If an old legacy STARGAZING_FIELD_GUIDE.epub exists, clean it up
+    legacy_epub = os.path.join(session_dir, "STARGAZING_FIELD_GUIDE.epub")
+    if os.path.exists(legacy_epub) or os.path.islink(legacy_epub):
+        try:
+            os.remove(legacy_epub)
+        except OSError:
+            pass
 
     print(f"Session:      {session_dir}")
     print(f"Folder Name:  {session_folder}")
     print(f"Series:       {series_name} (Issue #{series_index})")
     print(f"Output:       {output_path}")
-    print(f"Legacy:       {legacy_symlink_path}")
     print(f"=======================================================\n")
 
     # Image source paths
@@ -641,7 +647,7 @@ ol.hop-list li {
         <b>HOW TO READ THE PLANISPHERE:</b><br/>
         • <b>Center of Map:</b> Zenith (straight up overhead).<br/>
         • <b>Outer Perimeter:</b> Horizon. Red inner dashed ring marks Dvigrad's <b>15° terrain &amp; forest obstruction limit</b>.<br/>
-        • <b>Holding the Chart:</b> When facing South, hold the chart with "SOUTH" at the bottom. When facing North, turn the chart so "NORTH" is at the bottom.
+        • <b>Holding the Chart:</b> When facing South, hold the chart with "S" at the bottom. When facing North, turn the chart so "N" is at the bottom.
     </div>
 
     <img src="images/full_sky_map.png" class="chart-img" alt="All-Sky Planisphere"/>
@@ -1128,22 +1134,10 @@ ol.hop-list li {
 </package>"""
         zf.writestr("OEBPS/content.opf", opf_xml, compress_type=zipfile.ZIP_DEFLATED)
 
-    # Maintain backward-compatible copy or symlink
-    if os.path.exists(legacy_symlink_path) or os.path.islink(legacy_symlink_path):
-        try:
-            os.remove(legacy_symlink_path)
-        except OSError:
-            pass
-    try:
-        shutil.copyfile(output_path, legacy_symlink_path)
-    except Exception as e:
-        print(f"Notice: could not copy to legacy path: {e}")
-
     file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
     print(f"\n=======================================================")
     print(f"EPUB BOOK SUCCESSFULLY GENERATED!")
     print(f"Path:     {output_path}")
-    print(f"Legacy:   {legacy_symlink_path}")
     print(f"Size:     {file_size_mb:.2f} MB")
     print(f"Series:   {series_name} #{series_index}")
     print(f"Chapters: {len(chapters)}")

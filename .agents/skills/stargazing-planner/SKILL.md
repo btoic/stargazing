@@ -25,6 +25,7 @@ All session assets follow a standardized repository layout:
 │   └── <location>-<YYYY-MM-DD>/# Observation session packages
 │       ├── STARGAZING_PLAN.md  # Complete observation guide
 │       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (1 double-sided sheet)
+│       ├── STARGAZING_FIELD_GUIDE.epub # Standalone, indexed e-book for e-readers
 │       ├── full_sky_map.pdf    # All-sky planisphere with 15° obstruction ring
 │       ├── full_sky_map.png    # High-res planisphere image
 │       └── charts/             # Toner-saver negative finder charts (PDF + PNG)
@@ -36,6 +37,7 @@ All session assets follow a standardized repository layout:
 │   ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
 │   ├── generate_charts.py      # Vector planisphere & toner-saver negative finder chart generator
 │   ├── build_plan_pdf.py       # Two-page master guide PDF builder
+│   ├── build_session_epub.py   # Standalone EPUB e-reader book builder
 │   └── run_observation_planner.py # End-to-end observation planner pipeline
 └── requirements.txt            # Python package dependencies
 ```
@@ -95,6 +97,12 @@ Select 8 to 12 showpiece objects meeting these criteria:
   - **Page 1**: Title, location profile box, telescope configuration box, moon verdict banner, observation timeline Gantt chart, twilight schedule table.
   - **Page 2**: Curated Target Catalog table (referencing charts), Practical Field Protocols box, and Sky Charts Directory table.
   - **Zero Step-by-Step Hop Duplication**: Omit detailed hop text from the master plan—star-hopping instructions live on the dedicated charts.
+
+### Standalone E-Reader Field Book (`STARGAZING_FIELD_GUIDE.epub`)
+- Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book.
+- **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp vector/raster finder charts, and responsive styling.
+- **Interactive Indexing**: Target Catalog table jumps straight to dedicated chart chapters; each chart contains quick-return navigation links.
+- **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (Kindle, Kobo, Boox, Tolino, PocketBook).
 
 ### Finder Charts (Toner-Saver Negative B/W Edition)
 Every finder chart (`charts/chart_<N>_<name>.pdf` and `.png`) must have three distinct, labeled viewports:

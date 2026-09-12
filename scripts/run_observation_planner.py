@@ -74,9 +74,19 @@ def run():
     ]
     subprocess.run(cmd_pdf, env=env, check=True)
 
+    # Step 4: Build EPUB Field Guide for E-Readers
+    print(">>> Step 4: Compiling E-Reader EPUB Field Guide...")
+    cmd_epub = [
+        python_bin,
+        os.path.join(SCRIPT_DIR, "build_session_epub.py"),
+        "--session-dir", output_dir
+    ]
+    subprocess.run(cmd_epub, env=env, check=True)
+
     print(f"\n=======================================================")
     print(f"PIPELINE COMPLETED SUCCESSFULLY!")
     print(f"Master PDF: {os.path.join(output_dir, 'STARGAZING_PLAN.pdf')}")
+    print(f"EPUB Book:  {os.path.join(output_dir, 'STARGAZING_FIELD_GUIDE.epub')}")
     print(f"Charts:     {charts_dir}")
     print(f"=======================================================\n")
 

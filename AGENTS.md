@@ -17,6 +17,7 @@ All stargazing assets and sessions are organized into structured directories:
 │   └── <location>-<YYYY-MM-DD>/# Observation session packages
 │       ├── STARGAZING_PLAN.md  # Complete observation guide markdown
 │       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (1 double-sided A4 sheet)
+│       ├── STARGAZING_FIELD_GUIDE.epub # Standalone, indexed e-book for e-readers
 │       ├── full_sky_map.pdf    # All-sky planisphere (PDF vector)
 │       ├── full_sky_map.png    # High-resolution planisphere image
 │       └── charts/             # Dedicated finder charts (PDF + PNG)
@@ -30,6 +31,7 @@ All stargazing assets and sessions are organized into structured directories:
 │   ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
 │   ├── generate_charts.py      # Vector planisphere & toner-saver negative finder chart generator
 │   ├── build_plan_pdf.py       # Two-page master guide PDF builder
+│   ├── build_session_epub.py   # Standalone EPUB e-reader book builder
 │   └── run_observation_planner.py # End-to-end observation planner pipeline
 └── requirements.txt            # Python dependencies (astropy, matplotlib, reportlab, etc.)
 ```
@@ -69,6 +71,11 @@ All stargazing assets and sessions are organized into structured directories:
   - **Viewport B**: Telescope Eyepiece Simulation in **Toner-Saver Negative** (pure white background `#ffffff`, black stars, grey DSO contours, pre-inverted 180°: N ↓, E →).
   - **Viewport C**: Target Dossier & Star-Hopping Instructions.
   - Full B/W printer compatibility with solid, dashed, and dash-dot Telrad reticles.
+- **Standalone E-Reader Field Book (`STARGAZING_FIELD_GUIDE.epub`)**:
+  - Compiles the entire session (site profile, twilight schedule, full-sky planisphere, target catalog, all finder charts, and optical appendices) into a single, fully indexed EPUB.
+  - High-contrast, e-ink optimized styling (`#ffffff` backgrounds, crisp typography, clean line art).
+  - Two-way interactive navigation (Target Catalog links jump straight to charts; charts feature back-to-contents links).
+  - Compatible with EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) for all e-readers (Kindle, Kobo, Boox, etc.).
 
 ### Rule 2.5: Educational Tutorials & Field Craft
 - Store general tutorials, operational rules, and explanatory guides in `tutorials/`.

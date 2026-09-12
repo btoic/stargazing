@@ -22,6 +22,17 @@ Star-hopping is the classic, reliable technique for navigating the night sky wit
      - **Outer Telrad ring**: 4.0°
      - **Standard 8×50 / 9×50 optical finder**: ~5.0° diameter
 
+```mermaid
+flowchart TD
+    Start["1. Identify Naked-Eye Anchor Star<br/><i>(Mag 0–2: Vega, Altair, Navi, etc.)</i>"] --> Finder["2. Center Anchor in Red Dot / Telrad<br/><i>(Upright, unreversed orientation)</i>"]
+    Finder --> Step["3. Trace Geometric Step on Sky Chart<br/><i>(Line, right angle, or asterism)</i>"]
+    Step --> Hop["4. Hop by Calibrated Reticle Rings<br/><i>(0.5°, 2°, 4° Telrad spans)</i>"]
+    Hop --> Eyepiece{"5. Inspect Wide-Field Eyepiece<br/><i>(Remember 180° optical rotation!)</i>"}
+    Eyepiece -- "Target Acquired" --> HighPower["6. Center Object & Swap to High-Power Eyepiece"]
+    Eyepiece -- "Lost / Target Not Visible" --> Drift["Check Drift Direction<br/><i>(Stars drift directly West)</i>"]
+    Drift --> Finder
+```
+
 ---
 
 ## 2. Navigating Optical Inversions

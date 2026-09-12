@@ -38,17 +38,26 @@ gantt
     dateFormat HH:mm
     axisFormat %H:%M
     section Sun & Sky
-    Sunset (19:19)              :crit, done, 19:19, 19:19
-    Civil Twilight (to 19:50)    :done, 19:19, 19:50
-    Nautical Twilight (to 20:26) :active, 19:50, 20:26
-    Astronomical Twilight (to 21:05) :active, 20:26, 21:05
-    True Astro Darkness (21:05-04:54):milestone, 21:05, 22:30
+    Sunset (19:19)                       :milestone, 19:19, 19:19
+    Civil Twilight (to 19:50)            :done, 19:19, 19:50
+    Moonset (19:38)                      :milestone, 19:38, 19:38
+    Nautical Twilight (to 20:26)         :active, 19:50, 20:26
+    Astronomical Twilight (to 21:05)     :active, 20:26, 21:05
+    True Astro Darkness (Moonless)       :crit, active, 21:05, 22:30
     section Telescope Program
-    Mirror Cooldown & Alignment :19:30, 20:00
-    Twilight Showcase (Albireo, M22):20:00, 20:30
-    Deep Globulars & Open Clusters (M13, M92, M11):20:30, 21:15
-    Peak Deep Sky (M57, M27, M31, Double Cluster):21:15, 22:00
-    Planetary Finale (Saturn & Titan):22:00, 22:30
+    Mirror Cooldown & Alignment          :done, 19:30, 20:00
+    Twilight Showcase (Albireo, M22)     :active, 20:00, 20:30
+    Deep Globulars & Clusters (M13, M92, M11) :active, 20:30, 21:15
+    Peak Deep Sky (M57, M27, M31, Double Cl.) :crit, active, 21:15, 22:00
+    Planetary Finale (Saturn & Titan)    :active, 22:00, 22:30
+```
+
+```mermaid
+flowchart LR
+    A["<b>19:30 – 20:00</b><br/>Mirror Cooldown & 9x50 Alignment<br/><i>(Vega / Arcturus)</i>"] --> B["<b>20:00 – 20:30</b><br/>Twilight Showcase<br/><i>(Albireo & Low M22)</i>"]
+    B --> C["<b>20:30 – 21:15</b><br/>Rich Globulars & Clusters<br/><i>(M13, M92 & M11)</i>"]
+    C --> D["<b>21:15 – 22:00</b><br/>True Astro Darkness<br/><i>(M57 Ring, M27 Dumbbell, M31)</i>"]
+    D --> E["<b>22:00 – 22:30</b><br/>Planetary Finale<br/><i>(Saturn & Rings >20° Alt)</i>"]
 ```
 
 | Phase | Time Window (CEST) | Sun Altitude | Visual & Telescopic Notes |

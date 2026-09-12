@@ -29,6 +29,14 @@ Because a Dobsonian mount operates on simple Altitude (up/down) and Azimuth (lef
 - **Time your observations**: Observe objects when they are between **50° and 75° altitude**.
 - If a target passes directly overhead (e.g. Vega or M57), observe it 30–45 minutes *before* or *after* its zenith meridian transit.
 
+```mermaid
+flowchart LR
+    Arrival["<b>1. Sunset Arrival</b><br/>Level ground & uncap mirror"] --> Cooldown["<b>2. Thermal Acclimation</b><br/>30–45 min fan cooling"]
+    Cooldown --> Align["<b>3. Dusk Alignment</b><br/>Center Vega in finder & eyepiece"]
+    Align --> Track["<b>4. Track 20°–75° Alt</b><br/>Avoid zenith hole (>80° Alt)"]
+    Track --> DewControl["<b>5. Dew Mitigation</b><br/>Warm pockets for eyepieces"]
+```
+
 ---
 
 ## 3. Valley Humidity & Dew Prevention

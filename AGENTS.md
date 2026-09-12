@@ -74,6 +74,14 @@ All stargazing assets and sessions are organized into structured directories:
 - Store general tutorials, operational rules, and explanatory guides in `tutorials/`.
 - Whenever a user asks questions regarding astronomical concepts, optical handling, or observational techniques (such as star hopping, collimation, dew mitigation, or dark adaptation), refer to or create new markdown guides in `tutorials/<topic>.md`.
 
+### Rule 2.6: GitHub Mermaid Compatibility for Markdown Charts
+- Whenever creating charts, timelines, schedules, workflows, or decision trees inside markdown (`.md`) files (such as `STARGAZING_PLAN.md`, tutorials, or guides), **always use Mermaid code blocks** (` ```mermaid `) to ensure compatibility with GitHub web and mobile previews.
+- **Syntax Standards**:
+  - Prefer `flowchart TD` / `flowchart LR` or `gantt` charts.
+  - Always quote node labels containing special characters like parentheses, colons, or brackets (e.g. `step["M57 Ring Nebula (96×)"]`).
+  - For `gantt` charts, ensure time formats and milestone syntax strictly adhere to Mermaid specs so GitHub renders them smoothly without parser warnings.
+  - Never use plain ASCII diagrams or external proprietary chart embeds when a Mermaid diagram can represent the structure.
+
 ---
 
 ## 3. Python Environment & Script Execution

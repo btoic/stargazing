@@ -85,7 +85,10 @@ Select 8 to 12 showpiece objects meeting these criteria:
 
 ---
 
-## 4. Output Generation Standards
+### Master Plan Markdown Guide (`STARGAZING_PLAN.md`)
+- Detailed digital companion to the printable PDF.
+- **GitHub Mermaid Compatibility**: All timelines, schedules, workflows, and decision trees must be implemented using **Mermaid code blocks** (` ```mermaid `) for native, high-resolution rendering in GitHub web and mobile previews.
+- Format observation schedules as Mermaid `gantt` charts or `flowchart LR` process pipelines. Quote labels containing parentheses or brackets.
 
 ### Master Plan PDF (`STARGAZING_PLAN.pdf`)
 - Must fit onto **exactly 2 pages** (for 1 single double-sided A4 sheet):

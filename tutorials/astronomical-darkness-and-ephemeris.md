@@ -16,6 +16,14 @@ Twilight occurs while sunlight continues to scatter through the upper atmosphere
 | **Astronomical Twilight** | $-12.0^\circ \rightarrow -18.0^\circ$ | Sky darkens substantially. Milky Way dust clouds become noticeable. Fainter stars (to mag 5) emerge. Globular clusters become easily visible. |
 | **True Astronomical Darkness** | $\le -18.0^\circ$ | **Maximum natural darkness.** Zero solar illumination scattered in the upper atmosphere. The mandatory window for faint deep-sky nebulae, external galaxies, and dark rifts. |
 
+```mermaid
+flowchart TD
+    Sunset["Sunset (Sun Alt 0.0°)"] --> Civil["Civil Twilight (Sun Alt 0° to -6°)<br/><i>Primary mirror cooldown & finder alignment</i>"]
+    Civil --> Naut["Nautical Twilight (Sun Alt -6° to -12°)<br/><i>Showpiece double stars (Albireo) & low early targets</i>"]
+    Naut --> Astro["Astronomical Twilight (Sun Alt -12° to -18°)<br/><i>Rich globulars (M13, M92) & open star clusters</i>"]
+    Astro --> Dark["True Astronomical Darkness (Sun Alt < -18°)<br/><i>Emission / planetary nebulae (M57, M27) & external galaxies (M31)</i>"]
+```
+
 ---
 
 ## 2. Moon Ephemeris & Lunar Interference

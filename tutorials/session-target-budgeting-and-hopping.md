@@ -6,22 +6,68 @@ This guide details the astronomical planning principles for budgeting observatio
 
 ---
 
-## 1. The Dwell-Time Budget: Quality Over Quantity
+## 1. The Dwell-Time Budget: Observer Skill × Object Difficulty
 
-A common beginner mistake is scheduling 20 to 30 targets for a 2.5-hour observation session. In practice, this leads to rushed "faint-fuzzy stamp collecting," where you spend 80% of your night star-hopping, verifying coordinates, and nudging the rocker box, and only 30 seconds squinting into the eyepiece before moving on.
+A common beginner mistake is either scheduling 25 targets for a 2.5-hour session (rushing through faint fuzzies without truly seeing them) or assuming every object takes the same flat 15 minutes.
 
-### The Realistic Timing Formula
-For a **2.5-hour (150-minute)** astronomical darkness window:
-- **Acquisition & Star Hopping**: 3 to 7 minutes per target (locating starting anchor star, stepping through finder scope, centering in low power).
-- **Eyepiece Swapping & Focusing**: 2 to 3 minutes (stepping from 20mm search power up to 12.5mm or 6mm resolution power).
-- **Averted Vision & Visual Integration**: 8 to 12 minutes. The human eye and brain require several minutes of steady averted vision at the exit pupil for retinal rod cells to resolve delicate spiral galaxy arms, planetary nebula shells, or split globular cluster core stars.
-- **Discussion & Sharing**: 3 to 5 minutes (if observing with friends or family).
+In reality, **Total Dwell Time ($T_\text{dwell}$)** is the sum of two distinct phases:
+$$T_\text{dwell} = T_\text{acquire} + T_\text{observe}$$
 
-$$\text{Total Dwell Time per Primary Target} \approx 15 \text{ to } 20 \text{ minutes}$$
+1. **Acquisition Time ($T_\text{acquire}$)**: Identifying anchor guide stars, aligning the Telrad/finder scope, star-hopping through field stars, and centering the object in the low-power eyepiece.
+2. **Eyepiece Inspection Time ($T_\text{observe}$)**: Swapping to higher magnification (e.g. 96× / 12.5mm), focusing, adapting averted vision to dark-adapt rod cells, discerning core granularity, spiral arms, or nebula shells, and sharing the view.
 
-$$\frac{150 \text{ minutes of darkness}}{18 \text{ min average dwell}} \approx \mathbf{6 \text{ to } 8 \text{ Primary Anchor Targets}}$$
+### The 2D Timing Matrix: Observer Skill vs. Object Difficulty
 
-Planning **6 to 8 primary targets** gives you a relaxed, immersive observing rhythm with zero time pressure.
+Acquisition time scales dramatically with both **Observer Skill** and **Object Difficulty** (calibrated from Michael Swanson's *NexStar User's Guide II*):
+
+- **Very Easy / Easy Showpieces (e.g. M13, M31, M42, M45, M57, Albireo)**:
+  - An **Advanced observer** with muscle memory and sky familiarity needs only **1 to 2 minutes** to drop the Telrad onto M13 and center it. After 4–6 minutes of enjoying the core resolution at 96×, total dwell is only **5 to 8 minutes**.
+  - A **Beginner** may take 5–10 minutes to locate the Hercules Keystone, catching M13 in ~12–15 minutes total.
+- **Medium Targets (e.g. M1 Crab Nebula, M27 Dumbbell, M11 Wild Duck, M56, M81/M82)**:
+  - Fainter contrast or multiple intermediate hop steps. Takes 2–4 min acquisition for advanced observers, 10–15 min for beginners.
+- **Hard Targets (e.g. M33 Triangulum, M74, M76, M87, M71, M108)**:
+  - Low surface brightness, dense star fields, or subtle contrast. Requires methodical star-hopping and prolonged averted vision.
+
+| Object Difficulty Rating | Timing Phase | Beginner / Starter | Intermediate Observer | Advanced / Seasoned Observer |
+| :--- | :--- | :---: | :---: | :---: |
+| **Very Easy / Easy**<br>*(M13, M31, M45, M57, Albireo)* | **Acquisition ($T_\text{acq}$)**<br>**Inspection ($T_\text{obs}$)**<br>**Total Dwell ($T_\text{dwell}$)** | 5–10 min<br>5–8 min<br>**10–18 min** *(avg ~14m)* | 2–4 min<br>5–8 min<br>**7–12 min** *(avg ~9.5m)* | **1–2 min**<br>4–6 min<br>**5–8 min** *(avg ~6.5m)* |
+| **Medium**<br>*(M1, M27, M11, M56, M81/M82)* | **Acquisition ($T_\text{acq}$)**<br>**Inspection ($T_\text{obs}$)**<br>**Total Dwell ($T_\text{dwell}$)** | 10–15 min<br>8–10 min<br>**18–25 min** *(avg ~21.5m)* | 4–7 min<br>6–9 min<br>**10–16 min** *(avg ~13m)* | 2–4 min<br>5–8 min<br>**7–12 min** *(avg ~9.5m)* |
+| **Hard**<br>*(M33, M74, M76, M87, M71)* | **Acquisition ($T_\text{acq}$)**<br>**Inspection ($T_\text{obs}$)**<br>**Total Dwell ($T_\text{dwell}$)** | 18–25 min<br>8–10 min<br>**26–35 min** *(avg ~30m)* | 8–12 min<br>8–10 min<br>**16–22 min** *(avg ~19m)* | 4–8 min<br>8–12 min<br>**12–20 min** *(avg ~16m)* |
+
+---
+
+### The Mathematical Session Budget Formula
+
+To calculate realistic target numbers for any session, first deduct **30 minutes of overhead** (equipment setup, primary mirror thermal acclimation, finder alignment, and dark-adaptation breaks):
+$$T_\text{net} = T_\text{darkness} - 30\text{ min}$$
+
+We calculate three distinct pacing levels:
+1. **Min Targets (Relaxed Pace / In-Depth Visual Study)**: Prioritizes extended averted vision, sketching, or tackling challenging Medium/Hard targets.
+2. **Avg Targets (Balanced Program — Recommended)**: Optimal curated mix (~60% Easy anchors, ~30% Medium targets, ~10% Hard challenges) + opportunistic neighbor hops.
+3. **Max Targets (Active Sweeps / Marathon Pace)**: High-tempo sweeps across bright Easy/Very Easy clusters and showpieces.
+
+#### Benchmark Budget for a 2.5-Hour Darkness Window ($T_\text{net} = 120\text{ min}$):
+
+- **Beginner / Starter**:
+  - **Min**: **4 primary targets** (~30 min/target, zero pressure, deep inspection)
+  - **Avg**: **6 primary targets** (~20 min/target, 4 Easy showpieces + 2 Medium targets) — *(Recommended)*
+  - **Max**: **8 primary targets** (~15 min/target, focusing strictly on bright Easy showpieces)
+- **Intermediate Observer**:
+  - **Min**: **6 primary targets** (~20 min/target, deep averted vision inspection)
+  - **Avg**: **8 to 9 primary targets** (~13–15 min/target, 5 Easy + 3 Medium + 1 Hard) — *(Recommended)*
+  - **Max**: **12 primary targets** (~10 min/target, active hopping with 2–3 neighbor bonus targets)
+- **Advanced / Seasoned Observer**:
+  - **Min**: **8 primary targets** (~15 min/target, in-depth averted vision sketches / difficult targets)
+  - **Avg**: **12 to 14 primary targets** (~8–10 min/target, rapid 1–2 min hops + high-power detail) — *(Recommended)*
+  - **Max**: **16 to 18 primary targets** (~6–7 min/target, rapid Messier marathon sweeps)
+
+---
+
+### Observer Choice & Interactive Planning
+During session planning, the planning tool does not unilaterally force a fixed number of targets. Instead, it:
+1. Computes the net darkness window for the date and site.
+2. Calculates the **Min**, **Avg (Recommended)**, and **Max** target counts.
+3. Presents an interactive multiple-choice prompt giving the observer the final call, with a custom write-in field to enter any specific target count or custom wishlist.
 
 ---
 

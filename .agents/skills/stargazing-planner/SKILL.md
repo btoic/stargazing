@@ -87,11 +87,53 @@ Calculate for the observing date and location:
 - **Moon Ephemeris**: Phase illumination percentage, moonrise, and moonset times. True dark-sky observing requires $\text{Alt}_\text{Moon} \le 0^\circ$.
 
 ### Step 3.2: Target Curation & Session Budgeting Rules
-During initial session planning or skill invocation, ask the user about their experience level or how long it usually takes them to find an object. Adjust the dwell-time formula and target count accordingly:
-- **Beginner / Starters** (~25–30 min per target including acquisition): Plan **4 to 6 primary anchor targets** for a 2.5-hour darkness session.
-- **Intermediate** (~15–20 min per target): Plan **6 to 8 primary anchor targets** + 3 to 6 adjacent bonus hopping targets.
-- **Advanced / Seasoned** (~10–15 min per target): Plan **8 to 10 primary targets** + 4 to 8 adjacent bonus hopping targets.
-Formula: `Primary Targets = floor((Darkness Window Minutes - 30 min Setup/Breaks) / Target Find+Dwell Minutes)`.
+
+#### Dwell-Time Budget: Observer Skill × Object Difficulty
+Flat target dwell times are inaccurate because acquisition time scales dramatically with both **Observer Skill** and **Object Difficulty** (calibrated from Michael Swanson's *NexStar User's Guide II*).
+Total dwell time is:
+$$T_\text{dwell} = T_\text{acquire} + T_\text{observe}$$
+
+- **Very Easy / Easy Showpieces (e.g. M13, M31, M42, M45, M57, Albireo)**:
+  - **Advanced Observer**: Acquisition takes only **1 to 2 minutes**; eyepiece inspection takes 4–6 min $\rightarrow$ Total dwell: **5 to 8 minutes** (avg ~6.5 min).
+  - **Intermediate Observer**: Acquisition takes 2–4 min; inspection takes 5–8 min $\rightarrow$ Total dwell: **7 to 12 minutes** (avg ~9.5 min).
+  - **Beginner / Starter**: Acquisition takes 5–10 min; inspection takes 5–8 min $\rightarrow$ Total dwell: **10 to 18 minutes** (avg ~14 min).
+- **Medium Targets (e.g. M1, M27, M11, M56, M81/M82)**:
+  - Advanced: $T_\text{dwell} = \mathbf{7\text{--}12\text{ min}}$ (avg ~9.5 min, 2–4m acq).
+  - Intermediate: $T_\text{dwell} = \mathbf{10\text{--}16\text{ min}}$ (avg ~13 min, 4–7m acq).
+  - Beginner: $T_\text{dwell} = \mathbf{18\text{--}25\text{ min}}$ (avg ~21.5 min, 10–15m acq).
+- **Hard Targets (e.g. M33, M74, M76, M87, M71)**:
+  - Advanced: $T_\text{dwell} = \mathbf{12\text{--}20\text{ min}}$ (avg ~16 min, 4–8m acq).
+  - Intermediate: $T_\text{dwell} = \mathbf{16\text{--}22\text{ min}}$ (avg ~19 min, 8–12m acq).
+  - Beginner: $T_\text{dwell} = \mathbf{26\text{--}35\text{ min}}$ (avg ~30 min, 18–25m acq).
+
+#### Mathematical Session Budget Formula
+Deduct **30 minutes of overhead** (equipment setup, mirror acclimation, finder alignment, dark-adaptation breaks):
+$$T_\text{net} = T_\text{darkness} - 30\text{ min}$$
+
+For a standard 2.5-hour darkness session ($T_\text{net} = 120\text{ min}$):
+- **Beginner / Starter**:
+  - **Min (Relaxed)**: **4 primary targets** (~30 min/target, deep averted vision inspection)
+  - **Avg (Balanced)**: **6 primary targets** (~20 min/target, 4 Easy + 2 Medium) — *(Recommended)*
+  - **Max (Active Sweeps)**: **8 primary targets** (~15 min/target, strictly bright Easy showpieces)
+- **Intermediate Observer**:
+  - **Min (Relaxed)**: **6 primary targets** (~20 min/target, in-depth visual study)
+  - **Avg (Balanced)**: **8 to 9 primary targets** (~13–15 min/target, 5 Easy + 3 Medium + 1 Hard) — *(Recommended)*
+  - **Max (Active Sweeps)**: **12 primary targets** (~10 min/target, active hopping + 2–3 neighbor hops)
+- **Advanced / Seasoned Observer**:
+  - **Min (Relaxed)**: **8 primary targets** (~15 min/target, averted vision sketches / difficult targets)
+  - **Avg (Balanced)**: **12 to 14 primary targets** (~8–10 min/target, rapid 1–2m hops + high-power detail) — *(Recommended)*
+  - **Max (Active Sweeps)**: **16 to 18 primary targets** (~6–7 min/target, rapid Messier marathon pace)
+
+#### Interactive Observer Consultation Protocol (`ask_question`)
+Never unilaterally dictate a target count. During initial planning:
+1. Assess or inquire about observer skill level (Beginner, Intermediate, Advanced).
+2. Calculate $T_\text{net}$ and compute Min, Avg (Recommended), and Max target counts.
+3. Call `ask_question` with 3 concrete options plus the UI's built-in custom write-in field:
+   - `(Recommended) Balanced Program: <Avg> primary targets (+ <Y> bonus neighbor hops)`
+   - `Relaxed Pace: <Min> primary targets (more time per object, deep inspection/sketching)`
+   - `Active Sweeps: <Max> primary targets (fast acquisition, high-volume tour)`
+4. Respect the observer's selection or write-in custom wishlist before generating targets.
+
 
 Target Curation Criteria:
 1. **Target Manifest (`targets.md`)**: Save the curated targets into `observations/<session>/targets.md` (plain text markdown list with object slug, common name, constellation, difficulty rating, recommended magnification, and hops). This file serves as the reproducible source of truth for chart rendering and EPUB/PDF rebuilds.

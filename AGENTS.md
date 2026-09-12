@@ -68,16 +68,28 @@ All stargazing assets and sessions are organized into structured directories:
 
 ### Rule 2.3: Stargazing Plan Generation (`stargazing-planner` skill)
 - Always activate the `stargazing-planner` skill to calculate ephemerides and curate an optimal, customized observation portfolio.
-- **User Find-Time Interview & Dwell-Time Budgeting**:
-  - During initial invocation, interview the user on how long it usually takes them to locate an object (or assess their skill level) to calibrate target volume:
-    - **Beginner / Starters** (~25–30 min dwell/acquisition): Plan **4 to 6 primary anchor targets** for a 2.5-hour darkness session.
-    - **Intermediate** (~15–20 min dwell/acquisition): Plan **6 to 8 primary anchor targets** + 3 to 6 adjacent bonus hopping targets.
-    - **Advanced / Seasoned** (~10–15 min dwell/acquisition): Plan **8 to 10 primary targets** + 4 to 8 adjacent bonus hopping targets.
-    - Formula: `Primary Targets = floor((Darkness Window Minutes - 30 min Setup/Breaks) / Target Find+Dwell Minutes)`.
+- **Difficulty-Aware Dwell-Time Budgeting (Observer Skill × Object Difficulty)**:
+  - Dwell time is the sum of **Acquisition** ($T_\text{acq}$) and **Eyepiece Inspection** ($T_\text{obs}$).
+  - Account for the 2D relationship between **Observer Skill** (`Beginner`, `Intermediate`, `Advanced`) and **Object Difficulty** (`Very Easy`, `Easy`, `Medium`, `Hard`):
+    - *Very Easy / Easy (e.g. M13, M31, M57)*: Advanced observers acquire in **1–2 min** (total dwell 5–8 min); beginners acquire in **5–10 min** (total dwell 10–18 min).
+    - *Medium (e.g. M1, M27, M11, M56)*: Advanced acquire in **2–4 min** (total dwell 7–12 min); beginners acquire in **10–15 min** (total dwell 18–25 min).
+    - *Hard (e.g. M33, M74, M76, M87)*: Advanced acquire in **4–8 min** (total dwell 12–20 min); beginners acquire in **18–25 min** (total dwell 26–35 min).
+  - Calculate net darkness window: $T_\text{net} = T_\text{darkness} - 30\text{ min overhead}$.
+  - Compute 3 pacing tiers:
+    - **Min (Relaxed / Deep Inspection)**: Lower target count, extended averted vision/sketching.
+    - **Avg (Balanced Program — Recommended)**: Curated mix (~60% Easy anchors, 30% Medium, 10% Hard) + neighbor bonus hops.
+    - **Max (Active Sweeps / Marathon)**: High-volume sweeps across bright showpieces.
+- **Interactive User Selection (Final Call with Observer)**:
+  - The agent must **never unilaterally dictate** the target volume.
+  - Calculate Min, Avg, and Max based on the formula, then prompt the user via `ask_question`:
+    - Option 1: `(Recommended) Balanced Program: X primary targets (+ Y neighbor hops)`
+    - Option 2: `Relaxed Pace: X_min primary targets (more time per object, deep inspection)`
+    - Option 3: `Active Sweeps: X_max primary targets (fast acquisition, high volume)`
+    - The built-in write-in option in `ask_question` allows the user to specify any custom count or custom target wishlist.
   - Annotate **3 to 6 adjacent bonus neighbor targets** (e.g. M56 near M57, M71 near M27, M103 near Double Cluster) that can be hopped opportunistically from the same constellation field (see `tutorials/session-target-budgeting-and-hopping.md`).
-  - Save the target portfolio into `observations/<session>/targets.md` (plain text markdown manifest) for reproducible rebuilds.
+  - Save the agreed target portfolio into `observations/<session>/targets.md` (plain text markdown manifest) for reproducible rebuilds.
 - **Difficulty Rating Calibration**:
-  - Calibrate object difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog `catalogs/messier_difficulty_ratings.md`.
+  - Calibrate object difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog `catalogs/messier_difficulty_ratings.md` and dataset `catalogs/messier_catalog.json`.
 - **E-Reader Catalog Ergonomics**:
   - In target catalog tables, place the `Finder Chart` link column inward (before `Recommended Eyepiece`) rather than on the right edge, preventing accidental page-turn touch gestures on e-readers.
 - **Visibility Criteria**:

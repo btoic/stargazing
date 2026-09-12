@@ -26,9 +26,10 @@ The toolkit computes exact solar/lunar ephemerides, curates high-impact observin
   - **All-Sky Planisphere (`full_sky_map.pdf`)**: Strict 1:1 circular aspect ratio with clean `N`, `S`, `E`, `W` orientation.
   - **A4 Landscape Finder Charts (`charts/chart_<N>_*.pdf`)**: High-resolution negative toner-saver charts.
 - 🎯 **Target Budgeting & Clustering**:
-  - Interview-calibrated target lists matched to find-time skill levels.
-  - Spatial neighbor clustering (e.g. M56 near M57, M71 near M27, M103 near Double Cluster).
-  - Reproducible plain-text target manifests (`targets.md`).
+  - **2D Timing Matrix ($T_\text{dwell} = T_\text{acq} + T_\text{obs}$)**: Dwell times scale by both observer skill and object difficulty (Swanson ratings). Fast 1–2 min acquisition on easy showpieces like M13 for advanced observers vs. methodical 10–15 min hops for beginners.
+  - **3-Choice Interactive Consultation**: Planners calculate net darkness ($T_\text{net} = T_\text{darkness} - 30\text{ min}$) and prompt the user with Relaxed (Min), Balanced (Avg / Recommended), and Active Sweeps (Max) pacing options plus custom write-in requests.
+  - **Spatial Neighbor Clustering**: Groups objects by sky region so observers can easily hop to nearby bonus targets (e.g. M56 near M57, M71 near M27, M103 near Double Cluster).
+  - **Reproducible Manifests**: Plain-text target manifests (`targets.md`) ensure deterministic chart rendering and rebuilds.
 - 🌌 **Global Messier Catalog Observer's Guide (`messier_catalog.md`)**:
   - Comprehensive single-document master field guide in the repository root compiling all 110 Messier objects (M1 through M110).
   - Interactive master index with Michael Swanson difficulty ratings (*NexStar User's Guide II*) and `#m{N}` jump links.

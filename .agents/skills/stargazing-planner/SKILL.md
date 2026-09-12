@@ -17,12 +17,16 @@ This skill provides the end-to-end procedure for planning a stargazing observati
 All session assets follow a standardized repository layout:
 
 ```text
+├── catalogs/
+│   ├── messier_catalog.json    # Complete 110 Messier objects catalog with coordinates, optics & Swanson ratings
+│   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog
+├── messier_catalog.md          # Global 110-target Messier catalog observer's guide in repository root
 ├── locations/
 │   └── <location-slug>.md      # Reusable site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
 │   └── <equipment-slug>.md     # Reusable optics profiles (aperture, FL, eyepieces, inversion)
 ├── shared/
-│   └── <object-slug>/          # Shared, cross-session reusable charts cache
+│   └── <object-slug>/          # Shared, cross-session reusable charts cache (m1 through m110)
 │       ├── context.png         # Universal constellation orientation chart (mag <= 6.5)
 │       ├── widefield_<equip>.png # Wide-field star hopping chart (mag <= 8.5)
 │       ├── eyepiece_dossier_<equip>.png # Eyepiece simulation & dossier graphic
@@ -40,6 +44,9 @@ All session assets follow a standardized repository layout:
 ├── tutorials/
 │   └── <topic>.md              # Standalone astronomy guides, field craft & optical tutorials
 ├── scripts/
+│   ├── build_messier_catalog.py # Compiles unified 110 Messier astronomical dataset
+│   ├── generate_all_messier_shared.py # Parallel batch pre-renderer for all 110 Messier shared assets
+│   ├── build_messier_catalog_markdown.py # Compiles global messier_catalog.md observer guide
 │   ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
 │   ├── generate_charts.py      # Vector planisphere & toner-saver negative finder chart generator
 │   ├── build_plan_pdf.py       # Two-page master guide PDF builder
@@ -87,7 +94,7 @@ Formula: `Primary Targets = floor((Darkness Window Minutes - 30 min Setup/Breaks
 Target Curation Criteria:
 1. **Target Manifest (`targets.md`)**: Save the curated targets into `observations/<session>/targets.md` (plain text markdown list with object slug, common name, constellation, difficulty rating, recommended magnification, and hops). This file serves as the reproducible source of truth for chart rendering and EPUB/PDF rebuilds.
 2. **Anchor + Neighbor Clustering**: Group targets into spatial clusters so observers can easily hop to nearby bonus objects from the same constellation field (e.g. M56 near M57, M71 near M27, M103 near the Double Cluster / Ruchbah). (See [tutorials/session-target-budgeting-and-hopping.md](../../../tutorials/session-target-budgeting-and-hopping.md)).
-3. **Difficulty Rating Calibration**: Assign difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog [catalogs/messier_difficulty_ratings.md](../../../catalogs/messier_difficulty_ratings.md) (from Michael Swanson's *NexStar User Guide II*).
+3. **Target Catalog & Difficulty Calibration**: Use repository astronomical dataset [catalogs/messier_catalog.json](../../../catalogs/messier_catalog.json) for authoritative target coordinates, dimensions, magnitudes, and optical configs. Calibrate difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using [catalogs/messier_difficulty_ratings.md](../../../catalogs/messier_difficulty_ratings.md) (from Michael Swanson's *NexStar User Guide II*).
 4. **Horizon Obstruction Hard Floor**: All targets must be at **Altitude $\ge 15^\circ$** (preferably $\ge 20^\circ$) to clear local valley/tree obstructions and atmospheric extinction.
 5. **Meridian Timing**: Schedule targets within $\pm 1.5$ hours of their highest nightly transit.
 6. **Zenith Blindspot ("Dobson Hole") Avoidance**: Avoid scheduling manual Alt-Az tracking for targets directly overhead (>80° Alt); catch them at 65°–75° Alt.
@@ -131,6 +138,12 @@ Target Curation Criteria:
      - On subsequent runs or future sessions, existing charts are copied instantly (`[CACHE HIT]`), drastically reducing generation time.
 4. **All-Sky Planisphere (`full_sky_map.png` / `full_sky_map.pdf`)**:
    - Strictly maintains a 1:1 circular aspect ratio with clean, shortened cardinal direction labels (`N`, `S`, `E`, `W`).
+5. **Global Messier Catalog Guide (`messier_catalog.md`)**:
+   - Repository-level observer's guide in root compiling all 110 Messier objects.
+   - Replicates the exact 4-part EPUB layout: (1) Eyepiece simulation & dossier graphic, (2) Constellation context orientation chart, (3) Wide-field star hop chart & master A4 link, (4) Observing strategy & hop text.
+   - Interactive master index with Michael Swanson difficulty ratings and `#m{N}` anchor jump links.
+   - 100% GitHub markdown preview compatible (explicit `<a id="m{N}"></a>` anchors, repository-relative paths).
+   - Generated via `python3 scripts/build_messier_catalog_markdown.py`.
 
 #### On-Demand Deliverables (PDF Mode, via `--pdf` flag or user request)
 1. **Master Plan PDF (`STARGAZING_PLAN.pdf`)**:
@@ -179,6 +192,17 @@ python3 scripts/run_observation_planner.py \
   --date <YYYY-MM-DD> \
   --pdf
 ```
+
+To compile or regenerate the global Messier catalog markdown guide:
+```bash
+python3 scripts/build_messier_catalog_markdown.py
+```
+
+To pre-render or update shared assets for all 110 Messier objects in parallel:
+```bash
+python3 scripts/generate_all_messier_shared.py --workers 4
+```
+
 - Required libraries: `astropy`, `skyfield`, `numpy`, `matplotlib`, `reportlab`, `pypdfium2`.
 - Matplotlib cache should be directed to a writable location in sandboxed environments via `MPLCONFIGDIR=/tmp/matplotlib`.
 

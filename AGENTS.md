@@ -9,12 +9,16 @@ This repository contains astronomical observation plans, sky charts, target cata
 All stargazing assets and sessions are organized into structured directories:
 
 ```text
+├── catalogs/
+│   ├── messier_catalog.json    # Complete 110 Messier objects catalog with coordinates, optics & Swanson ratings
+│   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog
+├── messier_catalog.md          # Global 110-target Messier catalog observer's guide in repository root
 ├── locations/
 │   └── <location-slug>.md      # Reusable observing site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
 │   └── <equipment-slug>.md     # Reusable optical equipment profiles (aperture, FL, eyepieces)
 ├── shared/
-│   └── <object-slug>/          # Shared, cross-session reusable charts cache
+│   └── <object-slug>/          # Shared, cross-session reusable charts cache (All 110 Messier objects: m1-m110)
 │       ├── context.png         # Universal constellation orientation chart (mag <= 6.5)
 │       ├── widefield_<equip>.png # Wide-field star hopping chart (mag <= 8.5)
 │       ├── eyepiece_dossier_<equip>.png # Eyepiece simulation & dossier graphic
@@ -35,6 +39,9 @@ All stargazing assets and sessions are organized into structured directories:
 ├── .agents/skills/
 │   └── stargazing-planner/     # Automated planning skill for agents
 ├── scripts/
+│   ├── build_messier_catalog.py # Compiles unified 110 Messier astronomical dataset
+│   ├── generate_all_messier_shared.py # Parallel batch pre-renderer for all 110 Messier shared assets
+│   ├── build_messier_catalog_markdown.py # Compiles global messier_catalog.md observer guide
 │   ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
 │   ├── generate_charts.py      # Vector planisphere & toner-saver negative finder chart generator
 │   ├── build_plan_pdf.py       # Two-page master guide PDF builder
@@ -125,6 +132,18 @@ All stargazing assets and sessions are organized into structured directories:
 - All links, references, and image embeds across all markdown (`.md`) files in the repository must use repository-relative or folder-relative paths (e.g. `[Chart 2](charts/chart_2_*.png)`, `[Targets](../../targets.md)`).
 - Absolute local filesystem paths (`file:///...` or `/home/branko/...`) are strictly prohibited in all documentation, guides, and plan files to ensure they resolve seamlessly on GitHub web and mobile previews.
 
+### Rule 2.8: Global Messier Catalog Guide (`messier_catalog.md`) & Datasets (`catalogs/`)
+- **Astronomical Dataset (`catalogs/messier_catalog.json`)**: Authoritative machine-readable repository of all 110 Messier objects with astrometric J2000 coordinates, object classifications, visual magnitudes, angular dimensions, distance estimates, recommended eyepieces for the Sky-Watcher Skyliner 200P, and Michael Swanson difficulty ratings (*NexStar User's Guide II*).
+- **Global Guide (`messier_catalog.md`)**: A complete, single-document field guide in the repository root covering all 110 Messier objects:
+  - **Interactive Index Table**: Summary table sorted by Messier number with common names, constellations, object types, magnitudes, dimensions, difficulty ratings, and `#m{N}` jump links.
+  - **Strict EPUB 4-Part Layout per Target**:
+    1. Eyepiece Simulation & Technical Dossier graphic (`shared/m{N}/eyepiece_dossier_<equip>.png`).
+    2. Constellation Context Orientation Chart (`shared/m{N}/context.png`).
+    3. Wide-field Star-Hopping Finder Chart (`shared/m{N}/widefield_<equip>.png`) + high-res master A4 chart link.
+    4. Structured technical parameter table, dual-magnification observing strategy (framing at 60× vs. high-power detail at 96×), and step-by-step star hop narrative.
+  - **GitHub Preview & Navigation Invariants**: Explicit HTML anchors (`<a id="m{N}"></a>`) before headings, repository-relative paths (`shared/m{N}/...`), GFM alerts (`> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`), and bidirectional navigation bars (`[↑ Back to Catalog Index](#messier-catalog-index) • [← Previous: M{N-1}](#m{N-1}) • [Next: M{N+1} →](#m{N+1})`).
+  - **Regeneration**: Rebuilt anytime via `python3 scripts/build_messier_catalog_markdown.py`.
+
 ---
 
 ## 3. Python Environment & Script Execution
@@ -149,6 +168,17 @@ python3 scripts/run_observation_planner.py \
   --date YYYY-MM-DD \
   --pdf
 ```
+
+To compile or regenerate the global Messier catalog markdown guide:
+```bash
+python3 scripts/build_messier_catalog_markdown.py
+```
+
+To pre-render or update shared assets for all 110 Messier objects in parallel:
+```bash
+python3 scripts/generate_all_messier_shared.py --workers 4
+```
+
 - Matplotlib cache should be directed to a writable location if running in sandboxed or read-only home directory environments (`MPLCONFIGDIR=/tmp/matplotlib`).
 - If a local vendor directory `.pylibs/` is present, it is automatically resolved by the scripts.
 

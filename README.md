@@ -29,6 +29,11 @@ The toolkit computes exact solar/lunar ephemerides, curates high-impact observin
   - Interview-calibrated target lists matched to find-time skill levels.
   - Spatial neighbor clustering (e.g. M56 near M57, M71 near M27, M103 near Double Cluster).
   - Reproducible plain-text target manifests (`targets.md`).
+- 🌌 **Global Messier Catalog Observer's Guide (`messier_catalog.md`)**:
+  - Comprehensive single-document master field guide in the repository root compiling all 110 Messier objects (M1 through M110).
+  - Interactive master index with Michael Swanson difficulty ratings (*NexStar User's Guide II*) and `#m{N}` jump links.
+  - Follows the exact EPUB 4-part structure (eyepiece simulation/dossier, context chart, widefield hop chart + master A4 link, observing strategy & star hop instructions).
+  - 100% GitHub preview compatible with repository-relative paths and GFM alerts.
 
 ---
 
@@ -97,6 +102,14 @@ You can also run or re-run individual stages:
   ```bash
   python3 scripts/build_plan_pdf.py --output-dir observations/dvigrad-2026-09-12
   ```
+- **Compile / Rebuild Global Messier Catalog Guide**:
+  ```bash
+  python3 scripts/build_messier_catalog_markdown.py
+  ```
+- **Batch Pre-Render All 110 Messier Shared Assets**:
+  ```bash
+  python3 scripts/generate_all_messier_shared.py --workers 4
+  ```
 
 ---
 
@@ -164,6 +177,7 @@ The agent will:
 ├── catalogs/
 │   ├── messier_catalog.json    # Complete 110 Messier objects catalog with coordinates, optics & Swanson ratings
 │   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog
+├── messier_catalog.md          # Global 110-target Messier catalog observer's guide in repository root
 ├── shared/                     # Universal cross-session reusable charts cache (All 110 Messier objects!)
 │   └── m<N>/                   # m1 through m110 pre-rendered assets
 │       ├── context.png         # Naked-eye constellation orientation chart (mag <= 6.5)
@@ -192,6 +206,7 @@ The agent will:
 └── scripts/
     ├── build_messier_catalog.py # Compiles unified 110 Messier astronomical dataset
     ├── generate_all_messier_shared.py # Parallel batch pre-renderer for all 110 Messier shared assets
+    ├── build_messier_catalog_markdown.py # Compiles global messier_catalog.md observer guide
     ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
     ├── generate_charts.py      # Planisphere & finder chart generator with shared caching
     ├── build_plan_pdf.py       # Two-page master guide PDF builder

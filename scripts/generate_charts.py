@@ -82,13 +82,13 @@ def load_field(name):
             return json.load(f)
     return []
 
-def star_mag_to_size(mag, max_mag=10.3):
+def star_mag_to_size(mag, max_mag=8.5):
     """Calculates star markersize in points based on visual magnitude up to max_mag."""
     if mag > max_mag:
         return None
     return max(0.8, round((max_mag + 0.2 - mag)**1.7 * 0.14 + 0.7, 2))
 
-def draw_magnitude_legend(ax, loc='lower left', max_mag=10.3):
+def draw_magnitude_legend(ax, loc='lower left', max_mag=8.5):
     """Draws a crisp magnitude legend box (star dot size to magnitude) in the corner of Viewport A."""
     if loc == 'lower left':
         x0, y0 = 0.035, 0.035
@@ -97,10 +97,10 @@ def draw_magnitude_legend(ax, loc='lower left', max_mag=10.3):
     w, h = 0.38, 0.072
     rect = Rectangle((x0, y0), w, h, transform=ax.transAxes, facecolor='#ffffff', edgecolor='#000000', linewidth=0.8, zorder=20)
     ax.add_patch(rect)
-    ax.text(x0 + w/2, y0 + h - 0.015, f'MAGNITUDE KEY (Telescope Limit - 3: {max_mag:.1f} mag)',
+    ax.text(x0 + w/2, y0 + h - 0.015, f'MAGNITUDE KEY (Faintest Stars: {max_mag:.1f} mag)',
             transform=ax.transAxes, fontsize=5.8, fontweight='bold', ha='center', va='top', zorder=21)
     
-    mags = [1, 3, 5, 7, 9, 10]
+    mags = [1, 3, 5, 7, 8.5]
     dx = (w - 0.04) / (len(mags) - 1)
     dot_y = y0 + 0.024
     lbl_y = y0 + 0.007
@@ -108,9 +108,10 @@ def draw_magnitude_legend(ax, loc='lower left', max_mag=10.3):
         dot_x = x0 + 0.02 + i * dx
         ms = star_mag_to_size(m, max_mag)
         ax.plot(dot_x, dot_y, 'o', color='#000000', markersize=ms, transform=ax.transAxes, zorder=22)
-        ax.text(dot_x, lbl_y, str(m), transform=ax.transAxes, fontsize=5.8, color='#333333', ha='center', va='bottom', zorder=22)
+        lbl_str = f"{m:g}"
+        ax.text(dot_x, lbl_y, lbl_str, transform=ax.transAxes, fontsize=5.8, color='#333333', ha='center', va='bottom', zorder=22)
 
-def setup_wide_field(ax, c_ra, c_dec, span_ra, span_dec, max_mag=10.3, show_legend=True, legend_loc='lower left'):
+def setup_wide_field(ax, c_ra, c_dec, span_ra, span_dec, max_mag=8.5, show_legend=True, legend_loc='lower left'):
     ax.set_facecolor('#ffffff')
     cos_dec = math.cos(math.radians(c_dec))
     x_min, x_max = -(span_ra / 2.0) * cos_dec, (span_ra / 2.0) * cos_dec
@@ -134,7 +135,7 @@ def setup_wide_field(ax, c_ra, c_dec, span_ra, span_dec, max_mag=10.3, show_lege
                     y2 = dec2 - c_dec
                     ax.plot([x1, x2], [y1, y2], color='#475569', linewidth=1.1, linestyle='-', alpha=0.9, zorder=2)
 
-    # Stars - solid black dots, scaled by visual magnitude up to max_mag (telescope limit - 3)
+    # Stars - solid black dots, scaled by visual magnitude up to max_mag (8.5 mag limit)
     for f in stars_data['features']:
         ra = norm_ra(f['geometry']['coordinates'][0])
         dec = f['geometry']['coordinates'][1]
@@ -310,7 +311,7 @@ def draw_target_marker(ax, tx, ty):
     ax.plot([tx-0.3, tx+0.3], [ty, ty], color='#000000', linewidth=0.9, zorder=12)
     ax.plot([tx, tx], [ty-0.3, ty+0.3], color='#000000', linewidth=0.9, zorder=12)
 
-def make_full_sky_map(output_dir):
+def make_full_sky_map(output_dir, export_pdf=False):
     """Generates an all-sky planisphere formatted strictly to standard A4 Portrait."""
     print("Generating Full Sky Map (A4 Portrait, B/W Toner-Saver)...")
     fig = plt.figure(figsize=A4_PORTRAIT, facecolor='white', dpi=300)
@@ -420,7 +421,8 @@ def make_full_sky_map(output_dir):
 
     # Exact A4 page export (NO bbox_inches='tight')
     plt.savefig(os.path.join(output_dir, 'full_sky_map.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(output_dir, 'full_sky_map.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(output_dir, 'full_sky_map.pdf'), dpi=300, facecolor='white')
     plt.close()
     print("Full Sky Map generated successfully (A4 Portrait).")
 
@@ -432,7 +434,7 @@ def make_full_sky_map(output_dir):
 
 def draw_chart_1_widefield(ax):
     c_ra, c_dec = 283.0, 36.0
-    setup_wide_field(ax, c_ra, c_dec, 18.0, 18.0, max_mag=10.3, show_legend=True, legend_loc='lower left')
+    setup_wide_field(ax, c_ra, c_dec, 18.0, 18.0, max_mag=8.5, show_legend=True, legend_loc='lower left')
 
     stars_lyra = [
         (279.23, 38.78, 'Vega (α Lyr)\nmag 0.03', 0.4, 0.4, 8.5, 'bold'),
@@ -549,7 +551,7 @@ def draw_chart_1_context(ax):
                         283.0, 36.0, 18.0, 18.0,
                         constels, stars, targets)
 
-def make_chart_1(charts_dir):
+def make_chart_1(charts_dir, export_pdf=False):
     print("Generating Chart 1: M57 (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
     fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 1: M57 (RING NEBULA) — LYRA", fontsize=12, fontweight='bold', color='#000000')
@@ -573,7 +575,8 @@ def make_chart_1(charts_dir):
                  bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
     plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.pdf'), dpi=300, facecolor='white')
     plt.close(fig)
 
     # PocketBook Era Screen-Optimized Assets
@@ -601,7 +604,7 @@ def make_chart_1(charts_dir):
     # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M57 RING NEBULA — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
+    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
     ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
     draw_chart_1_widefield(ax_wide_era)
     plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57_widefield.png'), dpi=200, facecolor='white')
@@ -615,7 +618,7 @@ def make_chart_1(charts_dir):
 
 def draw_chart_2_widefield(ax):
     c_ra, c_dec = 296.0, 24.0
-    setup_wide_field(ax, c_ra, c_dec, 18.0, 18.0, max_mag=10.3, show_legend=True, legend_loc='lower left')
+    setup_wide_field(ax, c_ra, c_dec, 18.0, 18.0, max_mag=8.5, show_legend=True, legend_loc='lower left')
 
     key_stars = [
         (292.68, 27.96, 'β Cygni', -0.5, -0.6, 7.8, 'bold'),
@@ -733,7 +736,7 @@ def draw_chart_2_context(ax):
                         296.0, 24.0, 18.0, 18.0,
                         constels, stars, targets)
 
-def make_chart_2(charts_dir):
+def make_chart_2(charts_dir, export_pdf=False):
     print("Generating Chart 2: M27 & Albireo (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
     fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 2: M27 (DUMBBELL NEBULA) & ALBIREO — VULPECULA / CYGNUS", fontsize=11.5, fontweight='bold', color='#000000')
@@ -757,7 +760,8 @@ def make_chart_2(charts_dir):
                  bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
     plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.pdf'), dpi=300, facecolor='white')
     plt.close(fig)
 
     # PocketBook Era Screen-Optimized Assets
@@ -785,7 +789,7 @@ def make_chart_2(charts_dir):
     # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M27 & ALBIREO — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
+    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
     ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
     draw_chart_2_widefield(ax_wide_era)
     plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo_widefield.png'), dpi=200, facecolor='white')
@@ -799,7 +803,7 @@ def make_chart_2(charts_dir):
 
 def draw_chart_3_widefield(ax):
     c_ra, c_dec = 256.0, 38.0
-    setup_wide_field(ax, c_ra, c_dec, 20.0, 20.0, max_mag=10.3, show_legend=True, legend_loc='lower left')
+    setup_wide_field(ax, c_ra, c_dec, 20.0, 20.0, max_mag=8.5, show_legend=True, legend_loc='lower left')
 
     key_stars = [
         (250.77, 38.92, 'η Her (NW Corner)\nmag 3.48', 0.4, 0.4, 7.8, 'bold'),
@@ -813,53 +817,51 @@ def draw_chart_3_widefield(ax):
         y = s_dec - c_dec
         ax.text(x+ox, y+oy, lbl, fontsize=fsz, fontweight=fweight, color='#000000', zorder=10)
 
-    keystone_coords = [(250.77, 38.92), (257.65, 36.81), (254.98, 30.92), (250.84, 31.60)]
-    k_pts = [ (d_ra(ra, c_ra)*math.cos(math.radians(dec)), dec - c_dec) for ra, dec in keystone_coords ]
-    ax.add_patch(Polygon(k_pts, closed=True, facecolor='#f8fafc', edgecolor='#000000', linewidth=1.4, linestyle='--', alpha=0.5, zorder=3))
-    ax.text((k_pts[0][0]+k_pts[2][0])/2, (k_pts[0][1]+k_pts[2][1])/2, "THE KEYSTONE\nOF HERCULES", fontsize=8.0, fontweight='bold', color='#000000', ha='center', zorder=8)
-
-    m13_ra, m13_dec = 250.423, 36.460
-    m13_x = d_ra(m13_ra, c_ra) * math.cos(math.radians(m13_dec))
-    m13_y = m13_dec - c_dec
     eta_x = d_ra(250.77, c_ra) * math.cos(math.radians(38.92))
     eta_y = 38.92 - c_dec
+    zeta_x = d_ra(250.84, c_ra) * math.cos(math.radians(31.60))
+    zeta_y = 31.60 - c_dec
+
+    m13_ra, m13_dec = 250.422, 36.460
+    m13_x = d_ra(m13_ra, c_ra) * math.cos(math.radians(m13_dec))
+    m13_y = m13_dec - c_dec
 
     arrow1 = FancyArrowPatch((eta_x, eta_y), (m13_x, m13_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax.add_patch(arrow1)
-    ax.text(m13_x - 1.3, (eta_y+m13_y)/2, "[STEP 1] 1/3 way from η to ζ\nalong Keystone West side", fontsize=7.2, fontweight='bold', color='#000000',
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
+    ax.text((eta_x+m13_x)/2 + 0.5, (eta_y+m13_y)/2 + 0.4, "[STEP 1] Move 2.5° South\nfrom η toward ζ Herculis", fontsize=7.2, fontweight='bold', color='#000000',
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
+
+    pi_x = d_ra(257.65, c_ra) * math.cos(math.radians(36.81))
+    pi_y = 36.81 - c_dec
+    m92_ra, m92_dec = 259.280, 43.136
+    m92_x = d_ra(m92_ra, c_ra) * math.cos(math.radians(m92_dec))
+    m92_y = m92_dec - c_dec
+
+    arrow2 = FancyArrowPatch((pi_x, pi_y), (m92_x, m92_y), arrowstyle='->', mutation_scale=12, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
+    ax.add_patch(arrow2)
+    ax.text((pi_x+m92_x)/2 + 0.5, (pi_y+m92_y)/2 - 0.2, "[STEP 2] From π Herculis,\nhop 6.3° North to M92", fontsize=7.2, fontweight='bold', color='#000000',
+            bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
 
     draw_telrad_reticle(ax, m13_x, m13_y, (2.1, 1.8))
     draw_target_marker(ax, m13_x, m13_y)
-    ax.text(m13_x - 1.4, m13_y - 1.2, "M13 GREAT GLOBULAR CLUSTER\n(Visible naked-eye in Bortle 4!)", fontsize=7.8, fontweight='bold', color='#000000',
+    ax.text(m13_x - 0.5, m13_y - 1.2, "M13 GREAT GLOBULAR\n(Hercules Cluster, Mag 5.8)", fontsize=7.8, fontweight='bold', color='#000000',
             bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
-    m92_ra, m92_dec = 258.280, 43.136
-    m92_x = d_ra(m92_ra, c_ra) * math.cos(math.radians(m92_dec))
-    m92_y = m92_dec - c_dec
-    pi_x = d_ra(257.65, c_ra) * math.cos(math.radians(36.81))
-    pi_y = 36.81 - c_dec
-
-    arrow2 = FancyArrowPatch((pi_x, pi_y), (m92_x, m92_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
-    ax.add_patch(arrow2)
-    ax.text((pi_x+m92_x)/2 + 0.5, (pi_y+m92_y)/2, "[STEP 2] Hop 6.2° North\nfrom π Herculis to M92", fontsize=7.2, fontweight='bold', color='#000000',
-            bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
-
     draw_target_marker(ax, m92_x, m92_y)
-    ax.text(m92_x - 0.5, m92_y + 0.6, "M92 GLOBULAR CLUSTER", fontsize=7.8, fontweight='bold', color='#000000',
+    ax.text(m92_x - 0.5, m92_y + 0.8, "M92 GLOBULAR (Mag 6.3)", fontsize=7.5, fontweight='bold', color='#000000',
             bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=15)
 
 def draw_chart_3_eyepiece(ax):
     ax.set_facecolor('white')
     fov_deg = 0.52
-    ax.set_xlim(-fov_deg/2 - 0.02, fov_deg/2 + 0.02)
-    ax.set_ylim(-fov_deg/2 - 0.035, fov_deg/2 + 0.02)
+    ax.set_xlim(-fov_deg/2 - 0.015, fov_deg/2 + 0.015)
+    ax.set_ylim(-fov_deg/2 - 0.025, fov_deg/2 + 0.020)
     ax.set_aspect('equal')
-    ax.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
-    ax.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
-    ax.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
+    ax.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.6, zorder=1))
+    ax.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.7, zorder=2)
+    ax.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.7, zorder=2)
 
-    m13_ra, m13_dec = 250.423, 36.460
+    m13_ra, m13_dec = 250.422, 36.460
     m13_field = load_field('m13')
     for st in m13_field:
         dx = d_ra(st['ra'], m13_ra) * math.cos(math.radians(st['dec']))
@@ -869,80 +871,87 @@ def draw_chart_3_eyepiece(ax):
             s_size = max(1.5, max(0.0, 12.5 - st['mag'])**2.2 * 0.9)
             ax.plot(dx_inv, dy_inv, 'o', color='#000000', markersize=math.sqrt(s_size), alpha=0.95, zorder=10)
 
-    ax.add_patch(Circle((0, 0), 0.16, facecolor='#f8fafc', edgecolor='#cbd5e1', linestyle=':', linewidth=0.8, zorder=11))
+    ax.add_patch(Circle((0, 0), 0.17, facecolor='#f8fafc', edgecolor='#cbd5e1', linestyle=':', linewidth=0.8, zorder=11))
     ax.add_patch(Circle((0, 0), 0.10, facecolor='#f1f5f9', edgecolor='#94a3b8', linestyle='--', linewidth=0.8, zorder=12))
     ax.add_patch(Circle((0, 0), 0.05, facecolor='#e2e8f0', edgecolor='#64748b', linewidth=1.0, zorder=13))
 
     np.random.seed(42)
-    n_stars = 170
-    r_core = np.random.exponential(0.04, n_stars)
-    th = np.random.uniform(0, 2*np.pi, n_stars)
-    ax.scatter(r_core*np.cos(th), r_core*np.sin(th), s=np.random.uniform(1.5, 8.5, n_stars), color='#000000', alpha=0.9, zorder=14)
+    n_stars = 220
+    r_stars = np.random.exponential(0.045, n_stars)
+    th_stars = np.random.uniform(0, 2*np.pi, n_stars)
+    x_stars = r_stars * np.cos(th_stars)
+    y_stars = r_stars * np.sin(th_stars)
+    ax.scatter(x_stars, y_stars, s=np.random.uniform(1.2, 5.5, n_stars), color='#000000', alpha=0.95, zorder=14)
 
-    for p_ang in [30, 150, 270]:
-        pr_rad = np.radians(p_ang)
-        ax.plot([0.008*np.cos(pr_rad), 0.035*np.cos(pr_rad)], [0.008*np.sin(pr_rad), 0.035*np.sin(pr_rad)],
-                color='#ffffff', linewidth=1.8, alpha=0.9, zorder=15)
-    ax.text(0.03, -0.05, "Propeller Lane\n(Averted Vision)", fontsize=7.0, color='#000000', fontstyle='italic', zorder=20)
+    th_prop = [math.radians(35), math.radians(155), math.radians(275)]
+    for th in th_prop:
+        px = [0.015*math.cos(th), 0.075*math.cos(th)]
+        py = [0.015*math.sin(th), 0.075*math.sin(th)]
+        ax.plot(px, py, color='#ffffff', linewidth=2.5, zorder=15)
+        ax.plot(px, py, color='#475569', linewidth=1.2, linestyle='--', alpha=0.9, zorder=16)
+    ax.text(0.06, -0.09, "Propeller Dust Lane\n(3-Bladed Absorption)", fontsize=6.8, color='#000000', fontstyle='italic', zorder=25)
 
-    ax.text(0, -fov_deg/2 + 0.035, "↓ N (Inverted)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax.text(fov_deg/2 - 0.035, 0, "E →", fontsize=7.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
-    ax.text(0, -fov_deg/2 - 0.022, "12.5mm Eyepiece (96× Magnification, 31' True FOV)", fontsize=7.5, color='#000000', ha='center')
+    ax.text(0, -fov_deg/2 + 0.025, "↓ N (Inverted)", fontsize=7.2, color='#000000', fontweight='bold', ha='center', zorder=20)
+    ax.text(fov_deg/2 - 0.025, 0, "E →", fontsize=7.2, color='#000000', fontweight='bold', va='center', ha='right', zorder=20)
+    ax.text(0, -fov_deg/2 - 0.016, "12.5mm Eyepiece (96× Magnification, 31' True FOV)", fontsize=7.2, color='#000000', ha='center')
     ax.axis('off')
 
 def get_chart_3_dossier(include_hop=True):
     txt = (
-        "OBJECT DOSSIER: M13 (NGC 6205) & M92\n"
-        "• Constellation: Hercules | Type: Globular Clusters\n"
-        "• M13: Mag 5.8V | Size: 20' | Stars: ~300,000 | Dist: 22,200 ly\n"
-        "• M92: Mag 6.3V | Size: 14' | Extremely dense compact core\n"
+        "OBJECT DOSSIER: M13 (NGC 6205) & M92 (NGC 6341)\n"
+        "• Constellation: Hercules | Type: Globular Star Clusters\n"
+        "• M13: Mag 5.8V | Diameter: 20' (~145 light-years across)\n"
+        "• M92: Mag 6.3V | Diameter: 14' | Extremely ancient (~14 Gyr)\n"
+        "• Distance: ~22,200 ly (M13) / ~26,700 ly (M92)\n"
         "• Tonight's Ephemeris at Dvigrad (Sep 12, 2026):\n"
-        "    20:00 CEST: Alt 69.3° | 21:15 CEST: Alt 56.2° (Prime!)\n"
-        "    22:30 CEST: Alt 43.1°, Az 283° (Well Above Trees)\n\n"
+        "    20:00 CEST: Alt 65.4°, Az 248° (West, Superb & Steady)\n"
+        "    21:15 CEST: Alt 56.2°, Az 271° (Prime Contrast!)\n"
+        "    22:30 CEST: Alt 44.1°, Az 287° (Crisp before sinking)\n\n"
         "EYEPIECE QUICK REFERENCE & OBSERVING NOTES:\n"
-        "• Wide-Field / Finder (20mm / 60×): Glowing snowball\n"
-        "  framed beautifully by two 7th-magnitude field stars.\n"
-        "• Resolution (12.5mm / 96×): Bursts into hundreds of\n"
-        "  sparkling pinpricks with spider-like radiating arms.\n"
-        "• Propeller Lane: Dark 3-bladed silhouette near M13 core."
+        "• High Resolution (12.5mm / 96×): Mandatory! Core resolves into\n"
+        "  hundreds of glittering diamond points with spider-leg star chains.\n"
+        "• Propeller Feature: Search SE quadrant for faint dark 3-bladed 'Y'.\n"
+        "• M92 Bonus: Compact, intensely condensed nucleus; higher surface\n"
+        "  brightness than M13."
     )
     if include_hop:
         txt += (
             "\n\nSTEP-BY-STEP STAR HOP NARRATIVE:\n"
-            "1. Naked-Eye: Locate the Keystone of Hercules in the West.\n"
-            "2. Western side: η (NW corner) and ζ (SW corner).\n"
-            "3. Slew Telrad / Finder: Move along the line from η toward ζ;\n"
-            "   M13 sits exactly 1/3 of the way down.\n"
-            "4. Bonus M92: From π Herculis (NE corner), hop 6.2° due North."
+            "1. Naked-Eye: Locate the Keystone trapezoid of Hercules.\n"
+            "2. West edge: Identify η Her (NW corner) and ζ Her (SW corner).\n"
+            "3. Hop: Move 2.5° South along the η-ζ line (1/3 the way down).\n"
+            "4. M13 glows clearly in finder and 20mm eyepiece!\n"
+            "5. Bonus M92: From π Her (NE corner), slew 6.3° due North."
         )
     return txt
 
 def draw_chart_3_context(ax):
     constels = [
-        ("Hercules", 253.0, 32.0),
-        ("Corona Borealis", 235.0, 28.5),
-        ("Lyra", 280.0, 38.5),
-        ("Draco", 267.0, 52.0),
-        ("Ophiuchus", 263.0, 14.5)
+        ("Hercules", 255.0, 32.0),
+        ("Corona Borealis", 235.0, 30.0),
+        ("Lyra", 283.0, 37.0),
+        ("Draco", 260.0, 56.0),
+        ("Boötes", 222.0, 32.0),
+        ("Ophiuchus", 258.0, 6.0)
     ]
     stars = [
         ("Vega", 279.23, 38.78, 0.6, 0.6, 8.2, 'bold'),
         ("Alphecca", 233.67, 26.71, -0.6, 0.4, 7.8, 'bold'),
-        ("Rasalhague", 263.73, 12.56, 0.6, -0.6, 7.8, 'bold'),
-        ("Rastaban", 262.66, 52.30, 0.6, 0.4, 7.5, 'normal')
+        ("Rasalhague", 263.73, 12.56, -0.6, -0.6, 7.8, 'bold'),
+        ("Kornephoros", 247.55, 21.49, -0.6, -0.6, 7.5, 'normal')
     ]
     targets = [
-        ("M13", 250.42, 36.46, -0.5, 0.7),
-        ("M92", 258.28, 43.14, 0.5, 0.7)
+        ("M13 Keystone", 250.422, 36.460, -0.6, 0.8),
+        ("M92 Globular", 259.280, 43.136, 0.6, 0.8)
     ]
-    setup_context_field(ax, 255.0, 35.0, 56.0, 48.0,
+    setup_context_field(ax, 252.0, 35.0, 60.0, 52.0,
                         256.0, 38.0, 20.0, 20.0,
                         constels, stars, targets)
 
-def make_chart_3(charts_dir):
+def make_chart_3(charts_dir, export_pdf=False):
     print("Generating Chart 3: M13 & M92 (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
-    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 3: M13 & M92 GLOBULAR CLUSTERS — HERCULES", fontsize=11.5, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 3: M13 & M92 (HERCULES GLOBULARS) — HERCULES", fontsize=11.5, fontweight='bold', color='#000000')
     fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8-inch f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
     # VIEWPORT A
@@ -963,7 +972,8 @@ def make_chart_3(charts_dir):
                  bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
     plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.pdf'), dpi=300, facecolor='white')
     plt.close(fig)
 
     # PocketBook Era Screen-Optimized Assets
@@ -991,7 +1001,7 @@ def make_chart_3(charts_dir):
     # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "HERCULES M13 & M92 — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
+    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
     ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
     draw_chart_3_widefield(ax_wide_era)
     plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92_widefield.png'), dpi=200, facecolor='white')
@@ -1005,7 +1015,7 @@ def make_chart_3(charts_dir):
 
 def draw_chart_4_widefield(ax):
     c_ra, c_dec = 12.0, 36.0
-    setup_wide_field(ax, c_ra, c_dec, 26.0, 24.0, max_mag=10.3, show_legend=True, legend_loc='lower left')
+    setup_wide_field(ax, c_ra, c_dec, 26.0, 24.0, max_mag=8.5, show_legend=True, legend_loc='lower left')
 
     key_stars = [
         (2.10, 29.09, 'Alpheratz (α And)\nmag 2.07', -0.6, -0.6, 7.8, 'bold'),
@@ -1136,7 +1146,7 @@ def draw_chart_4_context(ax):
                         12.0, 36.0, 26.0, 24.0,
                         constels, stars, targets)
 
-def make_chart_4(charts_dir):
+def make_chart_4(charts_dir, export_pdf=False):
     print("Generating Chart 4: M31 Andromeda (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
     fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 4: M31 (ANDROMEDA GALAXY), M32 & M110 — ANDROMEDA", fontsize=11.5, fontweight='bold', color='#000000')
@@ -1160,7 +1170,8 @@ def make_chart_4(charts_dir):
                  bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
     plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.pdf'), dpi=300, facecolor='white')
     plt.close(fig)
 
     # PocketBook Era Screen-Optimized Assets
@@ -1188,7 +1199,7 @@ def make_chart_4(charts_dir):
     # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M31 ANDROMEDA GALAXY — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
+    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
     ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
     draw_chart_4_widefield(ax_wide_era)
     plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31_widefield.png'), dpi=200, facecolor='white')
@@ -1202,7 +1213,7 @@ def make_chart_4(charts_dir):
 
 def draw_chart_5_widefield(ax):
     c_ra, c_dec = 32.0, 55.0
-    setup_wide_field(ax, c_ra, c_dec, 46.0, 22.0, max_mag=10.3, show_legend=True, legend_loc='lower left')
+    setup_wide_field(ax, c_ra, c_dec, 46.0, 22.0, max_mag=8.5, show_legend=True, legend_loc='lower left')
 
     key_stars = [
         (14.18, 60.72, 'Navi (γ Cas)\nmag 2.15', 0.4, -0.6, 7.8, 'bold'),
@@ -1328,7 +1339,7 @@ def draw_chart_5_context(ax):
                         32.0, 55.0, 46.0, 22.0,
                         constels, stars, targets)
 
-def make_chart_5(charts_dir):
+def make_chart_5(charts_dir, export_pdf=False):
     print("Generating Chart 5: Double Cluster (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
     fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 5: THE DOUBLE CLUSTER (NGC 869 / NGC 884) — PERSEUS", fontsize=11.5, fontweight='bold', color='#000000')
@@ -1352,7 +1363,8 @@ def make_chart_5(charts_dir):
                  bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
     plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.pdf'), dpi=300, facecolor='white')
     plt.close(fig)
 
     # PocketBook Era Screen-Optimized Assets
@@ -1380,7 +1392,7 @@ def make_chart_5(charts_dir):
     # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "PERSEUS DOUBLE CLUSTER — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
+    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
     ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
     draw_chart_5_widefield(ax_wide_era)
     plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster_widefield.png'), dpi=200, facecolor='white')
@@ -1394,7 +1406,7 @@ def make_chart_5(charts_dir):
 
 def draw_chart_6_widefield(ax):
     c_ra, c_dec = 288.0, 2.0
-    setup_wide_field(ax, c_ra, c_dec, 24.0, 24.0, max_mag=10.3, show_legend=True, legend_loc='lower left')
+    setup_wide_field(ax, c_ra, c_dec, 24.0, 24.0, max_mag=8.5, show_legend=True, legend_loc='lower left')
 
     key_stars = [
         (297.70, 8.87, 'Altair (α Aql)\nmag 0.77', 0.4, -0.6, 8.5, 'bold'),
@@ -1535,7 +1547,7 @@ def draw_chart_6_context(ax):
                         288.0, 2.0, 24.0, 24.0,
                         constels, stars, targets, extra_fn=extra_chart_6)
 
-def make_chart_6(charts_dir):
+def make_chart_6(charts_dir, export_pdf=False):
     print("Generating Chart 6: M11 & Saturn (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
     fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 6: M11 (WILD DUCK CLUSTER) & SATURN — SCUTUM / AQUARIUS", fontsize=11.5, fontweight='bold', color='#000000')
@@ -1561,7 +1573,8 @@ def make_chart_6(charts_dir):
                  bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
     plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.png'), dpi=300, facecolor='white')
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.pdf'), dpi=300, facecolor='white')
+    if export_pdf:
+        plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.pdf'), dpi=300, facecolor='white')
     plt.close(fig)
 
     # PocketBook Era Screen-Optimized Assets
@@ -1591,7 +1604,7 @@ def make_chart_6(charts_dir):
     # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M11 & SATURN — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
-    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
+    fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 8.5 | Telrad Reticle", fontsize=7.8, color='#333333')
     ax_wide_era = fig_wide.add_axes([0.05, 0.04, 0.90, 0.88])
     draw_chart_6_widefield(ax_wide_era)
     plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn_widefield.png'), dpi=200, facecolor='white')
@@ -1599,23 +1612,24 @@ def make_chart_6(charts_dir):
     print("Chart 6 saved (A4 Landscape & PocketBook Era Screen-Optimized).")
 
 
-def generate_all_charts(output_dir=None):
+def generate_all_charts(output_dir=None, export_pdf=False):
     if output_dir is None:
         output_dir = os.path.join(REPO_ROOT, 'observations', 'dvigrad-2026-09-12')
     charts_dir = os.path.join(output_dir, 'charts')
     os.makedirs(charts_dir, exist_ok=True)
 
-    make_full_sky_map(output_dir)
-    make_chart_1(charts_dir)
-    make_chart_2(charts_dir)
-    make_chart_3(charts_dir)
-    make_chart_4(charts_dir)
-    make_chart_5(charts_dir)
-    make_chart_6(charts_dir)
-    print(f"ALL CHARTS GENERATED SUCCESSFULLY into: {output_dir}")
+    make_full_sky_map(output_dir, export_pdf=export_pdf)
+    make_chart_1(charts_dir, export_pdf=export_pdf)
+    make_chart_2(charts_dir, export_pdf=export_pdf)
+    make_chart_3(charts_dir, export_pdf=export_pdf)
+    make_chart_4(charts_dir, export_pdf=export_pdf)
+    make_chart_5(charts_dir, export_pdf=export_pdf)
+    make_chart_6(charts_dir, export_pdf=export_pdf)
+    print(f"ALL CHARTS GENERATED SUCCESSFULLY into: {output_dir} (PDF export: {export_pdf})")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate Stargazing Charts')
     parser.add_argument('--output-dir', type=str, default=None, help='Output directory for charts')
+    parser.add_argument('--pdf', action='store_true', default=False, help='Export printable PDF charts (default: False)')
     args = parser.parse_args()
-    generate_all_charts(args.output_dir)
+    generate_all_charts(args.output_dir, export_pdf=args.pdf)

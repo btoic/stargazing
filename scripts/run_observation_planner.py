@@ -2,7 +2,7 @@
 """
 scripts/run_observation_planner.py - End-to-End Observation Session Planner
 
-Orchestrates ephemeris calculation, sky chart generation, and 2-page master plan PDF compilation.
+Orchestrates ephemeris calculation, sky chart generation, EPUB e-book compilation, and on-demand printable PDFs.
 """
 
 import os
@@ -20,6 +20,7 @@ def run():
     parser.add_argument("--equipment", type=str, default="skywatcher-skyliner-200p", help="Equipment slug (matches equipment/<slug>.md)")
     parser.add_argument("--date", type=str, default="2026-09-12", help="Observation date (YYYY-MM-DD)")
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory (defaults to observations/<location>-<date>)")
+    parser.add_argument("--pdf", action="store_true", default=False, help="Generate printable PDF outputs (STARGAZING_PLAN.pdf and chart PDFs). Default is False (EPUB and Markdown only).")
 
     args = parser.parse_args()
 
@@ -45,6 +46,7 @@ def run():
     print(f"Equipment: {args.equipment}")
     print(f"Date:      {args.date}")
     print(f"Output:    {output_dir}")
+    print(f"PDF Mode:  {'Enabled (--pdf)' if args.pdf else 'Disabled (EPUB & Markdown primary)'}")
     print(f"=======================================================\n")
 
     # Step 1: Calculate ephemeris
@@ -63,16 +65,21 @@ def run():
         os.path.join(SCRIPT_DIR, "generate_charts.py"),
         "--output-dir", output_dir
     ]
+    if args.pdf:
+        cmd_charts.append("--pdf")
     subprocess.run(cmd_charts, env=env, check=True)
 
-    # Step 3: Build Master Plan PDF
-    print(">>> Step 3: Compiling 2-Page Master Plan PDF...")
-    cmd_pdf = [
-        python_bin,
-        os.path.join(SCRIPT_DIR, "build_plan_pdf.py"),
-        "--output-dir", output_dir
-    ]
-    subprocess.run(cmd_pdf, env=env, check=True)
+    # Step 3: Build Master Plan PDF (On-demand)
+    if args.pdf:
+        print(">>> Step 3: Compiling 2-Page Master Plan PDF...")
+        cmd_pdf = [
+            python_bin,
+            os.path.join(SCRIPT_DIR, "build_plan_pdf.py"),
+            "--output-dir", output_dir
+        ]
+        subprocess.run(cmd_pdf, env=env, check=True)
+    else:
+        print(">>> Step 3: PDF export skipped (use --pdf to compile printable A4 Master Plan PDF)")
 
     # Step 4: Build EPUB Field Guide for E-Readers
     print(">>> Step 4: Compiling E-Reader EPUB Field Guide...")
@@ -85,8 +92,11 @@ def run():
 
     print(f"\n=======================================================")
     epub_name = f"{os.path.basename(output_dir)}.epub"
-    print(f"EPUB Book:  {os.path.join(output_dir, epub_name)} (legacy: STARGAZING_FIELD_GUIDE.epub)")
+    print(f"EPUB Book:  {os.path.join(output_dir, epub_name)}")
+    print(f"Markdown:   {os.path.join(output_dir, 'STARGAZING_PLAN.md')}")
     print(f"Charts:     {charts_dir}")
+    if args.pdf:
+        print(f"Master PDF: {os.path.join(output_dir, 'STARGAZING_PLAN.pdf')}")
     print(f"=======================================================\n")
 
 if __name__ == "__main__":

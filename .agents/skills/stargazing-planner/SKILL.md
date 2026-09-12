@@ -2,13 +2,13 @@
 name: stargazing-planner
 description: >-
   Plan astronomical observation parties and stargazing sessions, calculate celestial
-  ephemerides, curate optimal deep-sky and planetary target lists, and generate printable
-  2-page master guide PDFs and toner-saver negative star-hopping finder charts.
+  ephemerides, curate optimal deep-sky and planetary target lists, and compile screen-optimized
+  EPUB e-books and markdown observation plans (with on-demand printable A4 PDFs).
 ---
 
 # Stargazing Planner Skill
 
-This skill provides the end-to-end procedure for planning a stargazing observation session, evaluating location and equipment profiles, computing astronomical ephemerides, curating a high-impact observing program, and generating print-ready deliverables.
+This skill provides the end-to-end procedure for planning a stargazing observation session, evaluating location and equipment profiles, computing astronomical ephemerides, curating a high-impact observing program, and generating screen-optimized e-reader and markdown deliverables (with on-demand printable A4 PDFs).
 
 ---
 
@@ -23,16 +23,15 @@ All session assets follow a standardized repository layout:
 │   └── <equipment-slug>.md     # Reusable optics profiles (aperture, FL, eyepieces, inversion)
 ├── observations/
 │   └── <location>-<YYYY-MM-DD>/# Observation session packages
-│       ├── STARGAZING_PLAN.md  # Complete observation guide
-│       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (1 double-sided sheet)
-│       ├── STARGAZING_FIELD_GUIDE.epub # Standalone, indexed e-book for e-readers
-│       ├── full_sky_map.pdf    # All-sky planisphere with 15° obstruction ring
+│       ├── STARGAZING_PLAN.md  # Complete observation guide (Primary deliverable)
+│       ├── <location>-<date>.epub # Standalone, indexed e-book for e-readers (Primary deliverable)
 │       ├── full_sky_map.png    # High-res planisphere image
-│       └── charts/             # Toner-saver negative finder charts (PDF + PNG)
-│           ├── chart_1_*.pdf
-│           └── ...
+│       ├── charts/             # Screen-optimized & master finder chart PNGs (Primary deliverable)
+│       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (On-demand via --pdf)
+│       ├── full_sky_map.pdf    # All-sky planisphere vector PDF (On-demand via --pdf)
+│       └── charts/*.pdf        # Toner-saver negative finder chart PDFs (On-demand via --pdf)
 ├── tutorials/
-│   └── <topic>.md              # General astronomy guides, field craft & optical tutorials
+│   └── <topic>.md              # Standalone astronomy guides, field craft & optical tutorials
 ├── scripts/
 │   ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
 │   ├── generate_charts.py      # Vector planisphere & toner-saver negative finder chart generator
@@ -87,68 +86,73 @@ Select 8 to 12 showpiece objects meeting these criteria:
 
 ---
 
-### Master Plan Markdown Guide (`STARGAZING_PLAN.md`)
-- Detailed digital companion to the printable PDF.
-- **GitHub Mermaid Compatibility**: All timelines, schedules, workflows, and decision trees must be implemented using **Mermaid code blocks** (` ```mermaid `) for native, high-resolution rendering in GitHub web and mobile previews.
-- Format observation schedules as Mermaid `gantt` charts or `flowchart LR` process pipelines. Quote labels containing parentheses or brackets.
+### Step 3.3: Deliverables & Output Formats
 
-### Master Plan PDF (`STARGAZING_PLAN.pdf`)
-- Must fit onto **exactly 2 pages** in **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`, for 1 single double-sided A4 sheet):
-  - **Page 1**: Title, location profile box, telescope configuration box, moon verdict banner, observation timeline Gantt chart, twilight schedule table.
-  - **Page 2**: Curated Target Catalog table (referencing charts), Practical Field Protocols box, and Sky Charts Directory table.
-  - **Zero Step-by-Step Hop Duplication**: Omit detailed hop text from the master plan—star-hopping instructions live on the dedicated charts.
+#### Primary Deliverables (Default)
+1. **Master Plan Markdown Guide (`STARGAZING_PLAN.md`)**:
+   - Complete observation guide and digital companion for desktop and mobile reading.
+   - **GitHub Mermaid Compatibility**: All timelines, schedules, workflows, and decision trees must be implemented using **Mermaid code blocks** (` ```mermaid `) for native, high-resolution rendering in GitHub web and mobile previews.
+   - Format observation schedules as Mermaid `gantt` charts or `flowchart LR` process pipelines. Quote labels containing parentheses or brackets.
+2. **Standalone E-Reader Field Book (`<session-slug>.epub`)**:
+   - Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book named dynamically after the session folder (e.g. `dvigrad-2026-09-12.epub`, with backward-compatible copy to `STARGAZING_FIELD_GUIDE.epub`).
+   - **PocketBook Era Hardware & 12px Zoom Optimization**: Optimized for 7.0" E-Ink Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 portrait aspect ratio) at **12px font zoom**.
+   - **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, and `pocketbook:font-size="12px"`.
+   - **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp toner-saver negative charts, and responsive styling.
+   - **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target is stored in a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
+     1. **Page 1 (Eyepiece & Dossier)**: Viewport B (Eyepiece simulation, inverted 180°) and Viewport C (Target Dossier) rendered side-by-side in landscape 4:3 ratio (`_eyepiece_dossier.png`). Eyepiece quick reference notes are integrated directly inside the dossier graphic, eliminating trailing HTML callouts.
+     2. **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.2`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
+     3. **Page 3 (Wide-Field Finder Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to visual **magnitude 8.5** (cutting out noise and clutter), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
+     4. **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target or catalog.
+   - **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (PocketBook, Kindle, Kobo, Boox, Tolino).
+3. **High-Resolution Finder Chart PNGs**:
+   - Master A4 landscape PNGs and dedicated PocketBook Era screen-optimized multi-page PNG assets saved in `charts/`.
 
-### All-Sky Planisphere (`full_sky_map.pdf`)
-- Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
-
-### Standalone E-Reader Field Book (`<session-slug>.epub`)
-- Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book named dynamically after the session folder (e.g. `dvigrad-2026-09-12.epub`, with backward-compatible copy to `STARGAZING_FIELD_GUIDE.epub`).
-- **PocketBook Era Hardware & 12px Zoom Optimization**: Optimized for 7.0" E-Ink Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 portrait aspect ratio) at **12px font zoom**.
-- **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, and `pocketbook:font-size="12px"`.
-- **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp toner-saver negative charts, and responsive styling.
-- **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target is stored in a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
-  1. **Page 1 (Eyepiece & Dossier)**: Viewport B (Eyepiece simulation, inverted 180°) and Viewport C (Target Dossier) rendered side-by-side in landscape 4:3 ratio (`_eyepiece_dossier.png`). Eyepiece quick reference notes are integrated directly inside the dossier graphic, eliminating trailing HTML callouts.
-  2. **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.2`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
-  3. **Page 3 (Wide-Field Finder Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to **telescope visual limiting magnitude minus 3.0** (e.g., mag 10.3 for an 8" Dobsonian), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
-  4. **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target or catalog.
-- **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (PocketBook, Kindle, Kobo, Boox, Tolino).
-
-### Finder Charts (Toner-Saver Negative B/W Edition)
-Finder charts are generated in dual formats:
-1. **Master Printable Charts (`charts/chart_<N>_<name>.pdf` and `.png`)**:
+#### On-Demand Deliverables (PDF Mode, via `--pdf` flag or user request)
+1. **Master Plan PDF (`STARGAZING_PLAN.pdf`)**:
+   - Must fit onto **exactly 2 pages** in **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`, for 1 single double-sided A4 sheet):
+     - **Page 1**: Title, location profile box, telescope configuration box, moon verdict banner, observation timeline Gantt chart, twilight schedule table.
+     - **Page 2**: Curated Target Catalog table (referencing charts), Practical Field Protocols box, and Sky Charts Directory table.
+     - **Zero Step-by-Step Hop Duplication**: Omit detailed hop text from the master plan—star-hopping instructions live on the dedicated charts.
+2. **All-Sky Planisphere (`full_sky_map.pdf`)**:
+   - Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
+3. **Printable Finder Charts (`charts/chart_<N>_<name>.pdf`)**:
    - Formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`).
    - **Zero Auto-Cropping (`bbox_inches='tight'` prohibited)**: Never pass `bbox_inches='tight'` to `plt.savefig()` when exporting printable PDF charts. Matplotlib's tight bounding box calculation alters the MediaBox dimensions and ruins 100% scale A4 printing. Use explicit subplots within safe margins (`x: 0.035..0.965`, `y: 0.045..0.880`).
    - Three viewports side-by-side:
-     - **`VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART`**: Upright naked-eye / finder orientation (N ↑, E ←), black stars down to mag ~6.5–7.0, constellation guide lines, Telrad concentric rings (0.5°, 2.0°, 4.0°, 5.0°), and numbered step badges.
+     - **`VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART`**: Upright naked-eye / finder orientation (N ↑, E ←), black stars down to mag 8.5, constellation guide lines, Telrad concentric rings (0.5°, 2.0°, 4.0°, 5.0°), and numbered step badges.
      - **`VIEWPORT B: TELESCOPE EYEPIECE SIMULATION`**: Toner-Saver Negative (pure white background `#ffffff`, black stars, grey DSO contours, pre-inverted 180° for Newtonian reflectors: N ↓, E →).
      - **`VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS`**: Monospaced technical dossier with ephemeris, recommended eyepieces, and complete step-by-step hopping text.
-2. **E-Reader Screen-Optimized Charts**:
-   - `charts/chart_<N>_<name>_eyepiece_dossier.png`: 4:3 landscape figure pairing Viewport B and Viewport C (hop narrative omitted for spacious dossier layout).
-   - `charts/chart_<N>_<name>_context.png`: 3:4 portrait figure showing surrounding constellations, naked-eye stars to mag 6.2, and the dashed next-page finder viewport bounding box.
-   - `charts/chart_<N>_<name>_widefield.png`: 3:4 portrait figure of Viewport A with deep stars down to magnitude (limiting mag − 3.0, e.g. 10.3) and visual magnitude legend.
 
 ---
 
-## 5. Tutorials & Continuous Refinement
-When the user asks general astronomical questions or seeks procedural advice (e.g., collimation, mirror cooldown, averted vision, dew shields):
-- Consult existing tutorials in `tutorials/`.
-- If a new concept or technique is explained, write or update a tutorial in `tutorials/<topic>.md` for persistent reuse.
+## 4. Tutorials & Field Craft Separation
+- General educational tutorials and maintenance guides (e.g. mirror collimation, star testing, dew mitigation, dark adaptation) are maintained in `tutorials/` as standalone guides and independent EPUBs/PDFs.
+- They are **decoupled from observation session packages** and not bundled into nightly observation EPUBs.
+- When the user asks general astronomical questions or seeks procedural advice, consult or update `tutorials/<topic>.md`.
 
 ---
 
-## 6. Python Environment & Execution
+## 5. Python Environment & Execution
 
 Dependencies are specified in `requirements.txt`:
 ```bash
 pip install -r requirements.txt
 ```
 
-To run the complete observation planning pipeline:
+To run the complete observation planning pipeline (defaults to EPUB and Markdown deliverables):
 ```bash
 python3 scripts/run_observation_planner.py \
   --location <location-slug> \
   --equipment <equipment-slug> \
   --date <YYYY-MM-DD>
+```
+To additionally generate printable A4 master and chart PDFs, pass `--pdf`:
+```bash
+python3 scripts/run_observation_planner.py \
+  --location <location-slug> \
+  --equipment <equipment-slug> \
+  --date <YYYY-MM-DD> \
+  --pdf
 ```
 - Required libraries: `astropy`, `skyfield`, `numpy`, `matplotlib`, `reportlab`, `pypdfium2`.
 - Matplotlib cache should be directed to a writable location in sandboxed environments via `MPLCONFIGDIR=/tmp/matplotlib`.

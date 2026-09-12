@@ -8,7 +8,7 @@ Key PocketBook Era Features:
 - Multi-page target navigation (Natural 4-Page Zero-Blank-Page Flow):
   1. Eyepiece Simulation & Target Dossier side-by-side (Viewport B + C)
   2. Constellation Context & Orientation Chart (surrounding constellations, naked-eye stars to mag 6.2, next-page finder viewport boundary)
-  3. Full-screen Wide-Field Star Hopping Chart (Viewport A, stars to mag 10.3, Telrad rings, magnitude key)
+  3. Full-screen Wide-Field Star Hopping Chart (Viewport A, stars to mag 8.5, Telrad rings, magnitude key)
   4. Text-based Step-by-Step Star-Hopping Narrative
 - Dynamic series metadata (Calibre series and EPUB 3 collection tags) incremented per observation
 - Dynamic naming matching the observation session directory (<location>-<date>.epub)
@@ -40,32 +40,36 @@ def get_series_info(session_dir):
     else:
         all_sessions = [session_folder]
 
-    if session_folder in all_sessions:
+    try:
         series_index = all_sessions.index(session_folder) + 1
-    else:
+    except ValueError:
         series_index = len(all_sessions) + 1
 
-    return series_name, series_index, session_folder
+    return series_name, series_index
 
 def build_epub(session_dir=None, output_path=None):
     if session_dir is None:
         session_dir = os.path.join(REPO_ROOT, "observations", "dvigrad-2026-09-12")
     session_dir = os.path.abspath(session_dir)
 
-    series_name, series_index, session_folder = get_series_info(session_dir)
+    if not os.path.isdir(session_dir):
+        print(f"Error: Session directory '{session_dir}' does not exist.")
+        sys.exit(1)
 
+    session_folder = os.path.basename(os.path.abspath(session_dir))
+    series_name, series_index = get_series_info(session_dir)
+
+    # Output path default: <session-folder>.epub inside session_dir
     if output_path is None:
         output_path = os.path.join(session_dir, f"{session_folder}.epub")
     output_path = os.path.abspath(output_path)
-
     legacy_symlink_path = os.path.join(session_dir, "STARGAZING_FIELD_GUIDE.epub")
 
-    print(f"\n=======================================================")
-    print(f"BUILDING EPUB FIELD GUIDE (PocketBook Era Screen-Optimized)")
     print(f"Session:      {session_dir}")
     print(f"Folder Name:  {session_folder}")
     print(f"Series:       {series_name} (Issue #{series_index})")
     print(f"Output:       {output_path}")
+    print(f"Legacy:       {legacy_symlink_path}")
     print(f"=======================================================\n")
 
     # Image source paths
@@ -91,10 +95,6 @@ def build_epub(session_dir=None, output_path=None):
         "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png"),
         "chart_6_scutum_m11_and_saturn_context.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_context.png"),
         "chart_6_scutum_m11_and_saturn_widefield.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_widefield.png"),
-        # Collimation tutorial figures
-        "collimation_hardware_controls.png": os.path.join(REPO_ROOT, "tutorials", "images", "collimation_hardware_controls.png"),
-        "collimation_steps_view.png": os.path.join(REPO_ROOT, "tutorials", "images", "collimation_steps_view.png"),
-        "star_test_patterns.png": os.path.join(REPO_ROOT, "tutorials", "images", "star_test_patterns.png"),
     }
 
     # Verify required images exist
@@ -308,7 +308,7 @@ ol.hop-list li {
         <p><b>Display Profile:</b> PocketBook Era E-Reader (Carta 1200, 300 ppi)</p>
         <p><b>Display Optimization:</b> 12px Font Zoom / Screen-Fitted 4-Page Flow</p>
         <hr style="border: 1px dashed #666666; margin: 1.0em 0;"/>
-        <p style="font-size: 11px; color: #444444;">PocketBook Era Screen-Fitted Flow (Optimized for 12px Font Zoom)<br/>Toner-Saver Negative B/W Star Charts (Stars to Mag 10.3)</p>
+        <p style="font-size: 11px; color: #444444;">PocketBook Era Screen-Fitted Flow (Optimized for 12px Font Zoom)<br/>Toner-Saver Negative B/W Star Charts (Stars to Mag 8.5)</p>
         <p style="margin-top: 1.2em;"><a href="toc.xhtml" style="font-family: sans-serif; font-weight: bold; text-decoration: none; border: 2px solid #000; padding: 5px 12px; background: #eee; color: #000;">OPEN TABLE OF CONTENTS →</a></p>
     </div>
 </body>
@@ -344,11 +344,6 @@ ol.hop-list li {
         <li><a href="chart_4_andromeda.xhtml"><b>Target 4: M31 Andromeda Galaxy &amp; Satellites</b> (Spiral Galaxy)</a></li>
         <li><a href="chart_5_perseus.xhtml"><b>Target 5: Perseus Double Cluster</b> (Twin Open Clusters)</a></li>
         <li><a href="chart_6_scutum_saturn.xhtml"><b>Target 6: M11 Wild Duck Cluster &amp; Saturn</b> (Cluster &amp; Planet)</a></li>
-    </ul>
-
-    <h2>Part III: Field Appendix</h2>
-    <ul>
-        <li><a href="appendix_collimation.xhtml">Appendix: Dobsonian Mirror Collimation Guide</a></li>
     </ul>
 </body>
 </html>"""
@@ -461,7 +456,7 @@ ol.hop-list li {
         <tr><td><b>Aperture</b></td><td>200 mm (7.87")</td><td>Collects 820× more light than human eye.</td></tr>
         <tr><td><b>Focal Length</b></td><td>1200 mm</td><td>f/6 focal ratio with minimal off-axis coma.</td></tr>
         <tr><td><b>Dawes Resolving Limit</b></td><td>0.58 arcsec</td><td>Resolves tight double stars &amp; ring features.</td></tr>
-        <tr><td><b>Limiting Magnitude</b></td><td>13.3 – 14.0 mag</td><td>Telescope - 3 chart threshold: ~10.3 mag.</td></tr>
+        <tr><td><b>Limiting Magnitude</b></td><td>13.3 – 14.0 mag</td><td>Telescope chart threshold: mag 8.5.</td></tr>
     </table>
 
     <h2>Eyepiece Reference</h2>
@@ -958,7 +953,7 @@ ol.hop-list li {
         <a href="toc.xhtml">← Contents</a>
         <a href="04_target_catalog.xhtml">Catalog</a>
         <a href="chart_5_perseus.xhtml">← Target 5 (Perseus)</a>
-        <a href="appendix_collimation.xhtml">Collimation Guide →</a>
+        <a href="toc.xhtml">Contents →</a>
     </div>
 
     <h1>Target 6: M11 Wild Duck &amp; Saturn</h1>
@@ -994,69 +989,12 @@ ol.hop-list li {
 
         <div class="nav-bar bottom-nav">
             <a href="04_target_catalog.xhtml">← Back to Catalog</a>
-            <a href="appendix_collimation.xhtml">Next: Collimation Guide →</a>
+            <a href="toc.xhtml">Return to Table of Contents →</a>
         </div>
     </div>
 </body>
 </html>"""
     chapters.append(("chart_6_scutum_saturn.xhtml", "Target 6: M11 & Saturn", c6_html))
-
-
-    # 14. Appendix: Collimation Guide
-    appendix_html = """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-<head>
-    <title>Appendix: Collimation Guide</title>
-    <link rel="stylesheet" type="text/css" href="style.css"/>
-</head>
-<body>
-    <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-    </div>
-
-    <h1>Appendix: Dobsonian Mirror Collimation</h1>
-    <div class="subtitle">Sky-Watcher Skyliner Classic 200P — Quick Field Reference</div>
-
-    <div class="callout" style="border-color: #b91c1c; background-color: #fef2f2;">
-        <b>CRITICAL SAFETY: TILT TUBE HORIZONTALLY BEFORE COLLIMATING!</b><br/>
-        Never collimate with the telescope pointing straight up. If an Allen key or thumbscrew slips from your fingers, it will fall directly onto the 200 mm primary mirror and chip the optical coatings. Tilt the tube 20°–30° above horizontal so any dropped tool harmlessly hits the steel tube wall!
-    </div>
-
-    <h2>Hardware Controls</h2>
-    <img src="images/collimation_hardware_controls.png" class="chart-img" alt="Collimation Hardware Controls"/>
-    <ul>
-        <li><b>Secondary Spider Hub:</b> 1 center Phillips bolt (axial depth/rotation) + 3 Allen tilt screws (2.0/2.5 mm).</li>
-        <li><b>Primary Rear Cell:</b> 3 large white thumbscrews (spring collimation) + 3 small black thumbscrews (locking). Back off locking screws 1/2 turn before collimating!</li>
-    </ul>
-
-    <h2>The 3-Step Alignment Procedure</h2>
-    <img src="images/collimation_steps_view.png" class="chart-img" alt="Collimation Sight Tube Progression"/>
-    <ol>
-        <li><b>Step 1: Center Secondary under Focuser:</b> Secondary appears circular and centered in drawtube.</li>
-        <li><b>Step 2: Adjust Secondary Tilt:</b> Sight tube crosshairs point dead-center inside the primary center donut.</li>
-        <li><b>Step 3: Adjust Primary Tilt:</b> Turn 3 rear white thumbscrews until black pupil spot sits centered in the donut. Snug black lock screws.</li>
-    </ol>
-
-    <h2>The High-Power Star Test</h2>
-    <img src="images/star_test_patterns.png" class="chart-img" alt="Star Test Patterns"/>
-    <p>Center Polaris in your 12.5 mm eyepiece (96×). Defocus slightly 1/4 turn inside and outside of focus:</p>
-    <ul>
-        <li><b>✓ Perfect Collimation:</b> Concentric bullseye rings with centered secondary shadow.</li>
-        <li><b>✗ Miscollimated (Coma):</b> Rings bunched on one side; secondary shadow shifted off-center. Adjust primary thumbscrews toward the flare.</li>
-        <li><b>✗ Pinched Optics:</b> Triangular 3-lobed rings. Loosen primary mirror clips!</li>
-    </ul>
-
-    <h2>Recommended Video Tutorials</h2>
-    <ul>
-        <li><b>AstroBiscuits (Live Star Test):</b> <code>https://www.youtube.com/watch?v=mviFGu37AcI</code></li>
-        <li><b>Small Optics (Dobsonian Collimation):</b> <code>https://www.youtube.com/watch?v=ht0WAEpya1o</code></li>
-        <li><b>Orion Telescopes (Theory &amp; Tools):</b> <code>https://www.youtube.com/watch?v=YAVGcGEBmCE</code></li>
-    </ul>
-</body>
-</html>"""
-    chapters.append(("appendix_collimation.xhtml", "Appendix: Collimation Guide", appendix_html))
 
 
     # Package files into EPUB ZIP archive

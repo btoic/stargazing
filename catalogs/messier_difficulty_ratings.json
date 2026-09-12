@@ -1,0 +1,776 @@
+{
+  "source": "https://www.nexstarsite.com/OddsNEnds/MessierDifficultyRatings.htm",
+  "count": 110,
+  "objects": [
+    {
+      "m_id": "M1",
+      "number": 1,
+      "name": "NGC 1952 Crab Nebula",
+      "type": "Supernova Remnant",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M2",
+      "number": 2,
+      "name": "NGC 7089",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M3",
+      "number": 3,
+      "name": "NGC 5272",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M4",
+      "number": 4,
+      "name": "NGC 6121",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M5",
+      "number": 5,
+      "name": "NGC 5904",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M6",
+      "number": 6,
+      "name": "NGC 6405 Butterfly Cluster",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M7",
+      "number": 7,
+      "name": "NGC 6475 Ptolemy\u00b9s Cluster",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M8",
+      "number": 8,
+      "name": "NGC 6523 Lagoon Nebula",
+      "type": "Diffuse Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M9",
+      "number": 9,
+      "name": "NGC 6333",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M10",
+      "number": 10,
+      "name": "NGC 6254",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M11",
+      "number": 11,
+      "name": "NGC 6705 Wild Duck Cluster",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M12",
+      "number": 12,
+      "name": "NGC 6218",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M13",
+      "number": 13,
+      "name": "NGC 6205 Hercules Globular Cluster",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M14",
+      "number": 14,
+      "name": "NGC 6402",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M15",
+      "number": 15,
+      "name": "NGC 7078",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M16",
+      "number": 16,
+      "name": "NGC 6611 Eagle Nebula Cluster",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M17",
+      "number": 17,
+      "name": "NGC 6618 Omega, Swan, Horseshoe Nebula",
+      "type": "Diffuse Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M18",
+      "number": 18,
+      "name": "NGC 6613",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M19",
+      "number": 19,
+      "name": "NGC 6273",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M20",
+      "number": 20,
+      "name": "NGC 6514 Trifid Nebula",
+      "type": "Diffuse Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M21",
+      "number": 21,
+      "name": "NGC 6531",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M22",
+      "number": 22,
+      "name": "NGC 6656",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M23",
+      "number": 23,
+      "name": "NGC 6494",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M24",
+      "number": 24,
+      "name": "NGC 6603 Milky Way Patch",
+      "type": "Star Cloud",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M25",
+      "number": 25,
+      "name": "IC 4725",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M26",
+      "number": 26,
+      "name": "NGC 6694",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M27",
+      "number": 27,
+      "name": "NGC 6853 Dumbbell Nebula",
+      "type": "Planetary Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M28",
+      "number": 28,
+      "name": "NGC 6626",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M29",
+      "number": 29,
+      "name": "NGC 6913",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M30",
+      "number": 30,
+      "name": "NGC 7099",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M31",
+      "number": 31,
+      "name": "NGC 224 Andromeda Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M32",
+      "number": 32,
+      "name": "NGC 221 Satellite of M31",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M33",
+      "number": 33,
+      "name": "NGC 598 Triangulum/Pinwheel Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M34",
+      "number": 34,
+      "name": "NGC 1039",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M35",
+      "number": 35,
+      "name": "NGC 2168",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M36",
+      "number": 36,
+      "name": "NGC 1960",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M37",
+      "number": 37,
+      "name": "NGC 2099",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M38",
+      "number": 38,
+      "name": "NGC 1912",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M39",
+      "number": 39,
+      "name": "NGC 7092",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M40",
+      "number": 40,
+      "name": "Winecke 4",
+      "type": "Double Star",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M41",
+      "number": 41,
+      "name": "NGC 2287",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M42",
+      "number": 42,
+      "name": "NGC 1976 Great Orion Nebula",
+      "type": "Diffuse Nebula",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M43",
+      "number": 43,
+      "name": "NGC 1982 de Mairan\u00b9s Nebula",
+      "type": "Diffuse Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M44",
+      "number": 44,
+      "name": "NGC 2632 Beehive Cluster (Praesepe)",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M45",
+      "number": 45,
+      "name": "Pleiades, Subaru, Seven Sisters",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M46",
+      "number": 46,
+      "name": "NGC 2437",
+      "type": "Open Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M47",
+      "number": 47,
+      "name": "NGC 2422",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M48",
+      "number": 48,
+      "name": "NGC 2548",
+      "type": "Open Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M49",
+      "number": 49,
+      "name": "NGC 4472",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M50",
+      "number": 50,
+      "name": "NGC 2323",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M51",
+      "number": 51,
+      "name": "NGC 5194 Whirlpool Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M52",
+      "number": 52,
+      "name": "NGC 7654",
+      "type": "Open Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M53",
+      "number": 53,
+      "name": "NGC 5024",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M54",
+      "number": 54,
+      "name": "NGC 6715",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M55",
+      "number": 55,
+      "name": "NGC 6809",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M56",
+      "number": 56,
+      "name": "NGC 6779",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M57",
+      "number": 57,
+      "name": "NGC 6720 Ring Nebula",
+      "type": "Planetary Nebula",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M58",
+      "number": 58,
+      "name": "NGC 4579",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M59",
+      "number": 59,
+      "name": "NGC 4621",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M60",
+      "number": 60,
+      "name": "NGC 4649",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M61",
+      "number": 61,
+      "name": "NGC 4303",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M62",
+      "number": 62,
+      "name": "NGC 6266",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M63",
+      "number": 63,
+      "name": "NGC 5055 Sunflower Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M64",
+      "number": 64,
+      "name": "NGC 4826 Blackeye Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M65",
+      "number": 65,
+      "name": "NGC 3623",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M66",
+      "number": 66,
+      "name": "NGC 3627",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M67",
+      "number": 67,
+      "name": "NGC 2682",
+      "type": "Open Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M68",
+      "number": 68,
+      "name": "NGC 4590",
+      "type": "Globular Cluster",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M69",
+      "number": 69,
+      "name": "NGC 6637",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M70",
+      "number": 70,
+      "name": "NGC 6681",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M71",
+      "number": 71,
+      "name": "NGC 6838",
+      "type": "Globular Cluster",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M72",
+      "number": 72,
+      "name": "NGC 6981",
+      "type": "Globular Cluster",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M73",
+      "number": 73,
+      "name": "NGC 6994  Group of 4 stars",
+      "type": "Group/Asterism",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M74",
+      "number": 74,
+      "name": "NGC 628",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M75",
+      "number": 75,
+      "name": "NGC 6864",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M76",
+      "number": 76,
+      "name": "NGC 650 Little Dumbbell, Cork, Butterfly Nebula",
+      "type": "Planetary Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M77",
+      "number": 77,
+      "name": "NGC 1068 Cetus A",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M78",
+      "number": 78,
+      "name": "NGC 2068",
+      "type": "Diffuse Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M79",
+      "number": 79,
+      "name": "NGC 1904",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M80",
+      "number": 80,
+      "name": "NGC 6093",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M81",
+      "number": 81,
+      "name": "NGC 3031 Bode\u00b9s Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M82",
+      "number": 82,
+      "name": "NGC 3034 Cigar Galaxy",
+      "type": "Irregular Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M83",
+      "number": 83,
+      "name": "NGC 5236 Southern Pinwheel Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M84",
+      "number": 84,
+      "name": "NGC 4374",
+      "type": "Lenticular (S0) Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M85",
+      "number": 85,
+      "name": "NGC 4382",
+      "type": "Lenticular (S0) Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M86",
+      "number": 86,
+      "name": "NGC 4406",
+      "type": "Lenticular (S0) Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M87",
+      "number": 87,
+      "name": "NGC 4486 Virgo A",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M88",
+      "number": 88,
+      "name": "NGC 4501",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M89",
+      "number": 89,
+      "name": "NGC 4552",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M90",
+      "number": 90,
+      "name": "NGC 4569",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M91",
+      "number": 91,
+      "name": "NGC 4548",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M92",
+      "number": 92,
+      "name": "NGC 6341",
+      "type": "Globular Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M93",
+      "number": 93,
+      "name": "NGC 2447",
+      "type": "Open Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M94",
+      "number": 94,
+      "name": "NGC 4736",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M95",
+      "number": 95,
+      "name": "NGC 3351",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M96",
+      "number": 96,
+      "name": "NGC 3368",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M97",
+      "number": 97,
+      "name": "NGC 3587 Owl Nebula",
+      "type": "Planetary Nebula",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M98",
+      "number": 98,
+      "name": "NGC 4192",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M99",
+      "number": 99,
+      "name": "NGC 4254",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M100",
+      "number": 100,
+      "name": "NGC 4321",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M101",
+      "number": 101,
+      "name": "NGC 5457 Pinwheel Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M102",
+      "number": 102,
+      "name": "NGC 5866 Spindle Galaxy",
+      "type": "Lenticular (S0) Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M103",
+      "number": 103,
+      "name": "NGC 581",
+      "type": "Open Cluster",
+      "difficulty": "Easy"
+    },
+    {
+      "m_id": "M104",
+      "number": 104,
+      "name": "NGC 4594 Sombrero Galaxy",
+      "type": "Spiral Galaxy",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M105",
+      "number": 105,
+      "name": "NGC 3379",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M106",
+      "number": 106,
+      "name": "NGC 4258",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M107",
+      "number": 107,
+      "name": "NGC 6171",
+      "type": "Globular Cluster",
+      "difficulty": "Medium"
+    },
+    {
+      "m_id": "M108",
+      "number": 108,
+      "name": "NGC 3556",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M109",
+      "number": 109,
+      "name": "NGC 3992",
+      "type": "Spiral Galaxy",
+      "difficulty": "Hard"
+    },
+    {
+      "m_id": "M110",
+      "number": 110,
+      "name": "NGC 205 Satellite of M31",
+      "type": "Elliptical Galaxy",
+      "difficulty": "Hard"
+    }
+  ]
+}

@@ -94,20 +94,29 @@ flowchart LR
 
 ## 4. Curated Target Catalog
 
-All coordinates and Alt/Az ephemerides are calculated specifically for **Dvigrad at 21:15 CEST (mid-session)**:
+Target difficulty ratings are calibrated according to the [Messier Difficulty Ratings](file:///home/branko/Documents/repos/github.com/btoic/stargazing/catalogs/messier_difficulty_ratings.md) from Michael Swanson's *NexStar User Guide II*:
 
-| # | Target Name | Constellation | Type | Mag | Size | Alt / Az @ 21:15 | Recommended Eyepiece | Chart Reference |
-| :-: | :--- | :--- | :--- | :-: | :-: | :-: | :-: | :--- |
-| **1** | **Albireo ($\beta$ Cygni)** | Cygnus | Double Star | 3.1 / 5.1 | 34.3" sep | 73° / 170° (S) | 20mm & 12.5mm | [Chart 2](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.pdf) |
-| **2** | **M22 (NGC 6656)** | Sagittarius | Globular Cl. | 5.1 | 32.0' | 17.5° / 195° (SSW) | 20mm $\rightarrow$ 12.5mm | [Full Sky Map](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/full_sky_map.pdf) *(Observe early!)* |
-| **3** | **M13 (Great Globular)** | Hercules | Globular Cl. | 5.8 | 20.0' | 63.4° / 268° (W) | 12.5mm (96×) | [Chart 3](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.pdf) |
-| **4** | **M92 (NGC 6341)** | Hercules | Globular Cl. | 6.3 | 14.0' | 71.2° / 295° (WNW) | 12.5mm (96×) | [Chart 3](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.pdf) |
-| **5** | **M11 (Wild Duck Cluster)** | Scutum | Open Cluster | 5.8 | 14.0' | 35.2° / 205° (SSW) | 20mm & 12.5mm | [Chart 6](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.pdf) |
-| **6** | **M57 (Ring Nebula)** | Lyra | Planetary Neb. | 8.8 | 1.4' × 1.0' | 76.1° / 222° (SW) | 12.5mm (96×) | [Chart 1](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_1_lyra_m57.pdf) |
-| **7** | **M27 (Dumbbell Nebula)** | Vulpecula | Planetary Neb. | 7.4 | 8.0' × 5.6' | 68.2° / 164° (SSE) | 20mm (60×) | [Chart 2](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.pdf) |
-| **8** | **Double Cluster (NGC 869/884)** | Perseus | Dual Open Cl. | 3.7 / 3.8 | 60.0' | 34.1° / 038° (NE) | 20mm (60×) | [Chart 5](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_5_perseus_double_cluster.pdf) |
-| **9** | **M31 (Andromeda Galaxy)** | Andromeda | Spiral Galaxy | 3.4 | 190' × 60' | 43.5° / 068° (ENE) | 20mm (60×) | [Chart 4](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_4_andromeda_m31.pdf) |
-| **10** | **Saturn & Titan** | Aquarius | Planet & Rings | +0.6 | 19.2" (disk) | 18°–23° / 115° (ESE) | 12.5mm (96×) | [Chart 6](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.pdf) |
+| # | Target Name | Constellation | Type | Mag | Size | Difficulty | Chart Reference | Recommended Eyepiece |
+| :-: | :--- | :--- | :--- | :-: | :-: | :-: | :--- | :--- |
+| **1** | **Albireo ($\beta$ Cygni)** | Cygnus | Double Star | 3.1 / 5.1 | 34.3" sep | **Very Easy** | [Chart 2](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.png) | 20mm & 12.5mm |
+| **2** | **M22 (NGC 6656)** | Sagittarius | Globular Cl. | 5.1 | 32.0' | **Easy** | [Full Sky Map](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/full_sky_map.png) *(Observe early!)* | 20mm $\rightarrow$ 12.5mm |
+| **3** | **M13 (Great Globular)** | Hercules | Globular Cl. | 5.8 | 20.0' | **Easy** | [Chart 3](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.png) | 12.5mm (96×) |
+| **4** | **M92 (NGC 6341)** | Hercules | Globular Cl. | 6.3 | 14.0' | **Easy** | [Chart 3](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.png) | 12.5mm (96×) |
+| **5** | **M11 (Wild Duck Cluster)** | Scutum | Open Cluster | 5.8 | 14.0' | **Easy** | [Chart 6](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.png) | 20mm & 12.5mm |
+| **6** | **M57 (Ring Nebula)** | Lyra | Planetary Neb. | 8.8 | 1.4' × 1.0' | **Easy** | [Chart 1](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_1_lyra_m57.png) | 12.5mm (96×) |
+| **7** | **M27 (Dumbbell Nebula)** | Vulpecula | Planetary Neb. | 7.4 | 8.0' × 5.6' | **Medium** | [Chart 2](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.png) | 20mm (60×) |
+| **8** | **Double Cluster (NGC 869/884)** | Perseus | Dual Open Cl. | 3.7 / 3.8 | 60.0' | **Easy** | [Chart 5](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_5_perseus_double_cluster.png) | 20mm (60×) |
+| **9** | **M31 (Andromeda Galaxy)** | Andromeda | Spiral Galaxy | 3.4 | 190' × 60' | **Easy** | [Chart 4](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_4_andromeda_m31.png) | 20mm (60×) |
+| **10** | **Saturn & Titan** | Aquarius | Planet & Rings | +0.6 | 19.2" (disk) | **Very Easy** | [Chart 6](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.png) | 12.5mm (96×) |
+
+> [!TIP]
+> **Bonus Neighbor Targets**: When targeted on these primary showpieces, sweep these adjacent gems in the same constellation field:
+> - **Near M57 (Lyra)**: **M56** (Globular Cl., mag 8.3, Medium) halfway to Albireo; **$\epsilon$ Lyrae** ("Double-Double", mag 4.7/5.1) 1.5° NE of Vega.
+> - **Near M27 (Vulpecula)**: **The Coathanger** (Cr 399 asterism, mag 3.6, Very Easy); **M71** (Globular Cl. in Sagitta, mag 8.2, Hard) 4° south along the arrow shaft.
+> - **Near Double Cluster (Cassiopeia/Perseus)**: **M103** (Open Cl., mag 7.4, Easy) 1° NE of hop-star Ruchbah ($\delta$ Cas); **NGC 457** ("Owl / ET Cluster", mag 6.4, Easy) 2° south.
+> - **Near M11 (Scutum)**: **M26** (Open Cl., mag 8.0, Medium) 3.5° SSW.
+> 
+> See [tutorials/session-target-budgeting-and-hopping.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/session-target-budgeting-and-hopping.md) for full dwell-time budgeting and neighbor clustering strategies.
 
 ---
 

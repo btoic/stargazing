@@ -70,12 +70,15 @@ Calculate for the observing date and location:
 - **Astronomical Darkness** ($\text{Alt}_\odot \le -18^\circ$): Zero atmospheric solar scattering; prime deep-sky window.
 - **Moon Ephemeris**: Phase illumination percentage, moonrise, and moonset times. True dark-sky observing requires $\text{Alt}_\text{Moon} \le 0^\circ$.
 
-### Step 3.2: Target Curation Rules
-Select 8 to 12 showpiece objects meeting these criteria:
-1. **Horizon Obstruction Hard Floor**: All targets must be at **Altitude $\ge 15^\circ$** (preferably $\ge 20^\circ$) to clear local valley/tree obstructions and atmospheric extinction.
-2. **Meridian Timing**: Schedule targets within $\pm 1.5$ hours of their highest nightly transit.
-3. **Zenith Blindspot ("Dobson Hole") Avoidance**: Avoid scheduling manual Alt-Az tracking for targets directly overhead (>80° Alt); catch them at 65°–75° Alt.
-4. **Balanced Program Portfolio**:
+### Step 3.2: Target Curation & Session Budgeting Rules
+Select 6 to 8 primary anchor showpiece objects and 3 to 6 adjacent bonus neighbor targets meeting these criteria:
+1. **Dwell-Time Budgeting**: Budget 15–20 minutes of dwell time per primary anchor target (accounting for acquisition, eyepiece steps, dark adaptation, and visual integration). A 2.5-hour darkness session realistically supports **6 to 8 primary targets**. (See [tutorials/session-target-budgeting-and-hopping.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/session-target-budgeting-and-hopping.md)).
+2. **Anchor + Neighbor Clustering**: Group targets into spatial clusters so observers can easily hop to nearby bonus objects from the same constellation field (e.g. M56 near M57, M71 near M27, M103 near the Double Cluster / Ruchbah).
+3. **Difficulty Rating Calibration**: Assign difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog [catalogs/messier_difficulty_ratings.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/catalogs/messier_difficulty_ratings.md) (from Michael Swanson's *NexStar User Guide II*).
+4. **Horizon Obstruction Hard Floor**: All targets must be at **Altitude $\ge 15^\circ$** (preferably $\ge 20^\circ$) to clear local valley/tree obstructions and atmospheric extinction.
+5. **Meridian Timing**: Schedule targets within $\pm 1.5$ hours of their highest nightly transit.
+6. **Zenith Blindspot ("Dobson Hole") Avoidance**: Avoid scheduling manual Alt-Az tracking for targets directly overhead (>80° Alt); catch them at 65°–75° Alt.
+7. **Balanced Program Portfolio**:
    - **Showpiece Double Stars**: Twilight warm-up (e.g., Albireo).
    - **Early Setting Targets**: Low-altitude objects before they set into trees (e.g., M22 in Sagittarius).
    - **Globular Clusters**: Core resolution showpieces (e.g., M13, M92).

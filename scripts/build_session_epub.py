@@ -501,7 +501,7 @@ ol.hop-list li {
     </div>
 
     <h1>4. Curated Target Catalog</h1>
-    <div class="subtitle">Mid-Session Ephemeris @ 21:15 CEST — Tap any chart link to open</div>
+    <div class="subtitle">Observing Program &amp; Difficulty Index — Tap chart link to open finder view</div>
 
     <table>
         <tr>
@@ -510,9 +510,9 @@ ol.hop-list li {
             <th>Const</th>
             <th>Type</th>
             <th>Mag</th>
-            <th>Alt / Az @ 21:15</th>
-            <th>Eyepiece</th>
-            <th>Finder Chart Link</th>
+            <th>Difficulty</th>
+            <th>Finder Chart</th>
+            <th>Recommended Eyepiece</th>
         </tr>
         <tr>
             <td>1</td>
@@ -520,9 +520,9 @@ ol.hop-list li {
             <td>Cyg</td>
             <td>Double Star</td>
             <td>3.1/5.1</td>
-            <td>73° / 170° (S)</td>
-            <td>20mm &amp; 12.5mm</td>
+            <td>Very Easy</td>
             <td><a href="chart_2_m27.xhtml"><b>Chart 2 →</b></a></td>
+            <td>20mm &amp; 12.5mm</td>
         </tr>
         <tr>
             <td>2</td>
@@ -530,9 +530,9 @@ ol.hop-list li {
             <td>Lyr</td>
             <td>Planetary Neb.</td>
             <td>8.8</td>
-            <td>75.4° / 218° (SW)</td>
-            <td>12.5mm (96×)</td>
+            <td>Easy</td>
             <td><a href="chart_1_m57.xhtml"><b>Chart 1 →</b></a></td>
+            <td>12.5mm (96×)</td>
         </tr>
         <tr>
             <td>3</td>
@@ -540,9 +540,9 @@ ol.hop-list li {
             <td>Her</td>
             <td>Globular Cl.</td>
             <td>5.8</td>
-            <td>56.2° / 271° (W)</td>
-            <td>12.5mm (96×)</td>
+            <td>Easy</td>
             <td><a href="chart_3_hercules.xhtml"><b>Chart 3 →</b></a></td>
+            <td>12.5mm (96×)</td>
         </tr>
         <tr>
             <td>4</td>
@@ -550,9 +550,9 @@ ol.hop-list li {
             <td>Her</td>
             <td>Globular Cl.</td>
             <td>6.3</td>
-            <td>65.4° / 295° (WNW)</td>
-            <td>12.5mm (96×)</td>
+            <td>Easy</td>
             <td><a href="chart_3_hercules.xhtml"><b>Chart 3 →</b></a></td>
+            <td>12.5mm (96×)</td>
         </tr>
         <tr>
             <td>5</td>
@@ -560,9 +560,9 @@ ol.hop-list li {
             <td>Sct</td>
             <td>Open Cluster</td>
             <td>5.8</td>
-            <td>37.7° / 196° (SSW)</td>
-            <td>12.5mm (96×)</td>
+            <td>Easy</td>
             <td><a href="chart_6_scutum_saturn.xhtml"><b>Chart 6 →</b></a></td>
+            <td>12.5mm (96×)</td>
         </tr>
         <tr>
             <td>6</td>
@@ -570,9 +570,9 @@ ol.hop-list li {
             <td>Vul</td>
             <td>Asterism</td>
             <td>3.6</td>
-            <td>65.0° / 195° (SSW)</td>
-            <td>20mm (60×)</td>
+            <td>Very Easy</td>
             <td><a href="chart_2_m27.xhtml"><b>Chart 2 →</b></a></td>
+            <td>20mm (60×)</td>
         </tr>
         <tr>
             <td>7</td>
@@ -580,9 +580,9 @@ ol.hop-list li {
             <td>Vul</td>
             <td>Planetary Neb.</td>
             <td>7.4</td>
-            <td>67.2° / 166° (SSE)</td>
-            <td>20mm (60×)</td>
+            <td>Medium</td>
             <td><a href="chart_2_m27.xhtml"><b>Chart 2 →</b></a></td>
+            <td>20mm (60×)</td>
         </tr>
         <tr>
             <td>8</td>
@@ -590,9 +590,9 @@ ol.hop-list li {
             <td>Per</td>
             <td>Dual Open Cl.</td>
             <td>3.7/3.8</td>
-            <td>31.6° / 039° (NE)</td>
-            <td>20mm (60×)</td>
+            <td>Easy</td>
             <td><a href="chart_5_perseus.xhtml"><b>Chart 5 →</b></a></td>
+            <td>20mm (60×)</td>
         </tr>
         <tr>
             <td>9</td>
@@ -600,9 +600,9 @@ ol.hop-list li {
             <td>And</td>
             <td>Spiral Galaxy</td>
             <td>3.4</td>
-            <td>36.2° / 065° (ENE)</td>
-            <td>20mm (60×)</td>
+            <td>Easy</td>
             <td><a href="chart_4_andromeda.xhtml"><b>Chart 4 →</b></a></td>
+            <td>20mm (60×)</td>
         </tr>
         <tr>
             <td>10</td>
@@ -610,9 +610,9 @@ ol.hop-list li {
             <td>Aqr</td>
             <td>Planet &amp; Rings</td>
             <td>+0.6</td>
-            <td>18°–23° / 115° (ESE)</td>
-            <td>12.5mm (96×)</td>
+            <td>Very Easy</td>
             <td><a href="chart_6_scutum_saturn.xhtml"><b>Chart 6 →</b></a></td>
+            <td>12.5mm (96×)</td>
         </tr>
     </table>
 </body>

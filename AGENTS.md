@@ -52,6 +52,13 @@ All stargazing assets and sessions are organized into structured directories:
 
 ### Rule 2.3: Stargazing Plan Generation (`stargazing-planner` skill)
 - Always activate the `stargazing-planner` skill to calculate ephemerides and curate an optimal, customized observation portfolio.
+- **Dwell-Time Budgeting & Clustering**:
+  - Plan **6 to 8 primary anchor targets** for a 2.5-hour darkness session (budgeting 15–20 min dwell time per target for finding, eyepiece switching, and dark-adapted averted vision).
+  - Annotate **3 to 6 adjacent bonus neighbor targets** (e.g. M56 near M57, M71 near M27, M103 near Double Cluster) that can be hopped opportunistically from the same constellation field (see `tutorials/session-target-budgeting-and-hopping.md`).
+- **Difficulty Rating Calibration**:
+  - Calibrate object difficulty ratings (`Very Easy`, `Easy`, `Medium`, `Hard`) using repository catalog `catalogs/messier_difficulty_ratings.md`.
+- **E-Reader Catalog Ergonomics**:
+  - In target catalog tables, place the `Finder Chart` link column inward (before `Recommended Eyepiece`) rather than on the right edge, preventing accidental page-turn touch gestures on e-readers.
 - **Visibility Criteria**:
   - Filter targets to ensure they remain at **altitude $\ge 15^\circ$** (preferably $\ge 20^\circ$) to clear local horizon obstructions and atmospheric extinction.
   - Schedule objects within $\pm 1.5$ hours of their meridian transit.

@@ -30,15 +30,17 @@
 
 ## 3. Digital Book & Sky Chart Rendering Standards
 When generating EPUB session packages tailored for the PocketBook Era:
-1. **Screen Aspect Ratio Optimization**:
-   - Master chart viewport images should target the **3:4 aspect ratio** (e.g. `1264 × 1680` or `1200 × 1600`) to fill the screen without letterboxing or squishing.
-2. **Multi-Page Target Flow**:
-   - Rather than cramming three viewports onto one screen, split target guides into 3 dedicated, full-screen pages:
-     - **Page 1 (Target Dossier & Eyepiece Simulation)**: Side-by-side Viewport B (negative inverted 180° simulation) and Viewport C (object ephemeris & specs, with hopping text dropped).
-     - **Page 2 (Wide-Field Star Hopping Chart)**: Full-screen Viewport A with deep star magnitude (telescope limit - 3, mag ~10.0), Telrad circles, hop badges, and magnitude key.
-     - **Page 3 (Step-by-Step Star-Hopping Narrative)**: Clean typography with large text for field reading.
+1. **Screen Aspect Ratio & 12px Zoom Optimization**:
+   - Calibrated for standard PocketBook Era **12px font zoom**.
+   - Base typography set to 12px sans-serif with 1.35 line height and compact margins (8–10px) to prevent accidental overflow.
+   - Master chart viewport images target the **3:4 aspect ratio** (e.g. `1264 × 1680` or `1200 × 1600`) to fill the screen without letterboxing or squishing.
+2. **Natural 3-Page Target Pagination (Zero Blank Pages)**:
+   - Each target is compiled as a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break rules (`.chart-page`, `.instructions-page` using `break-before: page`), eliminating artificial sub-chapter breaks and empty page flips.
+   - **Page 1 (Target Dossier & Eyepiece Simulation)**: Side-by-side Viewport B (negative inverted 180° simulation) and Viewport C (object ephemeris & specs, with eyepiece quick reference integrated directly inside the dossier graphic, removing trailing HTML callouts).
+   - **Page 2 (Wide-Field Star Hopping Chart)**: Full-screen Viewport A with deep star magnitude (telescope limit - 3, mag 10.3), Telrad circles, hop badges, and magnitude key. Redundant HTML headers and pinch-to-zoom tips are omitted so the chart occupies the full page.
+   - **Page 3 (Step-by-Step Star-Hopping Narrative)**: Clean typography with readable hop steps and direct bottom navigation to the next target or catalog.
 3. **High-Contrast Pure Monochrome**:
    - High-contrast pure white (`#ffffff`) background with solid black (`#000000`) stars, lines, and borders.
 4. **Metadata & Library Organization**:
    - Name e-book file after the observation session (`<location-slug>-<YYYY-MM-DD>.epub`).
-   - Populate standard Calibre series metadata (`calibre:series` and `calibre:series_index`) and EPUB 3 collection tags so PocketBook OS automatically groups stargazing field guides into an indexed collection.
+   - Populate standard Calibre series metadata (`calibre:series` and `calibre:series_index`), EPUB 3 collection tags, and PocketBook optimization metadata (`pocketbook:font-size="12px"`, `pocketbook:optimized-zoom="12px"`) so PocketBook OS automatically groups stargazing field guides into an indexed collection.

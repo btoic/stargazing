@@ -101,25 +101,29 @@ Select 8 to 12 showpiece objects meeting these criteria:
 ### All-Sky Planisphere (`full_sky_map.pdf`)
 - Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
 
-### Standalone E-Reader Field Book (`STARGAZING_FIELD_GUIDE.epub`)
-- Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book.
-- **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp vector/raster finder charts, and responsive styling.
-- **Interactive Indexing**: Target Catalog table jumps straight to dedicated chart chapters; each chart contains quick-return navigation links.
-- **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (Kindle, Kobo, Boox, Tolino, PocketBook).
+### Standalone E-Reader Field Book (`<session-slug>.epub`)
+- Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book named dynamically after the session folder (e.g. `dvigrad-2026-09-12.epub`, with backward-compatible copy to `STARGAZING_FIELD_GUIDE.epub`).
+- **PocketBook Era Hardware Optimization**: Optimized for 7.0" E-Ink Carta 1200 (1264 × 1680, 300 ppi, 3:4 portrait aspect ratio, SMARTlight amber night-vision mode, pinch-to-zoom). Profile documented in `equipment/pocketbook-era.md`.
+- **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, and EPUB 3 `belongs-to-collection`.
+- **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp toner-saver negative charts, and responsive styling.
+- **3-Page Consecutive Target Flow**:
+  1. **Page 1 (Eyepiece & Dossier)**: Viewport B (Eyepiece simulation, inverted 180°) and Viewport C (Target Dossier) rendered side-by-side in landscape 4:3 ratio (`_eyepiece_dossier.png`). Star-hopping narrative text is omitted from Viewport C to give technical parameters maximum readable spacing.
+  2. **Page 2 (Wide-Field Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to **telescope visual limiting magnitude minus 3.0** (e.g., mag 10.3 for an 8" Dobsonian), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend in the corner.
+  3. **Page 3 (Step-by-Step Hop Narrative)**: Dedicated typographic chapter with full narrative hopping steps formatted for quick reading under red flashlight.
+- **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (PocketBook, Kindle, Kobo, Boox, Tolino).
 
 ### Finder Charts (Toner-Saver Negative B/W Edition)
-Every finder chart (`charts/chart_<N>_<name>.pdf` and `.png`) must be formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`):
-- **Zero Auto-Cropping (`bbox_inches='tight'` prohibited)**: Never pass `bbox_inches='tight'` to `plt.savefig()` when exporting printable PDF charts. Matplotlib's tight bounding box calculation alters the MediaBox dimensions and ruins 100% scale A4 printing. Use explicit subplots within safe margins (`x: 0.035..0.965`, `y: 0.045..0.880`).
-- Every chart features three distinct, labeled viewports:
-1. **`VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART`**:
-   - Upright naked-eye / finder orientation (N ↑, E ←).
-   - High-contrast black stars, constellation guide lines, Telrad concentric rings (solid 0.5°, dashed 2.0°, dash-dot 4.0°, dotted 5.0° finder circle), and numbered step badges (`[STEP 1]`, `[STEP 2]`).
-2. **`VIEWPORT B: TELESCOPE EYEPIECE SIMULATION`**:
-   - **Toner-Saver Negative**: Pure white background (`#ffffff`), crisp black circular rim, black stars, and delicate light-grey shaded DSO contours.
-   - **Optical Inversion**: Pre-rotated 180° for Newtonian reflectors (N ↓, E →).
-   - Labeled for the specific eyepiece focal length, magnification, and true FOV.
-3. **`VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS`**:
-   - Monospaced boxed technical dossier with tonight's ephemeris at the site, recommended eyepieces, visual descriptions, and clear step-by-step hopping narrative.
+Finder charts are generated in dual formats:
+1. **Master Printable Charts (`charts/chart_<N>_<name>.pdf` and `.png`)**:
+   - Formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`).
+   - **Zero Auto-Cropping (`bbox_inches='tight'` prohibited)**: Never pass `bbox_inches='tight'` to `plt.savefig()` when exporting printable PDF charts. Matplotlib's tight bounding box calculation alters the MediaBox dimensions and ruins 100% scale A4 printing. Use explicit subplots within safe margins (`x: 0.035..0.965`, `y: 0.045..0.880`).
+   - Three viewports side-by-side:
+     - **`VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART`**: Upright naked-eye / finder orientation (N ↑, E ←), black stars down to mag ~6.5–7.0, constellation guide lines, Telrad concentric rings (0.5°, 2.0°, 4.0°, 5.0°), and numbered step badges.
+     - **`VIEWPORT B: TELESCOPE EYEPIECE SIMULATION`**: Toner-Saver Negative (pure white background `#ffffff`, black stars, grey DSO contours, pre-inverted 180° for Newtonian reflectors: N ↓, E →).
+     - **`VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS`**: Monospaced technical dossier with ephemeris, recommended eyepieces, and complete step-by-step hopping text.
+2. **E-Reader Screen-Optimized Charts**:
+   - `charts/chart_<N>_<name>_eyepiece_dossier.png`: 4:3 landscape figure pairing Viewport B and Viewport C (hop narrative omitted for spacious dossier layout).
+   - `charts/chart_<N>_<name>_widefield.png`: 3:4 portrait figure of Viewport A with deep stars down to magnitude (limiting mag − 3.0, e.g. 10.3) and visual magnitude legend.
 
 ---
 

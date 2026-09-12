@@ -70,15 +70,20 @@ All stargazing assets and sessions are organized into structured directories:
 - **Finder Charts (Toner-Saver Negative B/W Edition)**:
   - Generate high-resolution PDF and PNG charts for every primary target formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`).
   - **Zero Auto-Cropping (`bbox_inches='tight'` prohibited)**: Never use `bbox_inches='tight'` when saving PDF charts in Matplotlib; it alters the bounding box and breaks A4 standard dimensions. Use explicit subplots with safe 10–12 mm margins.
-  - **Viewport A**: Wide-Field Star-Hopping Chart (Upright naked-eye / finder: N ↑, E ←).
+  - **Viewport A**: Wide-Field Star-Hopping Chart (Upright naked-eye / finder: N ↑, E ←). Star density rendered down to **telescope limiting magnitude minus 3.0** (~10.3 mag) with a dedicated star dot size to magnitude legend printed in the bottom corner.
   - **Viewport B**: Telescope Eyepiece Simulation in **Toner-Saver Negative** (pure white background `#ffffff`, black stars, grey DSO contours, pre-inverted 180°: N ↓, E →).
   - **Viewport C**: Target Dossier & Star-Hopping Instructions.
   - Full B/W printer compatibility with solid, dashed, and dash-dot Telrad reticles.
-- **Standalone E-Reader Field Book (`STARGAZING_FIELD_GUIDE.epub`)**:
+- **Standalone E-Reader Field Book (`<session-folder>.epub` / `STARGAZING_FIELD_GUIDE.epub`)**:
   - Compiles the entire session (site profile, twilight schedule, full-sky planisphere, target catalog, all finder charts, and optical appendices) into a single, fully indexed EPUB.
-  - High-contrast, e-ink optimized styling (`#ffffff` backgrounds, crisp typography, clean line art).
-  - Two-way interactive navigation (Target Catalog links jump straight to charts; charts feature back-to-contents links).
-  - Compatible with EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) for all e-readers (Kindle, Kobo, Boox, etc.).
+  - **PocketBook Era Hardware Optimization**: Dictated by the PocketBook Era profile (`equipment/pocketbook-era.md`, 7.0" 1264 × 1680, 300 ppi, 3:4 aspect ratio, Carta 1200, 16 greyscale levels, pinch-to-zoom).
+  - **Multi-Page Target Flow**: Rather than cramming three viewports onto one screen, each target flows across 3 dedicated pages:
+    - **Page 1 (Eyepiece & Dossier)**: Side-by-side Viewport B (eyepiece simulation, inverted 180°) and Viewport C (target dossier, with star-hopping narrative dropped for generous room and large font).
+    - **Page 2 (Wide-Field Chart)**: Screen-fitted Viewport A wide-field chart with deep stars (to mag 10.3), Telrad rings, hop badges, and magnitude key. Pinch-to-zoom enabled.
+    - **Page 3 (Step-by-Step Hop Narrative)**: Large, high-contrast, reflowable text-based star-hopping guide and averted vision tips.
+  - **Dynamic Naming & Series Metadata**:
+    - Named after the observation directory (e.g. `dvigrad-2026-09-12.epub`), with backward-compatible symlink to `STARGAZING_FIELD_GUIDE.epub`.
+    - Auto-discovers past sessions in `observations/` to calculate and increment the series index (`calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`).
 
 ### Rule 2.5: Educational Tutorials & Field Craft
 - Store general tutorials, operational rules, and explanatory guides in `tutorials/`.

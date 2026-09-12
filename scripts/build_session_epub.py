@@ -1,8 +1,16 @@
 #!/usr/bin/env python3
 """
 scripts/build_session_epub.py - Compiles an observation session package into a single,
-fully indexed, high-contrast EPUB e-book optimized for e-ink e-readers (Kindle, Kobo, Boox)
-and red-light nighttime viewing.
+fully indexed, high-contrast EPUB e-book optimized for e-ink e-readers (specifically PocketBook Era,
+Kindle, Kobo, Boox) and red-light nighttime viewing.
+
+Key PocketBook Era Features:
+- Multi-page target navigation:
+  1. Eyepiece Simulation & Target Dossier side-by-side (Viewport B + C)
+  2. Full-screen Wide-Field Star Hopping Chart (Viewport A, stars to mag 10.3, Telrad rings, magnitude key)
+  3. Text-based Step-by-Step Star-Hopping Narrative
+- Dynamic series metadata (Calibre series and EPUB 3 collection tags) incremented per observation
+- Dynamic naming matching the observation session directory (<location>-<date>.epub)
 """
 
 import os
@@ -11,36 +19,71 @@ import zipfile
 import argparse
 import uuid
 import html
+import shutil
 from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
+def get_series_info(session_dir):
+    """Calculates series metadata by discovering all observation directories."""
+    observations_dir = os.path.join(REPO_ROOT, "observations")
+    session_folder = os.path.basename(os.path.abspath(session_dir))
+    series_name = "Stargazing Observations"
+
+    if os.path.isdir(observations_dir):
+        all_sessions = sorted([
+            d for d in os.listdir(observations_dir)
+            if os.path.isdir(os.path.join(observations_dir, d)) and not d.startswith('.')
+        ])
+    else:
+        all_sessions = [session_folder]
+
+    if session_folder in all_sessions:
+        series_index = all_sessions.index(session_folder) + 1
+    else:
+        series_index = len(all_sessions) + 1
+
+    return series_name, series_index, session_folder
 
 def build_epub(session_dir=None, output_path=None):
     if session_dir is None:
         session_dir = os.path.join(REPO_ROOT, "observations", "dvigrad-2026-09-12")
     session_dir = os.path.abspath(session_dir)
 
+    series_name, series_index, session_folder = get_series_info(session_dir)
+
     if output_path is None:
-        output_path = os.path.join(session_dir, "STARGAZING_FIELD_GUIDE.epub")
+        output_path = os.path.join(session_dir, f"{session_folder}.epub")
     output_path = os.path.abspath(output_path)
 
+    legacy_symlink_path = os.path.join(session_dir, "STARGAZING_FIELD_GUIDE.epub")
+
     print(f"\n=======================================================")
-    print(f"BUILDING EPUB FIELD GUIDE")
-    print(f"Session: {session_dir}")
-    print(f"Output:  {output_path}")
+    print(f"BUILDING EPUB FIELD GUIDE (PocketBook Era Screen-Optimized)")
+    print(f"Session:      {session_dir}")
+    print(f"Folder Name:  {session_folder}")
+    print(f"Series:       {series_name} (Issue #{series_index})")
+    print(f"Output:       {output_path}")
     print(f"=======================================================\n")
 
     # Image source paths
     img_sources = {
         "full_sky_map.png": os.path.join(session_dir, "full_sky_map.png"),
         "timeline_gantt.png": os.path.join(session_dir, "timeline_gantt.png"),
-        "chart_1_lyra_m57.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57.png"),
-        "chart_2_vulpecula_m27_albireo.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo.png"),
-        "chart_3_hercules_m13_m92.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92.png"),
-        "chart_4_andromeda_m31.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31.png"),
-        "chart_5_perseus_double_cluster.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster.png"),
-        "chart_6_scutum_m11_and_saturn.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn.png"),
+        # Screen-optimized PocketBook Era assets
+        "chart_1_lyra_m57_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_eyepiece_dossier.png"),
+        "chart_1_lyra_m57_widefield.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_widefield.png"),
+        "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png"),
+        "chart_2_vulpecula_m27_albireo_widefield.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_widefield.png"),
+        "chart_3_hercules_m13_m92_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_eyepiece_dossier.png"),
+        "chart_3_hercules_m13_m92_widefield.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_widefield.png"),
+        "chart_4_andromeda_m31_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_eyepiece_dossier.png"),
+        "chart_4_andromeda_m31_widefield.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_widefield.png"),
+        "chart_5_perseus_double_cluster_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_eyepiece_dossier.png"),
+        "chart_5_perseus_double_cluster_widefield.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_widefield.png"),
+        "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png"),
+        "chart_6_scutum_m11_and_saturn_widefield.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_widefield.png"),
         # Collimation tutorial figures
         "collimation_hardware_controls.png": os.path.join(REPO_ROOT, "tutorials", "images", "collimation_hardware_controls.png"),
         "collimation_steps_view.png": os.path.join(REPO_ROOT, "tutorials", "images", "collimation_steps_view.png"),
@@ -55,7 +98,7 @@ def build_epub(session_dir=None, output_path=None):
     # CSS Content
     css_content = """/* Stargazing E-Reader Optimized Stylesheet */
 @page {
-    margin: 4% 4%;
+    margin: 3% 3%;
 }
 body {
     font-family: serif;
@@ -74,39 +117,39 @@ h1, h2, h3, h4 {
     break-after: avoid;
 }
 h1 {
-    font-size: 1.6em;
+    font-size: 1.5em;
     border-bottom: 2px solid #000000;
     padding-bottom: 0.2em;
-    margin-top: 0.8em;
-    margin-bottom: 0.4em;
+    margin-top: 0.6em;
+    margin-bottom: 0.3em;
 }
 h2 {
-    font-size: 1.25em;
+    font-size: 1.2em;
     border-bottom: 1px solid #666666;
     padding-bottom: 0.15em;
-    margin-top: 1.0em;
+    margin-top: 0.8em;
     margin-bottom: 0.3em;
 }
 h3 {
     font-size: 1.05em;
-    margin-top: 0.8em;
+    margin-top: 0.6em;
     margin-bottom: 0.2em;
 }
 p {
-    margin: 0.5em 0;
+    margin: 0.4em 0;
 }
 .subtitle {
     font-family: sans-serif;
-    font-size: 0.9em;
+    font-size: 0.88em;
     color: #333333;
-    margin-bottom: 1.2em;
+    margin-bottom: 0.8em;
     line-height: 1.35;
 }
 .nav-bar {
     font-family: sans-serif;
     font-size: 0.82em;
-    margin: 0.6em 0 1.2em 0;
-    padding: 0.4em 0;
+    margin: 0.4em 0 0.8em 0;
+    padding: 0.3em 0;
     border-bottom: 1px dashed #666666;
 }
 .nav-bar a {
@@ -147,90 +190,87 @@ tr:nth-child(even) td {
 .center {
     text-align: center;
 }
-.badge {
-    display: inline-block;
-    font-family: monospace;
-    font-size: 0.82em;
-    background-color: #f0f0f0;
-    border: 1px solid #000000;
-    padding: 2px 6px;
-    margin: 2px;
-}
 .callout {
     border: 2px solid #000000;
     background-color: #f8f8f8;
     padding: 8px 12px;
-    margin: 1.0em 0;
+    margin: 0.8em 0;
 }
 .chart-img {
     max-width: 100%;
     height: auto;
     display: block;
-    margin: 0.8em auto;
+    margin: 0.6em auto;
     border: 1px solid #000000;
 }
 .cover-box {
     text-align: center;
-    padding: 3em 1em;
+    padding: 2.5em 1em;
     border: 3px solid #000000;
-    margin: 2em auto;
+    margin: 1.5em auto;
 }
 .cover-title {
     font-family: sans-serif;
-    font-size: 2.0em;
+    font-size: 1.8em;
     font-weight: bold;
-    margin-bottom: 0.3em;
+    margin-bottom: 0.2em;
 }
 .cover-sub {
     font-family: sans-serif;
-    font-size: 1.1em;
-    margin-bottom: 1.5em;
+    font-size: 1.05em;
+    margin-bottom: 1.2em;
     color: #333333;
-}
-.hop-step {
-    margin: 0.5em 0 0.5em 1.2em;
-    text-indent: -1.2em;
 }
 ol.hop-list {
     margin: 0.5em 0;
-    padding-left: 1.5em;
+    padding-left: 1.4em;
 }
 ol.hop-list li {
+    margin-bottom: 0.6em;
+    line-height: 1.4;
+}
+.series-tag {
+    font-family: sans-serif;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555555;
     margin-bottom: 0.5em;
 }
 """
 
-    # Chapters dictionary
     chapters = []
 
     # 1. Cover
-    cover_html = """<?xml version="1.0" encoding="UTF-8"?>
+    cover_html = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Dvigrad Stargazing Party</title>
+    <title>{html.escape(session_folder)}</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="cover-box">
-        <div class="cover-title">DVIGRAD STARGAZING PARTY</div>
-        <div class="cover-sub">Master Observation Guide &amp; High-Contrast Finder Charts</div>
-        <hr style="border: 1px solid #000000; margin: 1.5em 0;"/>
-        <p><b>Date:</b> Saturday, September 12, 2026</p>
-        <p><b>Observing Window:</b> 20:00 – 22:30 CEST (UTC+2)</p>
-        <p><b>Location:</b> Dvigrad Medieval Ruins, Kanfanar, Istria (Bortle 4)</p>
-        <p><b>Coordinates:</b> 45.12637° N, 13.81296° E | Elev: 143 m</p>
-        <p><b>Instrument:</b> Sky-Watcher Skyliner 200P Dobsonian (200 mm f/6)</p>
-        <hr style="border: 1px dashed #666666; margin: 1.5em 0;"/>
-        <p style="font-size: 0.85em; color: #444444;">E-Reader &amp; Night-Vision Print Edition<br/>Toner-Saver Negative B/W Star Charts</p>
-        <p style="margin-top: 1.5em;"><a href="toc.xhtml" style="font-family: sans-serif; font-weight: bold; text-decoration: none; border: 2px solid #000; padding: 6px 14px; background: #eee; color: #000;">OPEN TABLE OF CONTENTS →</a></p>
+        <div class="series-tag">{html.escape(series_name)} — Issue #{series_index}</div>
+        <div class="cover-title">{html.escape(session_folder.upper())}</div>
+        <div class="cover-sub">Stargazing Field Manual &amp; High-Contrast Finder Charts</div>
+        <hr style="border: 1px solid #000000; margin: 1.2em 0;"/>
+        <p><b>Observation Target:</b> Dvigrad Medieval Ruins, Istria (Bortle 4)</p>
+        <p><b>Date:</b> Saturday, September 12, 2026 (20:00 – 22:30 CEST)</p>
+        <p><b>Coordinates:</b> 45.12637° N, 13.81296° E | Elevation: 143 m</p>
+        <p><b>Telescope:</b> Sky-Watcher Skyliner 200P Dobsonian (8" f/6 Newtonian)</p>
+        <p><b>Display Profile:</b> PocketBook Era E-Reader (Carta 1200, 300 ppi)</p>
+        <hr style="border: 1px dashed #666666; margin: 1.2em 0;"/>
+        <p style="font-size: 0.85em; color: #444444;">PocketBook Era Screen-Fitted Multi-Page Flow<br/>Toner-Saver Negative B/W Star Charts (Stars to Mag 10.3)</p>
+        <p style="margin-top: 1.4em;"><a href="toc.xhtml" style="font-family: sans-serif; font-weight: bold; text-decoration: none; border: 2px solid #000; padding: 6px 14px; background: #eee; color: #000;">OPEN TABLE OF CONTENTS →</a></p>
     </div>
 </body>
 </html>"""
     chapters.append(("cover.xhtml", "Cover", cover_html))
 
     # 2. Table of Contents
-    toc_html = """<?xml version="1.0" encoding="UTF-8"?>
+    toc_html = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
@@ -239,73 +279,110 @@ ol.hop-list li {
 </head>
 <body>
     <h1>Table of Contents</h1>
-    <div class="subtitle">Dvigrad Stargazing Field Manual — September 12, 2026</div>
+    <div class="subtitle">{html.escape(session_folder)} — {html.escape(series_name)} #{series_index}</div>
 
-    <h2>Part I: Field Guide &amp; Ephemeris</h2>
+    <h2>Part I: Field Protocols &amp; Sky Overview</h2>
     <ul>
         <li><a href="01_site_profile.xhtml">1. Location &amp; Dark Sky Profile (Dvigrad Bortle 4)</a></li>
         <li><a href="02_ephemeris.xhtml">2. Twilight Phases &amp; Astronomical Timeline</a></li>
-        <li><a href="03_optics_and_fieldcraft.xhtml">3. Sky-Watcher 200P Optics &amp; Field Craft</a></li>
+        <li><a href="03_optics_and_fieldcraft.xhtml">3. Sky-Watcher 200P &amp; PocketBook Era Field Craft</a></li>
         <li><a href="04_target_catalog.xhtml">4. Curated Target Catalog (Interactive Index)</a></li>
         <li><a href="05_full_sky_map.xhtml">5. All-Sky Planisphere (Full Night Sky Map)</a></li>
     </ul>
 
-    <h2>Part II: High-Contrast Finder Charts &amp; Star-Hops</h2>
+    <h2>Part II: Target Navigation &amp; Star-Hops</h2>
     <ul>
-        <li><a href="chart_1_m57.xhtml"><b>Chart 1:</b> M57 Ring Nebula in Lyra (12.5mm / 96×)</a></li>
-        <li><a href="chart_2_m27_albireo.xhtml"><b>Chart 2:</b> M27 Dumbbell Nebula &amp; Albireo Double (20mm / 60×)</a></li>
-        <li><a href="chart_3_hercules.xhtml"><b>Chart 3:</b> Hercules Globulars M13 &amp; M92 (12.5mm / 96×)</a></li>
-        <li><a href="chart_4_andromeda.xhtml"><b>Chart 4:</b> M31 Andromeda Galaxy, M32 &amp; M110 (20mm / 60×)</a></li>
-        <li><a href="chart_5_perseus.xhtml"><b>Chart 5:</b> Perseus Double Cluster NGC 869/884 (20mm / 60×)</a></li>
-        <li><a href="chart_6_scutum_saturn.xhtml"><b>Chart 6:</b> M11 Wild Duck Cluster &amp; Saturn (20mm &amp; 12.5mm)</a></li>
+        <li><b>Target 1: M57 Ring Nebula in Lyra</b>
+            <ul>
+                <li><a href="chart_1_1_m57_dossier.xhtml">1.1 Eyepiece Simulation &amp; Target Dossier</a></li>
+                <li><a href="chart_1_2_m57_widefield.xhtml">1.2 Wide-Field Star-Hopping Chart</a></li>
+                <li><a href="chart_1_3_m57_hopping.xhtml">1.3 Step-by-Step Star-Hopping Guide</a></li>
+            </ul>
+        </li>
+        <li><b>Target 2: M27 Dumbbell Nebula &amp; Albireo</b>
+            <ul>
+                <li><a href="chart_2_1_m27_dossier.xhtml">2.1 Eyepiece Simulation &amp; Target Dossier</a></li>
+                <li><a href="chart_2_2_m27_widefield.xhtml">2.2 Wide-Field Star-Hopping Chart</a></li>
+                <li><a href="chart_2_3_m27_hopping.xhtml">2.3 Step-by-Step Star-Hopping Guide</a></li>
+            </ul>
+        </li>
+        <li><b>Target 3: Hercules Globulars M13 &amp; M92</b>
+            <ul>
+                <li><a href="chart_3_1_hercules_dossier.xhtml">3.1 Eyepiece Simulation &amp; Target Dossier</a></li>
+                <li><a href="chart_3_2_hercules_widefield.xhtml">3.2 Wide-Field Star-Hopping Chart</a></li>
+                <li><a href="chart_3_3_hercules_hopping.xhtml">3.3 Step-by-Step Star-Hopping Guide</a></li>
+            </ul>
+        </li>
+        <li><b>Target 4: M31 Andromeda Galaxy &amp; Satellites</b>
+            <ul>
+                <li><a href="chart_4_1_andromeda_dossier.xhtml">4.1 Eyepiece Simulation &amp; Target Dossier</a></li>
+                <li><a href="chart_4_2_andromeda_widefield.xhtml">4.2 Wide-Field Star-Hopping Chart</a></li>
+                <li><a href="chart_4_3_andromeda_hopping.xhtml">4.3 Step-by-Step Star-Hopping Guide</a></li>
+            </ul>
+        </li>
+        <li><b>Target 5: Perseus Double Cluster (NGC 869 &amp; 884)</b>
+            <ul>
+                <li><a href="chart_5_1_perseus_dossier.xhtml">5.1 Eyepiece Simulation &amp; Target Dossier</a></li>
+                <li><a href="chart_5_2_perseus_widefield.xhtml">5.2 Wide-Field Star-Hopping Chart</a></li>
+                <li><a href="chart_5_3_perseus_hopping.xhtml">5.3 Step-by-Step Star-Hopping Guide</a></li>
+            </ul>
+        </li>
+        <li><b>Target 6: M11 Wild Duck Cluster &amp; Saturn</b>
+            <ul>
+                <li><a href="chart_6_1_scutum_saturn_dossier.xhtml">6.1 Eyepiece Simulations &amp; Target Dossier</a></li>
+                <li><a href="chart_6_2_scutum_saturn_widefield.xhtml">6.2 Wide-Field Star-Hopping Chart</a></li>
+                <li><a href="chart_6_3_scutum_saturn_hopping.xhtml">6.3 Step-by-Step Star-Hopping Guide</a></li>
+            </ul>
+        </li>
     </ul>
 
-    <h2>Part III: Field Reference</h2>
+    <h2>Part III: Field Appendix</h2>
     <ul>
-        <li><a href="appendix_collimation.xhtml">Appendix: Dobsonian Mirror Collimation Field Guide</a></li>
+        <li><a href="appendix_collimation.xhtml">Appendix: Dobsonian Mirror Collimation Guide</a></li>
     </ul>
 </body>
 </html>"""
     chapters.append(("toc.xhtml", "Table of Contents", toc_html))
 
-    # 3. Site Profile
+    # 3. Location & Site Profile
     site_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>1. Location &amp; Dark Sky Profile</title>
+    <title>1. Site Profile</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
         <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">Target Catalog →</a>
+        <a href="02_ephemeris.xhtml">Twilight &amp; Timeline →</a>
     </div>
 
     <h1>1. Location &amp; Dark Sky Profile</h1>
-    <div class="subtitle">Dvigrad Medieval Fortress Ruins (Kanfanar, Istria, Croatia)</div>
+    <div class="subtitle">Dvigrad Medieval Ruins — Kanfanar Municipality, Istria, Croatia</div>
 
-    <div class="callout">
-        <b>GEOGRAPHIC COORDINATES &amp; TOPOGRAPHY</b><br/>
-        • <b>Coordinates:</b> 45.12637° N, 13.81296° E (Google Plus Code: <code>4RG7+G5 Kanfanar</code>)<br/>
-        • <b>Elevation:</b> 143 m ASL<br/>
-        • <b>Terrain:</b> Protected limestone depression in the Lim Valley (Draga)
-    </div>
-
-    <h2>Dark Sky Metrics</h2>
+    <h2>Geographic Position</h2>
     <table>
-        <tr><th>Metric</th><th>Observed Value</th><th>Field Interpretation</th></tr>
-        <tr><td><b>Bortle Class</b></td><td><b>Class 4</b></td><td>Rural/Suburban transition. High contrast, dark sky.</td></tr>
-        <tr><td><b>Sky Brightness</b></td><td><b>20.86 – 21.15 mag/arcsec²</b></td><td>Pristine background contrast for diffuse nebulae.</td></tr>
+        <tr><th>Parameter</th><th>Value</th><th>Field Significance</th></tr>
+        <tr><td><b>Coordinates</b></td><td><b>45.12637° N, 13.81296° E</b></td><td>Central Istrian karst plateau; Lim Valley floor.</td></tr>
+        <tr><td><b>Elevation</b></td><td><b>143 m</b></td><td>Depression topography: prone to nocturnal cold air pooling &amp; dew.</td></tr>
+        <tr><td><b>Accessibility</b></td><td>Direct asphalt / macadam</td><td>Unload telescope 10 m from observing clearing outside ruins.</td></tr>
+    </table>
+
+    <h2>Sky Brightness &amp; Transparency</h2>
+    <table>
+        <tr><th>Metric</th><th>Observed Value</th><th>Visual Characteristics</th></tr>
+        <tr><td><b>Bortle Class</b></td><td><b>Class 4 (Rural/Suburban)</b></td><td>Zodiacal light visible in autumn; subtle light domes on horizons.</td></tr>
+        <tr><td><b>SQM</b></td><td><b>~21.05 mag/arcsec²</b></td><td>High-contrast deep sky observing; M31 and M13 visible naked-eye.</td></tr>
         <tr><td><b>NELM</b></td><td><b>6.0 – 6.2 mag</b></td><td>Faint naked-eye stars visible at zenith.</td></tr>
         <tr><td><b>Milky Way</b></td><td><b>Clearly Structured</b></td><td>Great Rift through Cygnus/Aquila visible with dark clouds.</td></tr>
     </table>
 
     <h2>Horizon Obstruction Profile</h2>
-    <p>Because the ruins lie on the floor and flanks of the Lim Valley, surrounding oak/pine forests and terrain ridges create a <b>10° to 15° obstruction</b> across the horizon:</p>
+    <p>Surrounding oak/pine forests and terrain ridges create a <b>10° to 15° obstruction</b>:</p>
     <ul>
-        <li><b>South &amp; South-West (Lim Valley floor):</b> Ridge rises 12°–15°. Deep southern targets (Sagittarius core) sink into foliage early.</li>
-        <li><b>East &amp; North-East:</b> Rising terrain slope of 10°–14°. Rising targets (Saturn, Perseus) must reach ~15° before clearing boundary-layer thermal turbulence.</li>
+        <li><b>South &amp; South-West (Lim Valley):</b> Ridge rises 12°–15°. Southern targets sink into foliage early.</li>
+        <li><b>East &amp; North-East:</b> Rising terrain slope of 10°–14°. Rising targets (Saturn, Perseus) clear thermal turbulence above ~15°.</li>
         <li><b>Zenith (&gt;30° Altitude):</b> Completely unobstructed, crystalline transparency.</li>
     </ul>
 </body>
@@ -332,15 +409,15 @@ ol.hop-list li {
 
     <div class="callout">
         <b>MOON STATUS: ZERO LUNAR LIGHT POLLUTION!</b><br/>
-        On September 12, 2026, the Moon is a razor-thin <b>3.1% waxing crescent</b> (1.1 days after New Moon) and <b>sets at 19:38 CEST</b> (prior to observation start). Throughout the session (20:00–22:30 CEST), the Moon is <b>below the horizon (-4° to -30° Alt)</b>, providing 100% dark sky contrast!
+        On September 12, 2026, the Moon is a razor-thin <b>3.1% waxing crescent</b> and <b>sets at 19:38 CEST</b>. Throughout the session (20:00–22:30 CEST), the Moon is <b>below the horizon (-4° to -30° Alt)</b>, providing 100% dark sky contrast!
     </div>
 
     <h2>Twilight Schedule Table</h2>
     <table>
         <tr><th>Phase</th><th>Window (CEST)</th><th>Sun Alt</th><th>Program Guidance</th></tr>
-        <tr><td><b>Setup &amp; Cooldown</b></td><td>19:30 – 20:00</td><td>-2° to -8°</td><td>Primary mirror cooldown (30-45 min). 9x50 finder alignment on Vega / Arcturus.</td></tr>
-        <tr><td><b>Nautical Twilight</b></td><td>20:00 – 20:26</td><td>-8° to -12°</td><td>Sky deepens to slate blue. High-contrast double star Albireo &amp; urgent low M22 sweep.</td></tr>
-        <tr><td><b>Astro Twilight</b></td><td>20:26 – 21:05</td><td>-12° to -18°</td><td>Milky Way dust lanes emerge. Rich globular clusters pop into view (M13, M92, M11).</td></tr>
+        <tr><td><b>Setup &amp; Cooldown</b></td><td>19:30 – 20:00</td><td>-2° to -8°</td><td>Primary mirror cooldown. 9x50 finder alignment on Vega / Arcturus.</td></tr>
+        <tr><td><b>Nautical Twilight</b></td><td>20:00 – 20:26</td><td>-8° to -12°</td><td>Sky deepens to slate blue. High-contrast double star Albireo sweep.</td></tr>
+        <tr><td><b>Astro Twilight</b></td><td>20:26 – 21:05</td><td>-12° to -18°</td><td>Milky Way emerges. Globular clusters pop into view (M13, M92, M11).</td></tr>
         <tr><td><b>True Astro Darkness</b></td><td><b>21:05 – 22:30+</b></td><td><b>&lt; -18.0°</b></td><td><b>Maximum darkness.</b> Diffuse nebulae (M57, M27) and external galaxies (M31, M32, M110).</td></tr>
     </table>
 
@@ -366,15 +443,15 @@ ol.hop-list li {
     </div>
 
     <h1>3. Telescope Optics &amp; Field Craft</h1>
-    <div class="subtitle">Sky-Watcher Skyliner Classic 200P Dobsonian (f/6 Newtonian)</div>
+    <div class="subtitle">Sky-Watcher 200P Dobsonian &amp; PocketBook Era Field Configuration</div>
 
-    <h2>Optical Specifications</h2>
+    <h2>Telescope Optical Specifications</h2>
     <table>
         <tr><th>Specification</th><th>Value</th><th>Field Significance</th></tr>
         <tr><td><b>Aperture</b></td><td>200 mm (7.87")</td><td>Collects 820× more light than human eye.</td></tr>
         <tr><td><b>Focal Length</b></td><td>1200 mm</td><td>f/6 focal ratio with minimal off-axis coma.</td></tr>
-        <tr><td><b>Dawes Resolving Limit</b></td><td>0.58 arcsec</td><td>Easily resolves tight binary stars &amp; ring gaps.</td></tr>
-        <tr><td><b>Limiting Magnitude</b></td><td>13.3 – 14.0 mag</td><td>Reveals faint star cluster cores &amp; nebular envelopes.</td></tr>
+        <tr><td><b>Dawes Resolving Limit</b></td><td>0.58 arcsec</td><td>Resolves tight double stars &amp; ring features.</td></tr>
+        <tr><td><b>Limiting Magnitude</b></td><td>13.3 – 14.0 mag</td><td>Telescope - 3 chart threshold: ~10.3 mag.</td></tr>
     </table>
 
     <h2>Eyepiece Reference</h2>
@@ -384,30 +461,26 @@ ol.hop-list li {
         <tr><td><b>12.5 mm</b></td><td><b>96×</b></td><td>2.08 mm</td><td><b>~31' (0.52°)</b></td><td>Resolution: M13 &amp; M92 core stars, M57 Ring hole, Saturn rings.</td></tr>
     </table>
 
-    <h2>Field Protocols for Dvigrad Ruins</h2>
+    <h2>PocketBook Era Field Protocols</h2>
     <div class="callout">
-        <b>1. VALLEY DEW MANAGEMENT</b><br/>
-        Dvigrad sits in the Lim Valley depression where nocturnal cold air drains and humidity reaches saturation.<br/>
-        • Keep unmounted eyepieces in warm jacket pockets or closed foam cases.<br/>
-        • Keep the front dust cover on the telescope during breaks to protect the secondary mirror.<br/>
-        • Use a front dew shield extending 1.5× tube diameter.
+        <b>1. SMARTLIGHT NIGHT-VISION CALIBRATION</b><br/>
+        Set SMARTlight frontlight to <b>100% warm amber</b> (zero blue light emission) and set overall brightness to minimum legibility (5%–15%) to prevent pupil constriction and preserve scotopic vision.
     </div>
 
     <div class="callout">
-        <b>2. THE ZENITH TRAP ("DOBSON'S HOLE")</b><br/>
-        At altitudes &gt;80° straight overhead (e.g. Vega, M57), horizontal nudging requires swinging the entire heavy rocker box rapidly, making manual tracking jerky.<br/>
-        • <b>Pro Tip:</b> Observe M57 and Albireo between 21:00 and 21:45 when they have rolled slightly past the meridian (70°–75°), making manual tracking smooth.
+        <b>2. SCREEN-FITTED PINCH-TO-ZOOM</b><br/>
+        All wide-field star charts in Part II are formatted for the PocketBook Era's 3:4 screen ratio. Use a two-finger pinch gesture on the touchscreen to zoom directly into dense field star clusters.
     </div>
 
     <div class="callout">
-        <b>3. OPTICAL INVERSION REMINDER</b><br/>
-        The view in a Newtonian reflector is <b>inverted 180°</b> (rotated: Up becomes Down, Left becomes Right). The eyepiece simulation viewports on all finder charts in this book are pre-inverted 180° to match your actual view!
+        <b>3. DEW RESISTANCE (IPX8)</b><br/>
+        The PocketBook Era is IPX8 waterproof. Heavy Lim Valley condensation will not harm the device. Use the physical edge buttons to turn pages if moist fingers cause capacitive touch resistance.
     </div>
 </body>
 </html>"""
     chapters.append(("03_optics_and_fieldcraft.xhtml", "3. Optics & Field Craft", optics_html))
 
-    # 6. Curated Target Catalog (Interactive Table)
+    # 6. Curated Target Catalog
     catalog_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -444,17 +517,17 @@ ol.hop-list li {
             <td>3.1/5.1</td>
             <td>73° / 170° (S)</td>
             <td>20mm &amp; 12.5mm</td>
-            <td><a href="chart_2_m27_albireo.xhtml"><b>Chart 2 →</b></a></td>
+            <td><a href="chart_2_1_m27_dossier.xhtml"><b>Chart 2 →</b></a></td>
         </tr>
         <tr>
             <td>2</td>
-            <td><b>M22 (NGC 6656)</b></td>
-            <td>Sgr</td>
-            <td>Globular Cl.</td>
-            <td>5.1</td>
-            <td>17.5° / 195° (SSW)</td>
-            <td>20mm → 12.5mm</td>
-            <td><a href="05_full_sky_map.xhtml"><b>Sky Map →</b></a> <i>(Early!)</i></td>
+            <td><b>M57 Ring Nebula</b></td>
+            <td>Lyr</td>
+            <td>Planetary Neb.</td>
+            <td>8.8</td>
+            <td>75.4° / 218° (SW)</td>
+            <td>12.5mm (96×)</td>
+            <td><a href="chart_1_1_m57_dossier.xhtml"><b>Chart 1 →</b></a></td>
         </tr>
         <tr>
             <td>3</td>
@@ -462,19 +535,19 @@ ol.hop-list li {
             <td>Her</td>
             <td>Globular Cl.</td>
             <td>5.8</td>
-            <td>63.4° / 268° (W)</td>
+            <td>56.2° / 271° (W)</td>
             <td>12.5mm (96×)</td>
-            <td><a href="chart_3_hercules.xhtml"><b>Chart 3 →</b></a></td>
+            <td><a href="chart_3_1_hercules_dossier.xhtml"><b>Chart 3 →</b></a></td>
         </tr>
         <tr>
             <td>4</td>
-            <td><b>M92 (NGC 6341)</b></td>
+            <td><b>M92 Globular</b></td>
             <td>Her</td>
             <td>Globular Cl.</td>
             <td>6.3</td>
-            <td>71.2° / 295° (WNW)</td>
+            <td>65.4° / 295° (WNW)</td>
             <td>12.5mm (96×)</td>
-            <td><a href="chart_3_hercules.xhtml"><b>Chart 3 →</b></a></td>
+            <td><a href="chart_3_1_hercules_dossier.xhtml"><b>Chart 3 →</b></a></td>
         </tr>
         <tr>
             <td>5</td>
@@ -482,19 +555,19 @@ ol.hop-list li {
             <td>Sct</td>
             <td>Open Cluster</td>
             <td>5.8</td>
-            <td>35.2° / 205° (SSW)</td>
-            <td>20mm &amp; 12.5mm</td>
-            <td><a href="chart_6_scutum_saturn.xhtml"><b>Chart 6 →</b></a></td>
+            <td>37.7° / 196° (SSW)</td>
+            <td>12.5mm (96×)</td>
+            <td><a href="chart_6_1_scutum_saturn_dossier.xhtml"><b>Chart 6 →</b></a></td>
         </tr>
         <tr>
             <td>6</td>
-            <td><b>M57 Ring Nebula</b></td>
-            <td>Lyr</td>
-            <td>Planetary Neb.</td>
-            <td>8.8</td>
-            <td>76.1° / 222° (SW)</td>
-            <td>12.5mm (96×)</td>
-            <td><a href="chart_1_m57.xhtml"><b>Chart 1 →</b></a></td>
+            <td><b>Coathanger (Cr 399)</b></td>
+            <td>Vul</td>
+            <td>Asterism</td>
+            <td>3.6</td>
+            <td>65.0° / 195° (SSW)</td>
+            <td>20mm (60×)</td>
+            <td><a href="chart_2_1_m27_dossier.xhtml"><b>Chart 2 →</b></a></td>
         </tr>
         <tr>
             <td>7</td>
@@ -502,9 +575,9 @@ ol.hop-list li {
             <td>Vul</td>
             <td>Planetary Neb.</td>
             <td>7.4</td>
-            <td>68.2° / 164° (SSE)</td>
+            <td>67.2° / 166° (SSE)</td>
             <td>20mm (60×)</td>
-            <td><a href="chart_2_m27_albireo.xhtml"><b>Chart 2 →</b></a></td>
+            <td><a href="chart_2_1_m27_dossier.xhtml"><b>Chart 2 →</b></a></td>
         </tr>
         <tr>
             <td>8</td>
@@ -512,9 +585,9 @@ ol.hop-list li {
             <td>Per</td>
             <td>Dual Open Cl.</td>
             <td>3.7/3.8</td>
-            <td>34.1° / 038° (NE)</td>
+            <td>31.6° / 039° (NE)</td>
             <td>20mm (60×)</td>
-            <td><a href="chart_5_perseus.xhtml"><b>Chart 5 →</b></a></td>
+            <td><a href="chart_5_1_perseus_dossier.xhtml"><b>Chart 5 →</b></a></td>
         </tr>
         <tr>
             <td>9</td>
@@ -522,9 +595,9 @@ ol.hop-list li {
             <td>And</td>
             <td>Spiral Galaxy</td>
             <td>3.4</td>
-            <td>43.5° / 068° (ENE)</td>
+            <td>36.2° / 065° (ENE)</td>
             <td>20mm (60×)</td>
-            <td><a href="chart_4_andromeda.xhtml"><b>Chart 4 →</b></a></td>
+            <td><a href="chart_4_1_andromeda_dossier.xhtml"><b>Chart 4 →</b></a></td>
         </tr>
         <tr>
             <td>10</td>
@@ -534,14 +607,14 @@ ol.hop-list li {
             <td>+0.6</td>
             <td>18°–23° / 115° (ESE)</td>
             <td>12.5mm (96×)</td>
-            <td><a href="chart_6_scutum_saturn.xhtml"><b>Chart 6 →</b></a></td>
+            <td><a href="chart_6_1_scutum_saturn_dossier.xhtml"><b>Chart 6 →</b></a></td>
         </tr>
     </table>
 </body>
 </html>"""
     chapters.append(("04_target_catalog.xhtml", "4. Curated Target Catalog", catalog_html))
 
-    # 7. Full Sky Map
+    # 7. All-Sky Planisphere
     skymap_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -553,7 +626,7 @@ ol.hop-list li {
     <div class="nav-bar">
         <a href="toc.xhtml">← Table of Contents</a>
         <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="chart_1_m57.xhtml">Chart 1: M57 →</a>
+        <a href="chart_1_1_m57_dossier.xhtml">Chart 1: M57 →</a>
     </div>
 
     <h1>5. All-Sky Planisphere</h1>
@@ -567,46 +640,86 @@ ol.hop-list li {
     </div>
 
     <img src="images/full_sky_map.png" class="chart-img" alt="All-Sky Planisphere"/>
-
-    <h2>Key Constellations to Locate</h2>
-    <ul>
-        <li><b>The Summer Triangle:</b> Vega (Lyra), Deneb (Cygnus), and Altair (Aquila) dominate the high southern sky.</li>
-        <li><b>The Keystone of Hercules:</b> High in the West; home to globular clusters M13 and M92.</li>
-        <li><b>The Great Square of Pegasus &amp; Andromeda:</b> Rising high in the East/North-East; guiding arrow to M31.</li>
-        <li><b>Cassiopeia ("W"):</b> Circling high in the North-East; anchor for the Double Cluster.</li>
-    </ul>
 </body>
 </html>"""
     chapters.append(("05_full_sky_map.xhtml", "5. All-Sky Planisphere", skymap_html))
 
-    # 8. Chart 1: M57
-    chart1_html = """<?xml version="1.0" encoding="UTF-8"?>
+
+    # ==============================================================================
+    # TARGET 1: M57 RING NEBULA (3-Page Multi-Page Flow)
+    # ==============================================================================
+    # Page 1.1: Eyepiece Simulation & Target Dossier
+    c1_1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Chart 1: M57 Ring Nebula</title>
+    <title>Chart 1.1: M57 Eyepiece &amp; Dossier</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="chart_2_m27_albireo.xhtml">Next: Chart 2 (M27) →</a>
+        <a href="toc.xhtml">← Contents</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_1_2_m57_widefield.xhtml">Wide-Field Chart (1.2) →</a>
     </div>
 
-    <h1>Chart 1: M57 Ring Nebula in Lyra</h1>
-    <div class="subtitle">Planetary Nebula • Mag 8.8 • Size 1.4' × 1.0' • RA 18h 53.6m | Dec +33° 02'</div>
+    <h1>Chart 1.1: M57 Ring Nebula — Eyepiece Simulation &amp; Dossier</h1>
+    <div class="subtitle">Lyra • Planetary Nebula • Mag 8.8 • Size 1.4' × 1.0'</div>
+
+    <img src="images/chart_1_lyra_m57_eyepiece_dossier.png" class="chart-img" alt="M57 Eyepiece Simulation and Dossier"/>
 
     <div class="callout">
-        <b>TONIGHT'S EPHEMERIS @ 21:15 CEST:</b><br/>
-        • <b>Altitude / Azimuth:</b> 76.1° / 222° (SW)<br/>
-        • <b>Meridian Status:</b> Transited at 20:38 CEST (Rolling west off zenith; optimal Dobsonian tracking!)<br/>
-        • <b>Eyepieces:</b> 20 mm (60×) for acquisition → <b>12.5 mm (96×, 31' FOV)</b> for resolution
+        <b>EYEPIECE QUICK REFERENCE:</b><br/>
+        • <b>Acquisition (20 mm / 60×):</b> Tiny, intense smoky cheerio disk between faint field stars.<br/>
+        • <b>Resolution (12.5 mm / 96×):</b> Oval donut torus with dark central hollow.
+    </div>
+</body>
+</html>"""
+    chapters.append(("chart_1_1_m57_dossier.xhtml", "Chart 1.1: M57 Eyepiece & Dossier", c1_1_html))
+
+    # Page 1.2: Full-screen Wide-Field Star Hopping Chart
+    c1_2_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 1.2: M57 Wide-Field Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_1_1_m57_dossier.xhtml">← Eyepiece &amp; Dossier (1.1)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_1_3_m57_hopping.xhtml">Star-Hopping Guide (1.3) →</a>
     </div>
 
-    <img src="images/chart_1_lyra_m57.png" class="chart-img" alt="Finder Chart 1: M57 Ring Nebula"/>
+    <h1>Chart 1.2: M57 Ring Nebula — Wide-Field Star-Hopping Chart</h1>
+    <div class="subtitle">Naked-Eye / Finder Orientation (N ↑, E ←) • Stars to Mag 10.3 • Telrad Rings</div>
 
-    <h2>Step-by-Step Star-Hopping Guide</h2>
+    <img src="images/chart_1_lyra_m57_widefield.png" class="chart-img" alt="M57 Wide-Field Star-Hopping Chart"/>
+    <p style="font-size: 0.8em; color: #555555; text-align: center;">Tip: Pinch-to-zoom on PocketBook Era to inspect faint 10th-magnitude field stars.</p>
+</body>
+</html>"""
+    chapters.append(("chart_1_2_m57_widefield.xhtml", "Chart 1.2: M57 Wide-Field Chart", c1_2_html))
+
+    # Page 1.3: Step-by-Step Star-Hopping Guide
+    c1_3_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 1.3: M57 Star-Hopping Guide</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_1_2_m57_widefield.xhtml">← Wide-Field Chart (1.2)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_2_1_m27_dossier.xhtml">Next: Chart 2 (M27) →</a>
+    </div>
+
+    <h1>Chart 1.3: M57 Ring Nebula — Step-by-Step Star-Hopping Guide</h1>
+    <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
+
+    <h2>Step-by-Step Hopping Narrative</h2>
     <ol class="hop-list">
         <li><b>[STEP 1] Start at Vega (α Lyrae, Mag 0.03):</b> Look almost straight overhead for the brilliant sapphire-white anchor of the Summer Triangle. Center Vega in your finder scope.</li>
         <li><b>[STEP 2] Trace the Lyra Parallelogram:</b> Nudge 6° south of Vega to locate the prominent four-star parallelogram formed by ζ, δ, γ, and β Lyrae (Sulafat &amp; Sheliak).</li>
@@ -616,36 +729,81 @@ ol.hop-list li {
     </ol>
 </body>
 </html>"""
-    chapters.append(("chart_1_m57.xhtml", "Chart 1: M57 Ring Nebula", chart1_html))
+    chapters.append(("chart_1_3_m57_hopping.xhtml", "Chart 1.3: M57 Star-Hopping Guide", c1_3_html))
 
-    # 9. Chart 2: M27 & Albireo
-    chart2_html = """<?xml version="1.0" encoding="UTF-8"?>
+
+    # ==============================================================================
+    # TARGET 2: M27 DUMBBELL NEBULA & ALBIREO (3-Page Flow)
+    # ==============================================================================
+    c2_1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Chart 2: M27 &amp; Albireo</title>
+    <title>Chart 2.1: M27 Eyepiece &amp; Dossier</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="chart_3_hercules.xhtml">Next: Chart 3 (Hercules) →</a>
+        <a href="toc.xhtml">← Contents</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_2_2_m27_widefield.xhtml">Wide-Field Chart (2.2) →</a>
     </div>
 
-    <h1>Chart 2: M27 Dumbbell Nebula &amp; Albireo</h1>
+    <h1>Chart 2.1: M27 Dumbbell &amp; Albireo — Eyepiece Simulation &amp; Dossier</h1>
     <div class="subtitle">Vulpecula / Cygnus • Planetary Nebula &amp; Showcase Binary Star</div>
 
+    <img src="images/chart_2_vulpecula_m27_albireo_eyepiece_dossier.png" class="chart-img" alt="M27 Eyepiece Simulation and Dossier"/>
+
     <div class="callout">
-        <b>TARGET PARAMETERS &amp; MID-SESSION EPHEMERIS @ 21:15 CEST:</b><br/>
-        • <b>Albireo (β Cygni):</b> Mag 3.1 / 5.1 (34.3" sep) • Alt 73.0° / Az 170° (S). Golden-amber primary &amp; sapphire companion.<br/>
-        • <b>M27 Dumbbell (NGC 6853):</b> Mag 7.4 • Size 8.0' × 5.6' • Alt 68.2° / Az 164° (SSE). Transits 21:44 CEST.<br/>
-        • <b>Recommended Eyepiece:</b> <b>20 mm (60×, 50' FOV)</b>
+        <b>EYEPIECE QUICK REFERENCE:</b><br/>
+        • <b>M27 Dumbbell (20 mm / 60×):</b> Ghostly hourglass / apple-core nebula glowing against dark space.<br/>
+        • <b>Albireo (20 mm / 60×):</b> Striking color contrast between golden-topaz primary and vivid sky-blue companion.
+    </div>
+</body>
+</html>"""
+    chapters.append(("chart_2_1_m27_dossier.xhtml", "Chart 2.1: M27 Eyepiece & Dossier", c2_1_html))
+
+    c2_2_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 2.2: M27 Wide-Field Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_2_1_m27_dossier.xhtml">← Eyepiece &amp; Dossier (2.1)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_2_3_m27_hopping.xhtml">Star-Hopping Guide (2.3) →</a>
     </div>
 
-    <img src="images/chart_2_vulpecula_m27_albireo.png" class="chart-img" alt="Finder Chart 2: M27 &amp; Albireo"/>
+    <h1>Chart 2.2: M27 &amp; Albireo — Wide-Field Star-Hopping Chart</h1>
+    <div class="subtitle">Upright Naked-Eye / Finder (N ↑, E ←) • Stars to Mag 10.3 • Telrad Rings</div>
 
-    <h2>Step-by-Step Star-Hopping Guide</h2>
+    <img src="images/chart_2_vulpecula_m27_albireo_widefield.png" class="chart-img" alt="M27 Wide-Field Star-Hopping Chart"/>
+    <p style="font-size: 0.8em; color: #555555; text-align: center;">Tip: Pinch-to-zoom on PocketBook Era to inspect faint 10th-magnitude field stars.</p>
+</body>
+</html>"""
+    chapters.append(("chart_2_2_m27_widefield.xhtml", "Chart 2.2: M27 Wide-Field Chart", c2_2_html))
+
+    c2_3_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 2.3: M27 Star-Hopping Guide</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_2_2_m27_widefield.xhtml">← Wide-Field Chart (2.2)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_3_1_hercules_dossier.xhtml">Next: Chart 3 (Hercules) →</a>
+    </div>
+
+    <h1>Chart 2.3: M27 Dumbbell &amp; Albireo — Step-by-Step Star-Hopping Guide</h1>
+    <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
+
+    <h2>Step-by-Step Hopping Narrative</h2>
     <ol class="hop-list">
         <li><b>Target 1: Albireo (Showcase Double Star):</b> Look at the base of the Northern Cross in Cygnus. Center the naked-eye 3rd-mag star in your finder. In the 20 mm eyepiece, marvel at the striking color contrast between the golden-topaz primary and vivid sky-blue companion star!</li>
         <li><b>[STEP 1] Locate Sagitta (The Arrow):</b> From Albireo, look ~8° south-east for the compact, distinctive asterism of Sagitta (α, β, δ, γ Sge).</li>
@@ -655,158 +813,337 @@ ol.hop-list li {
     </ol>
 </body>
 </html>"""
-    chapters.append(("chart_2_m27_albireo.xhtml", "Chart 2: M27 & Albireo", chart2_html))
+    chapters.append(("chart_2_3_m27_hopping.xhtml", "Chart 2.3: M27 Star-Hopping Guide", c2_3_html))
 
-    # 10. Chart 3: Hercules Globulars
-    chart3_html = """<?xml version="1.0" encoding="UTF-8"?>
+
+    # ==============================================================================
+    # TARGET 3: HERCULES GLOBULARS M13 & M92 (3-Page Flow)
+    # ==============================================================================
+    c3_1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Chart 3: Hercules M13 &amp; M92</title>
+    <title>Chart 3.1: Hercules Eyepiece &amp; Dossier</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="chart_4_andromeda.xhtml">Next: Chart 4 (Andromeda) →</a>
+        <a href="toc.xhtml">← Contents</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_3_2_hercules_widefield.xhtml">Wide-Field Chart (3.2) →</a>
     </div>
 
-    <h1>Chart 3: Hercules Globulars M13 &amp; M92</h1>
-    <div class="subtitle">Globular Clusters • Showcase Stellar Swarms of the Northern Sky</div>
+    <h1>Chart 3.1: Hercules Globulars M13 &amp; M92 — Eyepiece Simulation &amp; Dossier</h1>
+    <div class="subtitle">Hercules • Showcase Globular Star Clusters</div>
+
+    <img src="images/chart_3_hercules_m13_m92_eyepiece_dossier.png" class="chart-img" alt="Hercules M13 Eyepiece Simulation and Dossier"/>
 
     <div class="callout">
-        <b>TARGET PARAMETERS &amp; MID-SESSION EPHEMERIS @ 21:15 CEST:</b><br/>
-        • <b>M13 (Great Globular Cluster):</b> Mag 5.8 • Size 20.0' • Alt 63.4° / Az 268° (W). ~300,000 ancient stars.<br/>
-        • <b>M92 (NGC 6341):</b> Mag 6.3 • Size 14.0' • Alt 71.2° / Az 295° (WNW). Extremely dense, luminous core.<br/>
-        • <b>Recommended Eyepiece:</b> <b>12.5 mm (96×, 31' FOV)</b>
+        <b>EYEPIECE QUICK REFERENCE:</b><br/>
+        • <b>Acquisition (20 mm / 60×):</b> Glowing spherical snowball framed by two 7th-mag stars.<br/>
+        • <b>Resolution (12.5 mm / 96×):</b> Bursts into hundreds of glittering pinprick stars. Look for the 3-bladed propeller dust lane!
+    </div>
+</body>
+</html>"""
+    chapters.append(("chart_3_1_hercules_dossier.xhtml", "Chart 3.1: Hercules Eyepiece & Dossier", c3_1_html))
+
+    c3_2_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 3.2: Hercules Wide-Field Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_3_1_hercules_dossier.xhtml">← Eyepiece &amp; Dossier (3.1)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_3_3_hercules_hopping.xhtml">Star-Hopping Guide (3.3) →</a>
     </div>
 
-    <img src="images/chart_3_hercules_m13_m92.png" class="chart-img" alt="Finder Chart 3: Hercules Globulars"/>
+    <h1>Chart 3.2: Hercules M13 &amp; M92 — Wide-Field Star-Hopping Chart</h1>
+    <div class="subtitle">Upright Naked-Eye / Finder (N ↑, E ←) • Stars to Mag 10.3 • Telrad Rings</div>
 
-    <h2>Step-by-Step Star-Hopping Guide</h2>
+    <img src="images/chart_3_hercules_m13_m92_widefield.png" class="chart-img" alt="Hercules Wide-Field Star-Hopping Chart"/>
+    <p style="font-size: 0.8em; color: #555555; text-align: center;">Tip: Pinch-to-zoom on PocketBook Era to inspect faint 10th-magnitude field stars.</p>
+</body>
+</html>"""
+    chapters.append(("chart_3_2_hercules_widefield.xhtml", "Chart 3.2: Hercules Wide-Field Chart", c3_2_html))
+
+    c3_3_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 3.3: Hercules Star-Hopping Guide</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_3_2_hercules_widefield.xhtml">← Wide-Field Chart (3.2)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_4_1_andromeda_dossier.xhtml">Next: Chart 4 (Andromeda) →</a>
+    </div>
+
+    <h1>Chart 3.3: Hercules Globulars M13 &amp; M92 — Step-by-Step Star-Hopping Guide</h1>
+    <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
+
+    <h2>Step-by-Step Hopping Narrative</h2>
     <ol class="hop-list">
-        <li><b>[STEP 1] Locate the Keystone of Hercules:</b> Look high in the western sky for the four-star Keystone asterism (η, ζ, ε, π Herculis).</li>
-        <li><b>[STEP 2] Hop to M13 (The Great Cluster):</b> Look along the western side of the Keystone between η Her (+3.5 mag) and ζ Her (+2.8 mag). M13 lies exactly one-third of the way from η toward ζ Her (2.5° south of η).</li>
-        <li><b>[STEP 3] Resolve M13 in 12.5 mm (96×):</b> In the 200P aperture, M13 resolves into thousands of brilliant pinprick diamond stars across its 20' diameter. Look for prominent outward-curving stellar chains resembling spider legs!</li>
-        <li><b>[STEP 4] Hop to M92:</b> Return to η Her. Sight 6.3° north-east towards ι Her (+3.8 mag), forming a triangle with π Her. Center the finder on the empty patch: M92 will glow brightly with an intensely concentrated, fiery core!</li>
+        <li><b>[STEP 1] Locate the Keystone of Hercules:</b> High in the western sky, locate the distinctive four-star trapezoid ("Keystone") formed by η, ζ, ε, and π Herculis.</li>
+        <li><b>[STEP 2] Trace the Western Edge:</b> Identify η Herculis (NW corner, mag 3.5) and ζ Herculis (SW corner, mag 2.8).</li>
+        <li><b>[STEP 3] Hop along the η–ζ Line:</b> Move roughly 1/3 of the way down from η toward ζ Herculis.</li>
+        <li><b>[STEP 4] Acquire M13:</b> In your finder or 20 mm eyepiece, M13 appears as an unmistakable bright fuzzy snowball. In Bortle 4 skies at Dvigrad, it is even visible to the naked eye with averted vision!</li>
+        <li><b>[STEP 5] Core Resolution at 12.5 mm:</b> Switch to 12.5 mm (96×). Hundreds of sparkling diamond stars resolve across the core. Search for the famous dark three-bladed "propeller" dust lane in the cluster's southeastern quadrant.</li>
+        <li><b>[STEP 6] Bonus Target M92:</b> Return to the Keystone. From π Herculis (NE corner, mag 3.2), hop 6.2° due North to find M92, a brilliant, compact globular cluster with a dense, glittering nucleus.</li>
     </ol>
 </body>
 </html>"""
-    chapters.append(("chart_3_hercules.xhtml", "Chart 3: Hercules M13 & M92", chart3_html))
+    chapters.append(("chart_3_3_hercules_hopping.xhtml", "Chart 3.3: Hercules Star-Hopping Guide", c3_3_html))
 
-    # 11. Chart 4: Andromeda M31
-    chart4_html = """<?xml version="1.0" encoding="UTF-8"?>
+
+    # ==============================================================================
+    # TARGET 4: M31 ANDROMEDA GALAXY (3-Page Flow)
+    # ==============================================================================
+    c4_1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Chart 4: M31 Andromeda Galaxy</title>
+    <title>Chart 4.1: Andromeda Eyepiece &amp; Dossier</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="chart_5_perseus.xhtml">Next: Chart 5 (Double Cluster) →</a>
+        <a href="toc.xhtml">← Contents</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_4_2_andromeda_widefield.xhtml">Wide-Field Chart (4.2) →</a>
     </div>
 
-    <h1>Chart 4: M31 Andromeda Galaxy, M32 &amp; M110</h1>
-    <div class="subtitle">Spiral Galaxy System • 2.5 Million Light-Years • Mag 3.4 • Size 190' × 60'</div>
+    <h1>Chart 4.1: M31 Andromeda Galaxy &amp; Satellites — Eyepiece Simulation &amp; Dossier</h1>
+    <div class="subtitle">Andromeda • Giant Spiral Galaxy + Satellite Dwarfs M32 &amp; M110</div>
+
+    <img src="images/chart_4_andromeda_m31_eyepiece_dossier.png" class="chart-img" alt="M31 Eyepiece Simulation and Dossier"/>
 
     <div class="callout">
-        <b>TONIGHT'S EPHEMERIS @ 21:15 CEST:</b><br/>
-        • <b>Altitude / Azimuth:</b> 43.5° / 068° (ENE)<br/>
-        • <b>Climbing:</b> Transits after midnight at 78° Alt. Excellent dark-sky contrast above 40° altitude.<br/>
-        • <b>Recommended Eyepiece:</b> <b>20 mm (60×, 50' FOV)</b> for wide framing
+        <b>EYEPIECE QUICK REFERENCE:</b><br/>
+        • <b>Wide Eyepiece (20 mm / 60×):</b> Mandatory! Frames the brilliant nucleus, dark dust absorption lane, compact satellite M32, and elongated dwarf companion M110.
+    </div>
+</body>
+</html>"""
+    chapters.append(("chart_4_1_andromeda_dossier.xhtml", "Chart 4.1: Andromeda Eyepiece & Dossier", c4_1_html))
+
+    c4_2_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 4.2: Andromeda Wide-Field Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_4_1_andromeda_dossier.xhtml">← Eyepiece &amp; Dossier (4.1)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_4_3_andromeda_hopping.xhtml">Star-Hopping Guide (4.3) →</a>
     </div>
 
-    <img src="images/chart_4_andromeda_m31.png" class="chart-img" alt="Finder Chart 4: M31 Andromeda Galaxy"/>
+    <h1>Chart 4.2: M31 Andromeda Galaxy — Wide-Field Star-Hopping Chart</h1>
+    <div class="subtitle">Upright Naked-Eye / Finder (N ↑, E ←) • Stars to Mag 10.3 • Telrad Rings</div>
 
-    <h2>Step-by-Step Star-Hopping Guide</h2>
+    <img src="images/chart_4_andromeda_m31_widefield.png" class="chart-img" alt="Andromeda Wide-Field Star-Hopping Chart"/>
+    <p style="font-size: 0.8em; color: #555555; text-align: center;">Tip: Pinch-to-zoom on PocketBook Era to inspect faint 10th-magnitude field stars.</p>
+</body>
+</html>"""
+    chapters.append(("chart_4_2_andromeda_widefield.xhtml", "Chart 4.2: Andromeda Wide-Field Chart", c4_2_html))
+
+    c4_3_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 4.3: Andromeda Star-Hopping Guide</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_4_2_andromeda_widefield.xhtml">← Wide-Field Chart (4.2)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_5_1_perseus_dossier.xhtml">Next: Chart 5 (Perseus) →</a>
+    </div>
+
+    <h1>Chart 4.3: M31 Andromeda Galaxy — Step-by-Step Star-Hopping Guide</h1>
+    <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
+
+    <h2>Step-by-Step Hopping Narrative</h2>
     <ol class="hop-list">
-        <li><b>[STEP 1] Start at the Great Square of Pegasus:</b> Identify Alpheratz (α Andromedae, mag 2.1), the top-left star marking the boundary between Pegasus and Andromeda.</li>
-        <li><b>[STEP 2] Follow Andromeda's Main Spine:</b> Hop 7° north-east along the northern curve to δ And (+3.3 mag), then another 8° in the same line to bright reddish Mirach (β And, +2.1 mag).</li>
-        <li><b>[STEP 3] Make a 90° North-West Turn:</b> From Mirach, turn 90° toward Cassiopeia. Hop 3.5° north-west to μ And (+3.9 mag), then another 3.5° in the exact same direction to ν And (+4.5 mag).</li>
-        <li><b>[STEP 4] Acquire M31:</b> Place your Telrad / finder 1.3° west of ν And. In the 20 mm eyepiece, M31's brilliant galactic nucleus fills the center of the field with sprawling elliptical haze.</li>
-        <li><b>[STEP 5] Locate Satellite Galaxies:</b>
-            <br/>• <b>M32:</b> Look 24' south of the core for a bright, round, high-surface-brightness fuzzy ball resembling an unresolved globular cluster.
-            <br/>• <b>M110:</b> Look 35' north-west across the primary dust lane for a large, faint, elongated ghostly companion galaxy.
-        </li>
+        <li><b>[STEP 1] Start at the Great Square of Pegasus:</b> Locate the large celestial diamond rising in the East. Identify Alpheratz (α Andromedae / δ Pegasi, mag 2.1), the northeastern corner star.</li>
+        <li><b>[STEP 2] Trace the Andromeda Star Chain to Mirach:</b> Move northeast along Andromeda’s main backbone through δ Andromedae (mag 3.3) to prominent reddish Mirach (β Andromedae, mag 2.1), roughly 14° from Alpheratz.</li>
+        <li><b>[STEP 3] Turn 90° North-West to μ Andromedae:</b> From Mirach, make a sharp 90° turn toward the northwest and hop 3.5° to μ Andromedae (mag 3.9).</li>
+        <li><b>[STEP 4] Continue North-West to ν Andromedae:</b> Hop another 3.5° in the exact same direction to ν Andromedae (mag 4.5).</li>
+        <li><b>[STEP 5] Slew 1.5° NW into M31:</b> Nudge 1.5° northwest past ν Andromedae. The dazzling nuclear bulge of the Andromeda Galaxy floods the field of view!</li>
+        <li><b>[STEP 6] Scan for Satellite Galaxies:</b> In the 20 mm eyepiece, look 24' south of the core for bright, compact elliptical dwarf <b>M32</b>, and 35' northwest across the dust lane for faint, elongated dwarf spheroidal <b>M110</b>.</li>
     </ol>
 </body>
 </html>"""
-    chapters.append(("chart_4_andromeda.xhtml", "Chart 4: M31 Andromeda Galaxy", chart4_html))
+    chapters.append(("chart_4_3_andromeda_hopping.xhtml", "Chart 4.3: Andromeda Star-Hopping Guide", c4_3_html))
 
-    # 12. Chart 5: Perseus Double Cluster
-    chart5_html = """<?xml version="1.0" encoding="UTF-8"?>
+
+    # ==============================================================================
+    # TARGET 5: PERSEUS DOUBLE CLUSTER (3-Page Flow)
+    # ==============================================================================
+    c5_1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Chart 5: Double Cluster</title>
+    <title>Chart 5.1: Double Cluster Eyepiece &amp; Dossier</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="chart_6_scutum_saturn.xhtml">Next: Chart 6 (M11 &amp; Saturn) →</a>
+        <a href="toc.xhtml">← Contents</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_5_2_perseus_widefield.xhtml">Wide-Field Chart (5.2) →</a>
     </div>
 
-    <h1>Chart 5: Perseus Double Cluster (NGC 869 / 884)</h1>
-    <div class="subtitle">Twin Open Clusters • 7,500 Light-Years • Mag 3.7 / 3.8 • Size 60' across</div>
+    <h1>Chart 5.1: Perseus Double Cluster — Eyepiece Simulation &amp; Dossier</h1>
+    <div class="subtitle">Perseus • Twin Open Star Clusters NGC 869 &amp; NGC 884 (Caldwell 14)</div>
+
+    <img src="images/chart_5_perseus_double_cluster_eyepiece_dossier.png" class="chart-img" alt="Double Cluster Eyepiece Simulation and Dossier"/>
 
     <div class="callout">
-        <b>TONIGHT'S EPHEMERIS @ 21:15 CEST:</b><br/>
-        • <b>Altitude / Azimuth:</b> 34.1° / 038° (NE)<br/>
-        • <b>Observing Window:</b> High above the 15° Dvigrad eastern tree line; rising toward zenith throughout the night.<br/>
-        • <b>Recommended Eyepiece:</b> <b>20 mm (60×, 50' FOV)</b> — fits both clusters into a single view!
+        <b>EYEPIECE QUICK REFERENCE:</b><br/>
+        • <b>Wide Eyepiece (20 mm / 60×):</b> Breathtaking dual jewel-box framing! Both cluster cores glitter simultaneously with ruby carbon supergiant stars in NGC 884.
+    </div>
+</body>
+</html>"""
+    chapters.append(("chart_5_1_perseus_dossier.xhtml", "Chart 5.1: Double Cluster Eyepiece & Dossier", c5_1_html))
+
+    c5_2_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 5.2: Double Cluster Wide-Field Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_5_1_perseus_dossier.xhtml">← Eyepiece &amp; Dossier (5.1)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_5_3_perseus_hopping.xhtml">Star-Hopping Guide (5.3) →</a>
     </div>
 
-    <img src="images/chart_5_perseus_double_cluster.png" class="chart-img" alt="Finder Chart 5: Perseus Double Cluster"/>
+    <h1>Chart 5.2: Perseus Double Cluster — Wide-Field Star-Hopping Chart</h1>
+    <div class="subtitle">Upright Naked-Eye / Finder (N ↑, E ←) • Stars to Mag 10.3 • Telrad Rings</div>
 
-    <h2>Step-by-Step Star-Hopping Guide</h2>
+    <img src="images/chart_5_perseus_double_cluster_widefield.png" class="chart-img" alt="Double Cluster Wide-Field Star-Hopping Chart"/>
+    <p style="font-size: 0.8em; color: #555555; text-align: center;">Tip: Pinch-to-zoom on PocketBook Era to inspect faint 10th-magnitude field stars.</p>
+</body>
+</html>"""
+    chapters.append(("chart_5_2_perseus_widefield.xhtml", "Chart 5.2: Double Cluster Wide-Field Chart", c5_2_html))
+
+    c5_3_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 5.3: Double Cluster Star-Hopping Guide</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_5_2_perseus_widefield.xhtml">← Wide-Field Chart (5.2)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_6_1_scutum_saturn_dossier.xhtml">Next: Chart 6 (M11 &amp; Saturn) →</a>
+    </div>
+
+    <h1>Chart 5.3: Perseus Double Cluster — Step-by-Step Star-Hopping Guide</h1>
+    <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
+
+    <h2>Step-by-Step Hopping Narrative</h2>
     <ol class="hop-list">
-        <li><b>[STEP 1] Locate the "W" of Cassiopeia:</b> Find the bright zigzag shape of Cassiopeia in the north-east sky. Identify γ Cas (center of the W) and δ Cas (Ruchbah, +2.7 mag).</li>
-        <li><b>[STEP 2] Project the Pointer Line:</b> Draw an imaginary line from γ Cas through δ Cas, and extend it straight south-east for approximately twice that distance (~7°–8°).</li>
-        <li><b>[STEP 3] Spot the Naked-Eye Shimmer:</b> Under Dvigrad's dark Bortle 4 sky, the Double Cluster is easily visible to the naked eye as an elongated, glittering patch of light between Cassiopeia and Perseus.</li>
-        <li><b>[STEP 4] Center in Finder &amp; Eyepiece:</b> Place your 9x50 finder crosshairs on the patch. In the 20 mm eyepiece (60×), both NGC 869 (western cluster) and NGC 884 (eastern cluster) fill the 50' field of view simultaneously!</li>
-        <li><b>[STEP 5] Visual Highlights:</b> Count over 300 glittering blue-white stars in each cluster. Look closely in the center of NGC 884 for several unmistakable ruby-red supergiant stars contrasting against the icy-blue diamonds!</li>
+        <li><b>[STEP 1] Locate Cassiopeia's "W":</b> High in the northeastern sky, identify the prominent zigzag of Cassiopeia.</li>
+        <li><b>[STEP 2] Identify γ and δ Cassiopeiae:</b> Find central star Navi (γ Cas) and bottom-left vertex Ruchbah (δ Cas, mag 2.7).</li>
+        <li><b>[STEP 3] Extend the Line toward Perseus:</b> Draw a line from γ Cas through δ Cas and project it southeast into Perseus by roughly the same distance (~6°).</li>
+        <li><b>[STEP 4] Naked-Eye Confirmation:</b> In Bortle 4 skies at Dvigrad, an unmistakable glowing double patch of mist is clearly visible without optical aid.</li>
+        <li><b>[STEP 5] Center in Finder / Telrad:</b> Point your finder reticle directly at the twin mist patches.</li>
+        <li><b>[STEP 6] Marvel in 20 mm Eyepiece:</b> Looking through the 20 mm eyepiece reveals hundreds of glittering diamond stars across NGC 869 and NGC 884. Note the bright orange carbon supergiant stars in the heart of NGC 884!</li>
     </ol>
 </body>
 </html>"""
-    chapters.append(("chart_5_perseus.xhtml", "Chart 5: Double Cluster", chart5_html))
+    chapters.append(("chart_5_3_perseus_hopping.xhtml", "Chart 5.3: Double Cluster Star-Hopping Guide", c5_3_html))
 
-    # 13. Chart 6: Scutum M11 & Saturn
-    chart6_html = """<?xml version="1.0" encoding="UTF-8"?>
+
+    # ==============================================================================
+    # TARGET 6: M11 WILD DUCK CLUSTER & SATURN (3-Page Flow)
+    # ==============================================================================
+    c6_1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>Chart 6: M11 &amp; Saturn</title>
+    <title>Chart 6.1: M11 &amp; Saturn Eyepieces &amp; Dossier</title>
     <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
     <div class="nav-bar">
-        <a href="toc.xhtml">← Table of Contents</a>
-        <a href="04_target_catalog.xhtml">← Target Catalog</a>
-        <a href="appendix_collimation.xhtml">Appendix: Collimation →</a>
+        <a href="toc.xhtml">← Contents</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_6_2_scutum_saturn_widefield.xhtml">Wide-Field Chart (6.2) →</a>
     </div>
 
-    <h1>Chart 6: M11 Wild Duck Cluster &amp; Saturn</h1>
-    <div class="subtitle">Scutum / Aquarius • Rich Open Cluster &amp; Ringed Planetary Finale</div>
+    <h1>Chart 6.1: M11 Wild Duck &amp; Saturn — Eyepiece Simulations &amp; Dossier</h1>
+    <div class="subtitle">Scutum / Aquarius • Dense Open Cluster &amp; Ringed Planet Finale</div>
+
+    <img src="images/chart_6_scutum_m11_and_saturn_eyepiece_dossier.png" class="chart-img" alt="M11 and Saturn Eyepiece Simulations and Dossier"/>
 
     <div class="callout">
-        <b>TARGET PARAMETERS &amp; MID-SESSION EPHEMERIS @ 21:15 CEST:</b><br/>
-        • <b>M11 Wild Duck Cluster (NGC 6705):</b> Mag 5.8 • Size 14.0' • Alt 35.2° / Az 205° (SSW). Observe by 21:30 before setting.<br/>
-        • <b>Saturn &amp; Titan:</b> Mag +0.6 • Disk 19.2" • Alt 18°–23° / Az 115° (ESE). Clears 15° Dvigrad trees after 21:40 CEST!<br/>
-        • <b>Eyepieces:</b> 20 mm (60×) for M11 framing → <b>12.5 mm (96×)</b> for M11 core &amp; Saturn's rings
+        <b>EYEPIECE QUICK REFERENCE:</b><br/>
+        • <b>M11 Wild Duck (12.5 mm / 96×):</b> Glittering V-shaped flight formation with yellow giant star near apex.<br/>
+        • <b>Saturn (12.5 mm / 96×):</b> Knife-edge shallow ring tilt (~2°), globe shadow, and bright moon Titan!
+    </div>
+</body>
+</html>"""
+    chapters.append(("chart_6_1_scutum_saturn_dossier.xhtml", "Chart 6.1: M11 & Saturn Eyepieces & Dossier", c6_1_html))
+
+    c6_2_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 6.2: M11 &amp; Saturn Wide-Field Chart</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_6_1_scutum_saturn_dossier.xhtml">← Eyepieces &amp; Dossier (6.1)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="chart_6_3_scutum_saturn_hopping.xhtml">Star-Hopping Guide (6.3) →</a>
     </div>
 
-    <img src="images/chart_6_scutum_m11_and_saturn.png" class="chart-img" alt="Finder Chart 6: M11 &amp; Saturn"/>
+    <h1>Chart 6.2: M11 Wild Duck &amp; Saturn — Wide-Field Star-Hopping Chart</h1>
+    <div class="subtitle">Upright Naked-Eye / Finder (N ↑, E ←) • Stars to Mag 10.3 • Telrad Rings</div>
 
-    <h2>Step-by-Step Star-Hopping Guide</h2>
+    <img src="images/chart_6_scutum_m11_and_saturn_widefield.png" class="chart-img" alt="M11 and Saturn Wide-Field Star-Hopping Chart"/>
+    <p style="font-size: 0.8em; color: #555555; text-align: center;">Tip: Pinch-to-zoom on PocketBook Era to inspect faint 10th-magnitude field stars.</p>
+</body>
+</html>"""
+    chapters.append(("chart_6_2_scutum_saturn_widefield.xhtml", "Chart 6.2: M11 & Saturn Wide-Field Chart", c6_2_html))
+
+    c6_3_html = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Chart 6.3: M11 &amp; Saturn Star-Hopping Guide</title>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+</head>
+<body>
+    <div class="nav-bar">
+        <a href="chart_6_2_scutum_saturn_widefield.xhtml">← Wide-Field Chart (6.2)</a>
+        <a href="04_target_catalog.xhtml">Catalog</a>
+        <a href="appendix_collimation.xhtml">Next: Collimation Guide →</a>
+    </div>
+
+    <h1>Chart 6.3: M11 Wild Duck &amp; Saturn — Step-by-Step Star-Hopping Guide</h1>
+    <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
+
+    <h2>Step-by-Step Hopping Narrative</h2>
     <ol class="hop-list">
-        <li><b>[STEP 1] Find M11 via Aquila's Tail:</b> Start at brilliant Altair (α Aql). Trace the eagle's body southwest to λ Aquilae (+3.4 mag).</li>
-        <li><b>[STEP 2] Hop 4.5° South-West into Scutum:</b> From λ Aql, nudge 4.5° SW toward 12 Aquilae and into the dense star clouds of Scutum.</li>
+        <li><b>[STEP 1] Find M11 via Aquila's Backbone:</b> Start at brilliant Altair (α Aql). Trace the eagle's body southwest across 14° of sky to λ Aquilae (+3.4 mag).</li>
+        <li><b>[STEP 2] Hop 4.5° WSW into the Scutum Star Cloud:</b> From λ Aql, nudge 4.5° west-southwest into the rich star clouds of Scutum.</li>
         <li><b>[STEP 3] View M11:</b> In the 20 mm eyepiece, M11 resembles a compact, glittering V-shaped wedge (like a flight of wild ducks) containing over 400 stars with an 8th-mag yellow giant star near its apex. At 12.5 mm (96×), the star field explodes into dense pinpricks.</li>
         <li><b>[STEP 4] Saturn Planetary Finale (Observe after 21:40 CEST):</b> Look low in the East-South-East horizon below Pegasus. Saturn is the brightest golden, steady non-twinkling object in Aquarius.</li>
         <li><b>[STEP 5] Inspect Saturn at 96× (12.5 mm):</b> As Saturn rises past 20° altitude above ground air turbulence:
@@ -816,9 +1153,10 @@ ol.hop-list li {
     </ol>
 </body>
 </html>"""
-    chapters.append(("chart_6_scutum_saturn.xhtml", "Chart 6: M11 & Saturn", chart6_html))
+    chapters.append(("chart_6_3_scutum_saturn_hopping.xhtml", "Chart 6.3: M11 & Saturn Star-Hopping Guide", c6_3_html))
 
-    # 14. Appendix: Collimation
+
+    # 14. Appendix: Collimation Guide
     appendix_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -874,11 +1212,11 @@ ol.hop-list li {
 </html>"""
     chapters.append(("appendix_collimation.xhtml", "Appendix: Collimation Guide", appendix_html))
 
+
     # Package files into EPUB ZIP archive
     print("Packaging EPUB files...")
 
-    # Unique book identifier
-    book_uuid = f"urn:uuid:stargazing-dvigrad-2026-09-12"
+    book_uuid = f"urn:uuid:stargazing-{session_folder}"
     now_iso = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     with zipfile.ZipFile(output_path, "w") as zf:
@@ -942,7 +1280,7 @@ ol.hop-list li {
     <meta name="dtb:totalPageCount" content="0"/>
     <meta name="dtb:maxPageNumber" content="0"/>
   </head>
-  <docTitle><text>Dvigrad Stargazing Party — Field Guide &amp; Finder Charts</text></docTitle>
+  <docTitle><text>{html.escape(session_folder)}</text></docTitle>
   <docAuthor><text>Branko Toic</text></docAuthor>
   <navMap>
 {ncx_map_content}
@@ -974,11 +1312,18 @@ ol.hop-list li {
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id" version="3.0">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
     <dc:identifier id="pub-id">{book_uuid}</dc:identifier>
-    <dc:title>Dvigrad Stargazing Party — Master Field Guide &amp; Finder Charts</dc:title>
+    <dc:title>{html.escape(session_folder)}</dc:title>
     <dc:creator>Branko Toic</dc:creator>
     <dc:language>en</dc:language>
     <dc:date>2026-09-12</dc:date>
     <meta property="dcterms:modified">{now_iso}</meta>
+    <!-- Calibre series metadata for PocketBook & e-readers -->
+    <meta name="calibre:series" content="{html.escape(series_name)}"/>
+    <meta name="calibre:series_index" content="{series_index}"/>
+    <!-- EPUB 3 Series Collection Metadata -->
+    <meta property="belongs-to-collection" id="series-01">{html.escape(series_name)}</meta>
+    <meta refines="#series-01" property="collection-type">series</meta>
+    <meta refines="#series-01" property="group-position">{series_index}</meta>
   </metadata>
   <manifest>
     {manifest_content}
@@ -993,11 +1338,24 @@ ol.hop-list li {
 </package>"""
         zf.writestr("OEBPS/content.opf", opf_xml, compress_type=zipfile.ZIP_DEFLATED)
 
+    # Maintain backward-compatible copy or symlink
+    if os.path.exists(legacy_symlink_path) or os.path.islink(legacy_symlink_path):
+        try:
+            os.remove(legacy_symlink_path)
+        except OSError:
+            pass
+    try:
+        shutil.copyfile(output_path, legacy_symlink_path)
+    except Exception as e:
+        print(f"Notice: could not copy to legacy path: {e}")
+
     file_size_mb = os.path.getsize(output_path) / (1024 * 1024)
     print(f"\n=======================================================")
     print(f"EPUB BOOK SUCCESSFULLY GENERATED!")
-    print(f"Path: {output_path}")
-    print(f"Size: {file_size_mb:.2f} MB")
+    print(f"Path:     {output_path}")
+    print(f"Legacy:   {legacy_symlink_path}")
+    print(f"Size:     {file_size_mb:.2f} MB")
+    print(f"Series:   {series_name} #{series_index}")
     print(f"Chapters: {len(chapters)}")
     print(f"Images:   {len(img_sources)}")
     print(f"=======================================================\n")

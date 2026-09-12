@@ -84,9 +84,8 @@ def run():
     subprocess.run(cmd_epub, env=env, check=True)
 
     print(f"\n=======================================================")
-    print(f"PIPELINE COMPLETED SUCCESSFULLY!")
-    print(f"Master PDF: {os.path.join(output_dir, 'STARGAZING_PLAN.pdf')}")
-    print(f"EPUB Book:  {os.path.join(output_dir, 'STARGAZING_FIELD_GUIDE.epub')}")
+    epub_name = f"{os.path.basename(output_dir)}.epub"
+    print(f"EPUB Book:  {os.path.join(output_dir, epub_name)} (legacy: STARGAZING_FIELD_GUIDE.epub)")
     print(f"Charts:     {charts_dir}")
     print(f"=======================================================\n")
 

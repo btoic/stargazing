@@ -1,0 +1,20 @@
+# Python dependencies for Stargazing Planner & Astronomical Pipeline
+# Install with: pip install -r requirements.txt
+
+# Astronomical calculations, coordinate systems (ICRS/AltAz), ephemerides
+astropy>=6.0.0
+
+# Precise planetary and lunar ephemeris calculations
+skyfield>=1.48
+
+# Array manipulation and mathematical operations
+numpy>=1.26.0
+
+# Astronomical chart generation, sky maps, and timeline plotting
+matplotlib>=3.8.0
+
+# Print-ready Master Field Guide PDF compilation
+reportlab>=4.0.0
+
+# (Optional) PDF rendering, inspection, and page-count verification
+pypdfium2>=4.0.0

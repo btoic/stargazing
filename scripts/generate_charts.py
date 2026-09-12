@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 scripts/generate_charts.py - Generates All-Sky Planisphere & Toner-Saver Negative Finder Charts
-for observation sessions (B/W Monochrome print-ready edition).
+for observation sessions (B/W Monochrome print-ready edition, strictly formatted for standard A4 paper).
+- All-Sky Planisphere: Standard A4 Portrait (210 mm x 297 mm / 595.3 pt x 841.9 pt)
+- Star-Hopping Finder Charts (1 to 6): Standard A4 Landscape (297 mm x 210 mm / 841.9 pt x 595.3 pt)
 """
 
 import os
@@ -28,12 +30,23 @@ import astropy.units as u
 
 CACHE_DIR = os.path.join(REPO_ROOT, '.cache')
 
+# Exact standard A4 dimensions in inches (1 inch = 25.4 mm = 72 pt)
+A4_LANDSCAPE = (297.0 / 25.4, 210.0 / 25.4)  # 11.6929" x 8.2677" -> 841.89 pt x 595.28 pt
+A4_PORTRAIT  = (210.0 / 25.4, 297.0 / 25.4)  # 8.2677" x 11.6929" -> 595.28 pt x 841.89 pt
+
 # Global datasets
-with open(os.path.join(CACHE_DIR, 'stars.json')) as f:
+stars_file = os.path.join(CACHE_DIR, 'stars.json')
+if not os.path.exists(stars_file):
+    stars_file = os.path.join(CACHE_DIR, 'stars.6.json')
+with open(stars_file) as f:
     stars_data = json.load(f)
-with open(os.path.join(CACHE_DIR, 'constellations.lines.json')) as f:
+
+lines_file = os.path.join(CACHE_DIR, 'constellations.lines.json')
+with open(lines_file) as f:
     lines_data = json.load(f)
-with open(os.path.join(CACHE_DIR, 'mw.json')) as f:
+
+mw_file = os.path.join(CACHE_DIR, 'mw.json')
+with open(mw_file) as f:
     mw_data = json.load(f)
 
 # Observation Site & Time Defaults (Dvigrad)
@@ -81,7 +94,7 @@ def setup_wide_field(ax, c_ra, c_dec, span_ra, span_dec):
                     y1 = dec1 - c_dec
                     x2 = dra2 * math.cos(math.radians(dec2))
                     y2 = dec2 - c_dec
-                    ax.plot([x1, x2], [y1, y2], color='#475569', linewidth=1.3, linestyle='-', alpha=0.9, zorder=2)
+                    ax.plot([x1, x2], [y1, y2], color='#475569', linewidth=1.1, linestyle='-', alpha=0.9, zorder=2)
 
     # Stars - solid black dots, scaled by visual magnitude
     for f in stars_data['features']:
@@ -93,43 +106,43 @@ def setup_wide_field(ax, c_ra, c_dec, span_ra, span_dec):
             x = dra * math.cos(math.radians(dec))
             y = dec - c_dec
             diff_mag = max(0.0, 6.5 - mag)
-            size = max(1.8, (diff_mag)**2.2 * 3.2)
+            size = max(1.5, (diff_mag)**2.2 * 2.8)
             ax.plot(x, y, 'o', color='#000000', markersize=math.sqrt(size), zorder=5)
 
-    # Cardinal Directions & Orientation Box
-    ax.text(x_max - 0.7, y_max - 0.7, "N ↑", fontsize=11, fontweight='bold', color='#000000', zorder=20)
-    ax.text(x_max - 1.7, y_max - 1.4, "← E", fontsize=11, fontweight='bold', color='#000000', zorder=20)
+    # Orientation Box in top-left corner
+    ax.text(0.035, 0.955, "N ↑\n← E", transform=ax.transAxes, fontsize=8.5, fontweight='bold', color='#000000',
+            va='top', ha='left', bbox=dict(boxstyle='square,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=20)
     
     # Outer frame
     for spine in ax.spines.values():
         spine.set_color('#000000')
-        spine.set_linewidth(1.3)
+        spine.set_linewidth(1.1)
     ax.set_xticks([]); ax.set_yticks([])
     return x_min, x_max, y_min, y_max
 
 def draw_telrad_reticle(ax, cx, cy, label_pos=(2.1, 1.8)):
     """Draws standardized B/W Telrad & 5-deg Optical Finder rings."""
     # 0.5° inner Telrad ring (solid)
-    ax.add_patch(Circle((cx, cy), 0.25, facecolor='none', edgecolor='#000000', linestyle='-', linewidth=1.2, zorder=8))
+    ax.add_patch(Circle((cx, cy), 0.25, facecolor='none', edgecolor='#000000', linestyle='-', linewidth=1.1, zorder=8))
     # 2.0° middle Telrad ring (dashed)
-    ax.add_patch(Circle((cx, cy), 1.0, facecolor='none', edgecolor='#000000', linestyle='--', linewidth=1.0, zorder=8))
+    ax.add_patch(Circle((cx, cy), 1.0, facecolor='none', edgecolor='#000000', linestyle='--', linewidth=0.9, zorder=8))
     # 4.0° outer Telrad ring (dash-dot)
-    ax.add_patch(Circle((cx, cy), 2.0, facecolor='none', edgecolor='#000000', linestyle='-.', linewidth=0.9, zorder=8))
+    ax.add_patch(Circle((cx, cy), 2.0, facecolor='none', edgecolor='#000000', linestyle='-.', linewidth=0.8, zorder=8))
     # 5.0° Optical Finder circle (dotted)
-    ax.add_patch(Circle((cx, cy), 2.5, facecolor='none', edgecolor='#333333', linestyle=':', linewidth=1.2, zorder=7))
+    ax.add_patch(Circle((cx, cy), 2.5, facecolor='none', edgecolor='#333333', linestyle=':', linewidth=1.0, zorder=7))
     
     lx, ly = label_pos
-    ax.text(cx + lx, cy + ly, "5° Finder / Telrad FOV", fontsize=8, color='#000000', fontweight='bold',
+    ax.text(cx + lx, cy + ly, "5° Finder / Telrad FOV", fontsize=7.2, color='#000000', fontweight='bold',
             bbox=dict(boxstyle='square,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
 
 def draw_target_marker(ax, tx, ty):
     """Draws a crisp B/W bullseye target marker with crosshair tick marks."""
-    ax.plot(tx, ty, 'o', color='#000000', markersize=4.5, zorder=12)
-    ax.plot(tx, ty, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.3, markersize=11, zorder=12)
-    ax.plot(tx, ty, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.0, linestyle='--', markersize=17, zorder=12)
+    ax.plot(tx, ty, 'o', color='#000000', markersize=3.8, zorder=12)
+    ax.plot(tx, ty, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.1, markersize=9.5, zorder=12)
+    ax.plot(tx, ty, 'o', color='none', markeredgecolor='#000000', markeredgewidth=0.9, linestyle='--', markersize=14.5, zorder=12)
 
 def make_full_sky_map(output_dir):
-    print("Generating Full Sky Map (B/W Toner-Saver)...")
+    print("Generating Full Sky Map (A4 Portrait, B/W Toner-Saver)...")
     def project(alt, az):
         r = (90.0 - alt) / 90.0
         az_rad = np.radians(az)
@@ -140,7 +153,6 @@ def make_full_sky_map(output_dir):
     star_ras = np.array([norm_ra(f['geometry']['coordinates'][0]) for f in stars_data['features']])
     star_decs = np.array([f['geometry']['coordinates'][1] for f in stars_data['features']])
     star_mags = np.array([f['properties']['mag'] for f in stars_data['features']])
-    star_ids  = [f['id'] for f in stars_data['features']]
 
     sc_stars = SkyCoord(ra=star_ras*u.deg, dec=star_decs*u.deg)
     altaz_stars = sc_stars.transform_to(altaz_frame)
@@ -154,8 +166,9 @@ def make_full_sky_map(output_dir):
     vis_x, vis_y = project(vis_alt, vis_az)
     sizes = np.clip([max(0.0, 6.2 - m)**2.1 * 1.8 + 1.0 for m in vis_mag], 1.0, 75.0)
 
-    fig = plt.figure(figsize=(14, 15), facecolor='white', dpi=300)
-    ax = fig.add_axes([0.05, 0.06, 0.90, 0.85], aspect='equal')
+    # Standard A4 Portrait: 210mm x 297mm (8.2677" x 11.6929")
+    fig = plt.figure(figsize=A4_PORTRAIT, facecolor='white', dpi=300)
+    ax = fig.add_axes([0.065, 0.23, 0.87, 0.615], aspect='equal')
     ax.set_facecolor('white')
 
     r_obs = 75.0 / 90.0
@@ -171,10 +184,10 @@ def make_full_sky_map(output_dir):
         ax.plot([0, x_end], [0, y_end], color='#cbd5e1', linestyle=':', linewidth=0.7, zorder=4)
 
     ax.plot([0], [0], '+', color='#000000', markersize=10, markeredgewidth=1.4, zorder=6)
-    ax.text(0.015, 0.015, 'Zenith (90°)', fontsize=8, color='#000000', zorder=6)
-    ax.text(0, (60/90)+0.01, '30° Alt', fontsize=7, color='#475569', ha='center', va='bottom', zorder=6)
-    ax.text(0, (30/90)+0.01, '60° Alt', fontsize=7, color='#475569', ha='center', va='bottom', zorder=6)
-    ax.text(0, r_obs+0.012, '15° Tree & Terrain Obstruction Line', fontsize=8, color='#000000', ha='center', va='bottom', fontweight='bold', zorder=11)
+    ax.text(0.015, 0.015, 'Zenith (90°)', fontsize=7.5, color='#000000', zorder=6)
+    ax.text(0, (60/90)+0.01, '30° Alt', fontsize=6.5, color='#475569', ha='center', va='bottom', zorder=6)
+    ax.text(0, (30/90)+0.01, '60° Alt', fontsize=6.5, color='#475569', ha='center', va='bottom', zorder=6)
+    ax.text(0, r_obs+0.012, '15° Tree & Terrain Obstruction Line', fontsize=7.5, color='#000000', ha='center', va='bottom', fontweight='bold', zorder=11)
 
     for feat in mw_data['features']:
         for poly in feat['geometry']['coordinates']:
@@ -203,23 +216,24 @@ def make_full_sky_map(output_dir):
 
     ax.scatter(vis_x, vis_y, s=sizes, color='#000000', zorder=6)
 
-    dirs = [(0, 'N (North)', 1.035, 'center', 'bottom'),
-            (45, 'NE', 1.035, 'left', 'bottom'),
-            (90, 'E (East)', 1.035, 'left', 'center'),
-            (135, 'SE', 1.035, 'left', 'top'),
-            (180, 'S (South)', 1.035, 'center', 'top'),
-            (225, 'SW', 1.035, 'right', 'top'),
-            (270, 'W (West)', 1.035, 'right', 'center'),
-            (315, 'NW', 1.035, 'right', 'bottom')]
+    # Compass directions with outwards alignment away from circle
+    dirs = [(0, 'N (North)', 1.04, 'center', 'bottom'),
+            (45, 'NE', 1.04, 'right', 'bottom'),
+            (90, 'E (East)', 1.04, 'right', 'center'),
+            (135, 'SE', 1.04, 'right', 'top'),
+            (180, 'S (South)', 1.04, 'center', 'top'),
+            (225, 'SW', 1.04, 'left', 'top'),
+            (270, 'W (West)', 1.04, 'left', 'center'),
+            (315, 'NW', 1.04, 'left', 'bottom')]
     for az, lbl, r_pos, ha, va in dirs:
         x, y = project(0, az)
-        ax.text(x * r_pos, y * r_pos, lbl, fontsize=10, fontweight='bold', color='#000000', ha=ha, va=va, zorder=12)
+        ax.text(x * r_pos, y * r_pos, lbl, fontsize=8.5, fontweight='bold', color='#000000', ha=ha, va=va, zorder=12)
 
     targets_allsky = [
         ('M57 (Ring)', 283.396, 33.029, 0.02, 0.02),
         ('M27 (Dumbbell)', 299.901, 22.721, 0.02, -0.03),
-        ('M13 (Globular)', 250.423, 36.460, -0.04, 0.02),
-        ('M92', 258.280, 43.136, 0.02, 0.02),
+        ('M13 (Globular)', 250.423, 36.460, 0.02, -0.05),
+        ('M92', 258.280, 43.136, 0.02, 0.04),
         ('M31 (Andromeda)', 10.685, 41.269, 0.02, 0.02),
         ('Double Cluster', 35.150, 57.150, 0.02, 0.02),
         ('M11 (Wild Duck)', 282.775, -6.267, -0.04, -0.03),
@@ -231,42 +245,47 @@ def make_full_sky_map(output_dir):
         if aa.alt.deg > 0:
             tx, ty = project(aa.alt.deg, aa.az.deg)
             draw_target_marker(ax, tx, ty)
-            ax.text(tx + ox, ty + oy, f"{t_name}\n({aa.alt.deg:.0f}° Alt)", fontsize=8, fontweight='bold', color='#000000',
-                    bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=16)
+            ax.text(tx + ox, ty + oy, f"{t_name}\n({aa.alt.deg:.0f}° Alt)", fontsize=6.8, fontweight='bold', color='#000000',
+                    bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=16)
 
-    ax.set_xlim(-1.20, 1.20); ax.set_ylim(-1.20, 1.20); ax.axis('off')
+    ax.set_xlim(-1.24, 1.24); ax.set_ylim(-1.24, 1.24); ax.axis('off')
 
-    fig.text(0.05, 0.965, "DVIGRAD ALL-SKY PLANISPHERE (OBSERVATION MAP)", fontsize=16, fontweight='bold', color='#000000')
-    fig.text(0.05, 0.942, "Date: Sep 12, 2026 • 21:15 CEST | Location: Dvigrad Ruins (45.126° N, 13.813° E) | Bortle 4 | B/W Toner-Saver Print Edition", fontsize=10, color='#333333')
+    # Header
+    fig.text(0.065, 0.958, "DVIGRAD ALL-SKY PLANISPHERE (OBSERVATION MAP)", fontsize=13.0, fontweight='bold', color='#000000')
+    fig.text(0.065, 0.938, "Date: Sep 12, 2026 • 21:15 CEST | Location: Dvigrad Ruins (45.126° N, 13.813° E) | Bortle 4 | B/W Toner-Saver Print Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.05, 0.020,
+    # Footer Info Box
+    fig.text(0.065, 0.045,
              "HOW TO USE: Hold chart overhead with North facing North. Outer dashed ring marks the 15° Dvigrad Draga valley tree/terrain obstruction.\n"
-             "MOON STATUS: Waxing crescent (3.1%) set at 19:38 CEST (below horizon). Genuine zero lunar pollution darkness for entire session.",
-             fontsize=8.5, color='#000000', bbox=dict(boxstyle='round,pad=0.4', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0))
+             "MOON STATUS: Waxing crescent (3.1%) set at 19:38 CEST (below horizon). Genuine zero lunar pollution darkness for entire session.\n"
+             "TELESCOPE: Sky-Watcher Skyliner Classic 200P (203mm f/6 Dobsonian) | Eyepieces: 20mm Super (60×, 50' FOV), 12.5mm Plössl (96×, 31' FOV)",
+             fontsize=7.2, color='#000000', bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0))
 
-    plt.savefig(os.path.join(output_dir, 'full_sky_map.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(output_dir, 'full_sky_map.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight' so A4 page boundary is strictly preserved)
+    plt.savefig(os.path.join(output_dir, 'full_sky_map.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(output_dir, 'full_sky_map.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Full Sky Map generated successfully.")
+    print("Full Sky Map generated successfully (A4 Portrait).")
 
 def make_chart_1(charts_dir):
-    print("Generating Chart 1: M57 (Toner-Saver Negative)...")
-    fig = plt.figure(figsize=(16, 10), facecolor='white', dpi=300)
-    fig.text(0.04, 0.966, "STAR-HOPPING FINDER CHART 1: M57 (RING NEBULA) — LYRA", fontsize=15, fontweight='bold', color='#000000')
-    fig.text(0.04, 0.942, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=10, color='#333333')
+    print("Generating Chart 1: M57 (A4 Landscape, Toner-Saver Negative)...")
+    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 1: M57 (RING NEBULA) — LYRA", fontsize=12, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.04, 0.895, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder Orientation: N ↑, E ←)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.04, 0.07, 0.58, 0.81])
+    # VIEWPORT A
+    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
     c_ra, c_dec = 283.0, 36.0
     setup_wide_field(ax_wide, c_ra, c_dec, 18.0, 18.0)
 
     stars_lyra = [
-        (279.23, 38.78, 'Vega (α Lyr)\nmag 0.03', 0.4, 0.4, 10, 'bold'),
-        (285.14, 33.36, 'Sheliak (β)\nmag 3.5', -0.6, 0.4, 9, 'bold'),
-        (286.06, 32.69, 'Sulafat (γ)\nmag 3.2', 0.5, -0.6, 9, 'bold'),
-        (280.67, 39.67, 'ε Lyr (Double-Double)', -0.5, 0.4, 8.5, 'normal'),
-        (283.47, 36.90, 'δ Lyr', 0.4, 0.2, 8.5, 'normal'),
-        (281.90, 37.60, 'ζ Lyr', -0.5, -0.4, 8.5, 'normal')
+        (279.23, 38.78, 'Vega (α Lyr)\nmag 0.03', 0.4, 0.4, 8.5, 'bold'),
+        (285.14, 33.36, 'Sheliak (β)\nmag 3.5', 0.4, 0.4, 7.8, 'bold'),
+        (286.06, 32.69, 'Sulafat (γ)\nmag 3.2', -0.6, -0.6, 7.8, 'bold'),
+        (280.67, 39.67, 'ε Lyr (Double-Double)', -0.5, 0.4, 7.2, 'normal'),
+        (283.47, 36.90, 'δ Lyr', 0.4, 0.2, 7.2, 'normal'),
+        (281.90, 37.60, 'ζ Lyr', -0.5, -0.4, 7.2, 'normal')
     ]
     for s_ra, s_dec, lbl, ox, oy, fsz, fweight in stars_lyra:
         x = d_ra(s_ra, c_ra) * math.cos(math.radians(s_dec))
@@ -281,28 +300,30 @@ def make_chart_1(charts_dir):
     b_x = d_ra(285.14, c_ra) * math.cos(math.radians(33.36))
     b_y = 33.36 - c_dec
 
-    arrow1 = FancyArrowPatch((v_x, v_y), (b_x+0.3, b_y+0.6), arrowstyle='->', mutation_scale=16, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow1 = FancyArrowPatch((v_x, v_y), (b_x+0.3, b_y+0.6), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow1)
-    ax_wide.text((v_x+b_x)/2 - 0.7, (v_y+b_y)/2, "[STEP 1] Slew 6° South from Vega\nto base stars Sheliak & Sulafat", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text((v_x+b_x)/2 - 0.7, (v_y+b_y)/2, "[STEP 1] Slew 6° South from Vega\nto base stars Sheliak & Sulafat", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
-    arrow2 = FancyArrowPatch((b_x, b_y), (m57_x, m57_y), arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow2 = FancyArrowPatch((b_x, b_y), (m57_x, m57_y), arrowstyle='->', mutation_scale=12, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow2)
-    ax_wide.text((b_x+m57_x)/2 - 0.2, (b_y+m57_y)/2 + 0.9, "[STEP 2] Place reticle halfway\nbetween β & γ (closer to γ)", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text((b_x+m57_x)/2 - 0.4, (b_y+m57_y)/2 + 0.8, "[STEP 2] Place reticle halfway\nbetween β & γ (closer to γ)", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
     draw_telrad_reticle(ax_wide, m57_x, m57_y, (2.1, 1.8))
     draw_target_marker(ax_wide, m57_x, m57_y)
-    ax_wide.text(m57_x - 0.4, m57_y - 0.5, "M57 RING NEBULA\n(Centered in Reticle)", fontsize=9, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffffff', edgecolor='#000000', linewidth=1.4), zorder=15)
+    ax_wide.text(m57_x - 0.4, m57_y - 0.5, "M57 RING NEBULA\n(Centered in Reticle)", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
     # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.65, 0.895, "VIEWPORT B: TELESCOPE EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.65, 0.49, 0.31, 0.39])
+    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
     ax_eye.set_facecolor('white')
     fov_deg = 0.52
-    ax_eye.set_xlim(-fov_deg/2, fov_deg/2); ax_eye.set_ylim(-fov_deg/2, fov_deg/2); ax_eye.set_aspect('equal')
-    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=2.0, zorder=1))
+    ax_eye.set_xlim(-fov_deg/2 - 0.02, fov_deg/2 + 0.02)
+    ax_eye.set_ylim(-fov_deg/2 - 0.035, fov_deg/2 + 0.02)
+    ax_eye.set_aspect('equal')
+    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
     ax_eye.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
     ax_eye.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
 
@@ -315,18 +336,18 @@ def make_chart_1(charts_dir):
             s_size = max(1.5, max(0.0, 12.5 - st['mag'])**2.2 * 0.9)
             ax_eye.plot(dx_inv, dy_inv, 'o', color='#000000', markersize=math.sqrt(s_size), alpha=0.95, zorder=10)
 
-    ax_eye.add_patch(Ellipse((0, 0), 0.040, 0.029, angle=60, facecolor='#cbd5e1', edgecolor='#334151', linewidth=1.3, zorder=11))
-    ax_eye.add_patch(Ellipse((0, 0), 0.022, 0.014, angle=60, facecolor='#ffffff', edgecolor='#475569', linewidth=0.9, zorder=12))
-    ax_eye.text(0.025, 0.025, "Smoke Ring\n(Hollow Core)", fontsize=7.5, color='#000000', fontweight='bold', zorder=20)
+    ax_eye.add_patch(Ellipse((0, 0), 0.040, 0.029, angle=60, facecolor='#cbd5e1', edgecolor='#334151', linewidth=1.2, zorder=11))
+    ax_eye.add_patch(Ellipse((0, 0), 0.022, 0.014, angle=60, facecolor='#ffffff', edgecolor='#475569', linewidth=0.8, zorder=12))
+    ax_eye.text(0.025, 0.025, "Smoke Ring\n(Hollow Core)", fontsize=7.0, color='#000000', fontweight='bold', zorder=20)
 
-    ax_eye.text(0, -fov_deg/2 + 0.035, "↓ N (Inverted)", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax_eye.text(fov_deg/2 - 0.035, 0, "E →", fontsize=8.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
-    ax_eye.text(0, -fov_deg/2 - 0.026, "12.5mm Eyepiece (96× Magnification, 31' True FOV)", fontsize=8.5, color='#000000', ha='center')
+    ax_eye.text(0, -fov_deg/2 + 0.035, "↓ N (Inverted)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(fov_deg/2 - 0.035, 0, "E →", fontsize=7.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
+    ax_eye.text(0, -fov_deg/2 - 0.022, "12.5mm Eyepiece (96× Magnification, 31' True FOV)", fontsize=7.5, color='#000000', ha='center')
     ax_eye.axis('off')
 
     # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.65, 0.455, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.65, 0.07, 0.31, 0.37])
+    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
     ax_info.axis('off')
     dossier_text = (
         "OBJECT DOSSIER: M57 (NGC 6720)\n"
@@ -351,31 +372,33 @@ def make_chart_1(charts_dir):
         "   slightly closer to Sulafat (about 60% of the distance).\n"
         "4. Eyepiece: Look for the ghostly smoke-ring between two stars!"
     )
-    ax_info.text(0.0, 0.98, dossier_text, fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+    ax_info.text(0.0, 0.98, dossier_text, fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight')
+    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Chart 1 saved.")
+    print("Chart 1 saved (A4 Landscape).")
 
 def make_chart_2(charts_dir):
-    print("Generating Chart 2: M27 & Albireo (Toner-Saver Negative)...")
-    fig = plt.figure(figsize=(16, 10), facecolor='white', dpi=300)
-    fig.text(0.04, 0.966, "STAR-HOPPING FINDER CHART 2: M27 (DUMBBELL NEBULA) & ALBIREO — VULPECULA / CYGNUS", fontsize=15, fontweight='bold', color='#000000')
-    fig.text(0.04, 0.942, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=10, color='#333333')
+    print("Generating Chart 2: M27 & Albireo (A4 Landscape, Toner-Saver Negative)...")
+    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 2: M27 (DUMBBELL NEBULA) & ALBIREO — VULPECULA / CYGNUS", fontsize=11.5, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.04, 0.895, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder Orientation: N ↑, E ←)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.04, 0.07, 0.58, 0.81])
+    # VIEWPORT A
+    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
     c_ra, c_dec = 296.0, 24.0
     setup_wide_field(ax_wide, c_ra, c_dec, 18.0, 18.0)
 
     key_stars = [
-        (292.68, 27.96, 'β Cygni', -0.5, -0.6, 9, 'bold'),
-        (299.70, 19.49, 'γ Sge (Arrow Tip)\nmag 3.51', 0.4, -0.6, 9, 'bold'),
-        (296.79, 18.53, 'δ Sge', -0.3, -0.6, 8.5, 'normal'),
-        (294.90, 17.47, 'α & β Sge\n(Arrow Feathers)', -0.6, -0.7, 8.5, 'normal'),
-        (291.35, 20.18, 'Coathanger (Cr 399)\nAsterism', 0.4, 0.4, 8.5, 'bold')
+        (292.68, 27.96, 'β Cygni', -0.5, -0.6, 7.8, 'bold'),
+        (299.70, 19.49, 'γ Sge (Arrow Tip)\nmag 3.51', 0.4, 0.3, 7.8, 'bold'),
+        (296.79, 18.53, 'δ Sge', -0.3, -0.6, 7.2, 'normal'),
+        (294.90, 17.47, 'α & β Sge\n(Arrow Feathers)', -0.6, -0.7, 7.2, 'normal'),
+        (291.35, 20.18, 'Coathanger (Cr 399)\nAsterism', 0.4, 0.4, 7.5, 'bold')
     ]
     for s_ra, s_dec, lbl, ox, oy, fsz, fweight in key_stars:
         x = d_ra(s_ra, c_ra) * math.cos(math.radians(s_dec))
@@ -388,29 +411,31 @@ def make_chart_2(charts_dir):
     g_x = d_ra(299.70, c_ra) * math.cos(math.radians(19.49))
     g_y = 19.49 - c_dec
 
-    arrow1 = FancyArrowPatch((g_x, g_y), (m27_x, m27_y), arrowstyle='->', mutation_scale=16, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow1 = FancyArrowPatch((g_x, g_y), (m27_x, m27_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow1)
-    ax_wide.text((g_x+m27_x)/2 + 0.6, (g_y+m27_y)/2 - 0.2, "[STEP 1] Slew 3.2° North\nfrom γ Sagittae tip", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text((g_x+m27_x)/2 + 0.6, (g_y+m27_y)/2, "[STEP 1] Slew 3.2° North\nfrom γ Sagittae tip", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
     draw_telrad_reticle(ax_wide, m27_x, m27_y, (2.1, 1.8))
     draw_target_marker(ax_wide, m27_x, m27_y)
-    ax_wide.text(m27_x - 0.5, m27_y + 0.6, "M27 DUMBBELL NEBULA", fontsize=9, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffffff', edgecolor='#000000', linewidth=1.4), zorder=15)
+    ax_wide.text(m27_x - 0.5, m27_y + 0.6, "M27 DUMBBELL NEBULA", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
     alb_x = d_ra(292.68, c_ra) * math.cos(math.radians(27.96))
     alb_y = 27.96 - c_dec
     draw_target_marker(ax_wide, alb_x, alb_y)
-    ax_wide.text(alb_x - 0.4, alb_y + 0.8, "BONUS TARGET: ALBIREO\n(Gold & Blue Double Star)", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=15)
+    ax_wide.text(alb_x - 0.4, alb_y + 0.8, "BONUS TARGET: ALBIREO\n(Gold & Blue Double Star)", fontsize=7.5, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=15)
 
     # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.65, 0.895, "VIEWPORT B: TELESCOPE EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.65, 0.49, 0.31, 0.39])
+    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
     ax_eye.set_facecolor('white')
     fov_deg = 0.83
-    ax_eye.set_xlim(-fov_deg/2, fov_deg/2); ax_eye.set_ylim(-fov_deg/2, fov_deg/2); ax_eye.set_aspect('equal')
-    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=2.0, zorder=1))
+    ax_eye.set_xlim(-fov_deg/2 - 0.03, fov_deg/2 + 0.03)
+    ax_eye.set_ylim(-fov_deg/2 - 0.04, fov_deg/2 + 0.03)
+    ax_eye.set_aspect('equal')
+    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
     ax_eye.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
     ax_eye.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
 
@@ -427,16 +452,16 @@ def make_chart_2(charts_dir):
     ax_eye.add_patch(Ellipse((-0.025, 0), 0.09, 0.12, angle=25, facecolor='#cbd5e1', edgecolor='#64748b', linestyle='--', linewidth=0.8, zorder=11))
     ax_eye.add_patch(Ellipse(( 0.025, 0), 0.09, 0.12, angle=25, facecolor='#cbd5e1', edgecolor='#64748b', linestyle='--', linewidth=0.8, zorder=11))
     ax_eye.add_patch(Ellipse((0, 0), 0.07, 0.09, angle=25, facecolor='#94a3b8', edgecolor='#334151', linewidth=1.1, zorder=12))
-    ax_eye.text(0.12, 0.12, "Hourglass / Apple Core\n(Bright Central Waist)", fontsize=7.5, color='#000000', fontweight='bold', zorder=20)
+    ax_eye.text(0.12, 0.12, "Hourglass / Apple Core\n(Bright Central Waist)", fontsize=7.0, color='#000000', fontweight='bold', zorder=20)
 
-    ax_eye.text(0, -fov_deg/2 + 0.045, "↓ N (Inverted)", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax_eye.text(fov_deg/2 - 0.045, 0, "E →", fontsize=8.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
-    ax_eye.text(0, -fov_deg/2 - 0.026, "20mm Eyepiece (60× Magnification, 50' True FOV)", fontsize=8.5, color='#000000', ha='center')
+    ax_eye.text(0, -fov_deg/2 + 0.045, "↓ N (Inverted)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(fov_deg/2 - 0.045, 0, "E →", fontsize=7.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
+    ax_eye.text(0, -fov_deg/2 - 0.022, "20mm Eyepiece (60× Magnification, 50' True FOV)", fontsize=7.5, color='#000000', ha='center')
     ax_eye.axis('off')
 
     # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.65, 0.455, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.65, 0.07, 0.31, 0.37])
+    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
     ax_info.axis('off')
     dossier_text = (
         "OBJECT DOSSIER: M27 (NGC 6853) & ALBIREO\n"
@@ -462,31 +487,33 @@ def make_chart_2(charts_dir):
         "3. Eyepiece confirmation: A striking, bright ethereal\n"
         "   hourglass cloud appears instantly in the 20mm field!"
     )
-    ax_info.text(0.0, 0.98, dossier_text, fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+    ax_info.text(0.0, 0.98, dossier_text, fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight')
+    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Chart 2 saved.")
+    print("Chart 2 saved (A4 Landscape).")
 
 def make_chart_3(charts_dir):
-    print("Generating Chart 3: M13 & M92 (Toner-Saver Negative)...")
-    fig = plt.figure(figsize=(16, 10), facecolor='white', dpi=300)
-    fig.text(0.04, 0.966, "STAR-HOPPING FINDER CHART 3: M13 & M92 GLOBULAR CLUSTERS — HERCULES", fontsize=15, fontweight='bold', color='#000000')
-    fig.text(0.04, 0.942, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=10, color='#333333')
+    print("Generating Chart 3: M13 & M92 (A4 Landscape, Toner-Saver Negative)...")
+    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 3: M13 & M92 GLOBULAR CLUSTERS — HERCULES", fontsize=11.5, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.04, 0.895, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder Orientation: N ↑, E ←)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.04, 0.07, 0.58, 0.81])
+    # VIEWPORT A
+    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
     c_ra, c_dec = 256.0, 38.0
     setup_wide_field(ax_wide, c_ra, c_dec, 20.0, 20.0)
 
     key_stars = [
-        (250.77, 38.92, 'η Her (NW Corner)\nmag 3.48', 0.4, 0.4, 9, 'bold'),
-        (250.84, 31.60, 'ζ Her (SW Corner)\nmag 2.81', 0.4, -0.6, 9, 'bold'),
-        (257.65, 36.81, 'π Her (NE Corner)\nmag 3.16', -0.4, 0.4, 9, 'bold'),
-        (254.98, 30.92, 'ε Her (SE Corner)\nmag 3.92', -0.4, -0.6, 9, 'bold'),
-        (264.83, 46.00, 'ι Her (North)\nmag 3.82', 0.4, -0.6, 8.5, 'normal')
+        (250.77, 38.92, 'η Her (NW Corner)\nmag 3.48', 0.4, 0.4, 7.8, 'bold'),
+        (250.84, 31.60, 'ζ Her (SW Corner)\nmag 2.81', 0.4, -0.6, 7.8, 'bold'),
+        (257.65, 36.81, 'π Her (NE Corner)\nmag 3.16', -0.4, 0.4, 7.8, 'bold'),
+        (254.98, 30.92, 'ε Her (SE Corner)\nmag 3.92', -0.4, -0.6, 7.2, 'bold'),
+        (264.83, 46.00, 'ι Her (North)\nmag 3.82', 0.4, -0.6, 7.2, 'normal')
     ]
     for s_ra, s_dec, lbl, ox, oy, fsz, fweight in key_stars:
         x = d_ra(s_ra, c_ra) * math.cos(math.radians(s_dec))
@@ -495,8 +522,8 @@ def make_chart_3(charts_dir):
 
     keystone_coords = [(250.77, 38.92), (257.65, 36.81), (254.98, 30.92), (250.84, 31.60)]
     k_pts = [ (d_ra(ra, c_ra)*math.cos(math.radians(dec)), dec - c_dec) for ra, dec in keystone_coords ]
-    ax_wide.add_patch(Polygon(k_pts, closed=True, facecolor='#f8fafc', edgecolor='#000000', linewidth=1.5, linestyle='--', alpha=0.5, zorder=3))
-    ax_wide.text((k_pts[0][0]+k_pts[2][0])/2, (k_pts[0][1]+k_pts[2][1])/2, "THE KEYSTONE\nOF HERCULES", fontsize=9.5, fontweight='bold', color='#000000', ha='center', zorder=8)
+    ax_wide.add_patch(Polygon(k_pts, closed=True, facecolor='#f8fafc', edgecolor='#000000', linewidth=1.4, linestyle='--', alpha=0.5, zorder=3))
+    ax_wide.text((k_pts[0][0]+k_pts[2][0])/2, (k_pts[0][1]+k_pts[2][1])/2, "THE KEYSTONE\nOF HERCULES", fontsize=8.0, fontweight='bold', color='#000000', ha='center', zorder=8)
 
     m13_ra, m13_dec = 250.423, 36.460
     m13_x = d_ra(m13_ra, c_ra) * math.cos(math.radians(m13_dec))
@@ -504,15 +531,15 @@ def make_chart_3(charts_dir):
     eta_x = d_ra(250.77, c_ra) * math.cos(math.radians(38.92))
     eta_y = 38.92 - c_dec
 
-    arrow1 = FancyArrowPatch((eta_x, eta_y), (m13_x, m13_y), arrowstyle='->', mutation_scale=16, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow1 = FancyArrowPatch((eta_x, eta_y), (m13_x, m13_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow1)
-    ax_wide.text(m13_x + 1.2, (eta_y+m13_y)/2, "[STEP 1] 1/3 way from η to ζ\nalong Keystone West side", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text(m13_x - 1.3, (eta_y+m13_y)/2, "[STEP 1] 1/3 way from η to ζ\nalong Keystone West side", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
-    draw_telrad_reticle(ax_wide, m13_x, m13_y, (-2.2, 1.8))
+    draw_telrad_reticle(ax_wide, m13_x, m13_y, (2.1, 1.8))
     draw_target_marker(ax_wide, m13_x, m13_y)
-    ax_wide.text(m13_x - 0.5, m13_y - 0.9, "M13 GREAT GLOBULAR CLUSTER\n(Visible naked-eye in Bortle 4!)", fontsize=9, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffffff', edgecolor='#000000', linewidth=1.4), zorder=15)
+    ax_wide.text(m13_x - 1.4, m13_y - 1.2, "M13 GREAT GLOBULAR CLUSTER\n(Visible naked-eye in Bortle 4!)", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
     m92_ra, m92_dec = 258.280, 43.136
     m92_x = d_ra(m92_ra, c_ra) * math.cos(math.radians(m92_dec))
@@ -520,22 +547,24 @@ def make_chart_3(charts_dir):
     pi_x = d_ra(257.65, c_ra) * math.cos(math.radians(36.81))
     pi_y = 36.81 - c_dec
 
-    arrow2 = FancyArrowPatch((pi_x, pi_y), (m92_x, m92_y), arrowstyle='->', mutation_scale=16, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow2 = FancyArrowPatch((pi_x, pi_y), (m92_x, m92_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow2)
-    ax_wide.text((pi_x+m92_x)/2 + 0.5, (pi_y+m92_y)/2, "[STEP 2] Hop 6.2° North\nfrom π Herculis to M92", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text((pi_x+m92_x)/2 + 0.5, (pi_y+m92_y)/2, "[STEP 2] Hop 6.2° North\nfrom π Herculis to M92", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
     draw_target_marker(ax_wide, m92_x, m92_y)
-    ax_wide.text(m92_x - 0.5, m92_y + 0.6, "M92 GLOBULAR CLUSTER", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=15)
+    ax_wide.text(m92_x - 0.5, m92_y + 0.6, "M92 GLOBULAR CLUSTER", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=15)
 
     # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.65, 0.895, "VIEWPORT B: TELESCOPE EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.65, 0.49, 0.31, 0.39])
+    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
     ax_eye.set_facecolor('white')
     fov_deg = 0.52
-    ax_eye.set_xlim(-fov_deg/2, fov_deg/2); ax_eye.set_ylim(-fov_deg/2, fov_deg/2); ax_eye.set_aspect('equal')
-    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=2.0, zorder=1))
+    ax_eye.set_xlim(-fov_deg/2 - 0.02, fov_deg/2 + 0.02)
+    ax_eye.set_ylim(-fov_deg/2 - 0.035, fov_deg/2 + 0.02)
+    ax_eye.set_aspect('equal')
+    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
     ax_eye.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
     ax_eye.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
 
@@ -562,16 +591,16 @@ def make_chart_3(charts_dir):
         pr_rad = np.radians(p_ang)
         ax_eye.plot([0.008*np.cos(pr_rad), 0.035*np.cos(pr_rad)], [0.008*np.sin(pr_rad), 0.035*np.sin(pr_rad)],
                     color='#ffffff', linewidth=1.8, alpha=0.9, zorder=15)
-    ax_eye.text(0.03, -0.05, "Propeller Lane\n(Averted Vision)", fontsize=7.5, color='#000000', fontstyle='italic', zorder=20)
+    ax_eye.text(0.03, -0.05, "Propeller Lane\n(Averted Vision)", fontsize=7.0, color='#000000', fontstyle='italic', zorder=20)
 
-    ax_eye.text(0, -fov_deg/2 + 0.035, "↓ N (Inverted)", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax_eye.text(fov_deg/2 - 0.035, 0, "E →", fontsize=8.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
-    ax_eye.text(0, -fov_deg/2 - 0.026, "12.5mm Eyepiece (96× Magnification, 31' True FOV)", fontsize=8.5, color='#000000', ha='center')
+    ax_eye.text(0, -fov_deg/2 + 0.035, "↓ N (Inverted)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(fov_deg/2 - 0.035, 0, "E →", fontsize=7.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
+    ax_eye.text(0, -fov_deg/2 - 0.022, "12.5mm Eyepiece (96× Magnification, 31' True FOV)", fontsize=7.5, color='#000000', ha='center')
     ax_eye.axis('off')
 
     # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.65, 0.455, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.65, 0.07, 0.31, 0.37])
+    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
     ax_info.axis('off')
     dossier_text = (
         "OBJECT DOSSIER: M13 (NGC 6205) & M92\n"
@@ -596,31 +625,33 @@ def make_chart_3(charts_dir):
         "   M13 sits exactly 1/3 of the way down.\n"
         "4. Bonus M92: From π Herculis (NE corner), hop 6.2° due North."
     )
-    ax_info.text(0.0, 0.98, dossier_text, fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+    ax_info.text(0.0, 0.98, dossier_text, fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight')
+    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Chart 3 saved.")
+    print("Chart 3 saved (A4 Landscape).")
 
 def make_chart_4(charts_dir):
-    print("Generating Chart 4: M31 Andromeda (Toner-Saver Negative)...")
-    fig = plt.figure(figsize=(16, 10), facecolor='white', dpi=300)
-    fig.text(0.04, 0.966, "STAR-HOPPING FINDER CHART 4: M31 (ANDROMEDA GALAXY), M32 & M110 — ANDROMEDA", fontsize=15, fontweight='bold', color='#000000')
-    fig.text(0.04, 0.942, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=10, color='#333333')
+    print("Generating Chart 4: M31 Andromeda (A4 Landscape, Toner-Saver Negative)...")
+    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 4: M31 (ANDROMEDA GALAXY), M32 & M110 — ANDROMEDA", fontsize=11.5, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.04, 0.895, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder Orientation: N ↑, E ←)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.04, 0.07, 0.58, 0.81])
+    # VIEWPORT A
+    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
     c_ra, c_dec = 12.0, 36.0
     setup_wide_field(ax_wide, c_ra, c_dec, 26.0, 24.0)
 
     key_stars = [
-        (2.10, 29.09, 'Alpheratz (α And)\nmag 2.07', 0.5, -0.6, 9.5, 'bold'),
-        (8.54, 30.86, 'δ And\nmag 3.27', 0.4, -0.6, 8.5, 'normal'),
-        (17.43, 35.62, 'Mirach (β And)\nmag 2.07 (Red)', 0.5, -0.8, 9.5, 'bold'),
-        (17.07, 38.50, 'μ And (Hop 1)\nmag 3.86', -0.5, 0.4, 8.5, 'bold'),
-        (14.65, 41.08, 'ν And (Hop 2)\nmag 4.53', 0.4, 0.4, 8.5, 'bold')
+        (2.10, 29.09, 'Alpheratz (α And)\nmag 2.07', -0.6, -0.6, 7.8, 'bold'),
+        (8.54, 30.86, 'δ And\nmag 3.27', 0.4, -0.6, 7.2, 'normal'),
+        (17.43, 35.62, 'Mirach (β And)\nmag 2.07 (Red)', -0.6, 0.4, 7.8, 'bold'),
+        (17.07, 38.50, 'μ And (Hop 1)\nmag 3.86', -0.5, 0.4, 7.2, 'bold'),
+        (14.65, 41.08, 'ν And (Hop 2)\nmag 4.53', 0.4, 0.4, 7.2, 'bold')
     ]
     for s_ra, s_dec, lbl, ox, oy, fsz, fweight in key_stars:
         x = d_ra(s_ra, c_ra) * math.cos(math.radians(s_dec))
@@ -634,31 +665,33 @@ def make_chart_4(charts_dir):
     pts = [(2.10, 29.09), (8.54, 30.86), (17.43, 35.62), (17.07, 38.50), (14.65, 41.08), (m31_ra, m31_dec)]
     p_xy = [ (d_ra(ra, c_ra)*math.cos(math.radians(dec)), dec - c_dec) for ra, dec in pts ]
 
-    ax_wide.add_patch(FancyArrowPatch(p_xy[0], p_xy[2], arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.5, zorder=6))
-    ax_wide.text((p_xy[0][0]+p_xy[2][0])/2, (p_xy[0][1]+p_xy[2][1])/2 + 0.9, "[STEP 1] Hop 14° NE to Mirach", fontsize=8.5, fontweight='bold', color='#000000',
+    ax_wide.add_patch(FancyArrowPatch(p_xy[0], p_xy[2], arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6))
+    ax_wide.text((p_xy[0][0]+p_xy[2][0])/2, (p_xy[0][1]+p_xy[2][1])/2 + 0.9, "[STEP 1] Hop 14° NE to Mirach", fontsize=7.2, fontweight='bold', color='#000000',
                  bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
 
-    ax_wide.add_patch(FancyArrowPatch(p_xy[2], p_xy[3], arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.6, zorder=6))
-    ax_wide.add_patch(FancyArrowPatch(p_xy[3], p_xy[4], arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.6, zorder=6))
-    ax_wide.text(p_xy[3][0] + 0.6, (p_xy[2][1]+p_xy[4][1])/2, "[STEP 2] Turn 90° NW:\nHop to μ, then ν And", fontsize=8.5, fontweight='bold', color='#000000',
+    ax_wide.add_patch(FancyArrowPatch(p_xy[2], p_xy[3], arrowstyle='->', mutation_scale=12, color='#000000', linestyle='--', linewidth=1.4, zorder=6))
+    ax_wide.add_patch(FancyArrowPatch(p_xy[3], p_xy[4], arrowstyle='->', mutation_scale=12, color='#000000', linestyle='--', linewidth=1.4, zorder=6))
+    ax_wide.text(p_xy[3][0] + 0.6, (p_xy[2][1]+p_xy[4][1])/2, "[STEP 2] Turn 90° NW:\nHop to μ, then ν And", fontsize=7.2, fontweight='bold', color='#000000',
                  bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
 
-    ax_wide.add_patch(FancyArrowPatch(p_xy[4], p_xy[5], arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.8, zorder=6))
-    ax_wide.text((p_xy[4][0]+p_xy[5][0])/2, p_xy[5][1] + 1.0, "[STEP 3] Slew 1.5° NW to M31!", fontsize=8.5, fontweight='bold', color='#000000',
+    ax_wide.add_patch(FancyArrowPatch(p_xy[4], p_xy[5], arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6))
+    ax_wide.text((p_xy[4][0]+p_xy[5][0])/2, p_xy[5][1] + 1.0, "[STEP 3] Slew 1.5° NW to M31!", fontsize=7.2, fontweight='bold', color='#000000',
                  bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
 
     draw_telrad_reticle(ax_wide, m31_x, m31_y, (2.1, 1.8))
     draw_target_marker(ax_wide, m31_x, m31_y)
-    ax_wide.text(m31_x - 0.6, m31_y - 0.9, "M31 ANDROMEDA GALAXY\n(Naked-eye oval in Bortle 4)", fontsize=9, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffffff', edgecolor='#000000', linewidth=1.4), zorder=15)
+    ax_wide.text(m31_x - 0.6, m31_y - 0.9, "M31 ANDROMEDA GALAXY\n(Naked-eye oval in Bortle 4)", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
     # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.65, 0.895, "VIEWPORT B: TELESCOPE EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.65, 0.49, 0.31, 0.39])
+    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
     ax_eye.set_facecolor('white')
     fov_deg = 0.83
-    ax_eye.set_xlim(-fov_deg/2, fov_deg/2); ax_eye.set_ylim(-fov_deg/2, fov_deg/2); ax_eye.set_aspect('equal')
-    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=2.0, zorder=1))
+    ax_eye.set_xlim(-fov_deg/2 - 0.03, fov_deg/2 + 0.03)
+    ax_eye.set_ylim(-fov_deg/2 - 0.04, fov_deg/2 + 0.03)
+    ax_eye.set_aspect('equal')
+    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
     ax_eye.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
     ax_eye.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
 
@@ -678,25 +711,25 @@ def make_chart_4(charts_dir):
 
     lane_x = np.linspace(-0.25, 0.25, 50)
     lane_y = lane_x * math.tan(math.radians(38)) + 0.055
-    ax_eye.plot(lane_x, lane_y, color='#0f172a', linewidth=2.2, alpha=0.85, zorder=15)
-    ax_eye.text(0.08, 0.14, "Dark Dust Lane", fontsize=7.5, color='#000000', fontweight='bold', fontstyle='italic', zorder=25)
+    ax_eye.plot(lane_x, lane_y, color='#0f172a', linewidth=2.0, alpha=0.85, zorder=15)
+    ax_eye.text(0.08, 0.14, "Dark Dust Lane", fontsize=7.0, color='#000000', fontweight='bold', fontstyle='italic', zorder=25)
 
     m32_x_inv, m32_y_inv = 0.08, 0.26
     ax_eye.add_patch(Circle((m32_x_inv, m32_y_inv), 0.035, facecolor='#475569', edgecolor='#000000', linewidth=1.0, zorder=16))
-    ax_eye.text(m32_x_inv+0.04, m32_y_inv, "M32 (Satellite)", fontsize=8, color='#000000', fontweight='bold', va='center', zorder=25)
+    ax_eye.text(m32_x_inv+0.04, m32_y_inv, "M32 (Satellite)", fontsize=7.5, color='#000000', fontweight='bold', va='center', zorder=25)
 
     m110_x_inv, m110_y_inv = -0.15, -0.23
     ax_eye.add_patch(Ellipse((m110_x_inv, m110_y_inv), 0.14, 0.07, angle=20, facecolor='#f1f5f9', edgecolor='#64748b', linestyle='--', linewidth=1.0, zorder=16))
-    ax_eye.text(m110_x_inv - 0.02, m110_y_inv + 0.05, "M110 (Dwarf Elliptical)", fontsize=8, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(m110_x_inv - 0.02, m110_y_inv + 0.05, "M110 (Dwarf Elliptical)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
 
-    ax_eye.text(0, -fov_deg/2 + 0.045, "↓ N (Inverted)", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax_eye.text(fov_deg/2 - 0.045, 0, "E →", fontsize=8.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
-    ax_eye.text(0, -fov_deg/2 - 0.026, "20mm Eyepiece (60× Magnification, 50' True FOV)", fontsize=8.5, color='#000000', ha='center')
+    ax_eye.text(0, -fov_deg/2 + 0.045, "↓ N (Inverted)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(fov_deg/2 - 0.045, 0, "E →", fontsize=7.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
+    ax_eye.text(0, -fov_deg/2 - 0.022, "20mm Eyepiece (60× Magnification, 50' True FOV)", fontsize=7.5, color='#000000', ha='center')
     ax_eye.axis('off')
 
     # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.65, 0.455, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.65, 0.07, 0.31, 0.37])
+    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
     ax_info.axis('off')
     dossier_text = (
         "OBJECT DOSSIER: M31 (NGC 224), M32 & M110\n"
@@ -724,31 +757,33 @@ def make_chart_4(charts_dir):
         "3. Turn 90° NW: Hop 3.5° to μ And, then 3.5° to ν And.\n"
         "4. Slew 1.5° further NW: M31 fills the finder and eyepiece!"
     )
-    ax_info.text(0.0, 0.98, dossier_text, fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+    ax_info.text(0.0, 0.98, dossier_text, fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight')
+    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Chart 4 saved.")
+    print("Chart 4 saved (A4 Landscape).")
 
 def make_chart_5(charts_dir):
-    print("Generating Chart 5: Double Cluster (Toner-Saver Negative)...")
-    fig = plt.figure(figsize=(16, 10), facecolor='white', dpi=300)
-    fig.text(0.04, 0.966, "STAR-HOPPING FINDER CHART 5: THE DOUBLE CLUSTER (NGC 869 / NGC 884) — PERSEUS", fontsize=15, fontweight='bold', color='#000000')
-    fig.text(0.04, 0.942, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=10, color='#333333')
+    print("Generating Chart 5: Double Cluster (A4 Landscape, Toner-Saver Negative)...")
+    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 5: THE DOUBLE CLUSTER (NGC 869 / NGC 884) — PERSEUS", fontsize=11.5, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.04, 0.895, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder Orientation: N ↑, E ←)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.04, 0.07, 0.58, 0.81])
+    # VIEWPORT A
+    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
     c_ra, c_dec = 32.0, 55.0
     setup_wide_field(ax_wide, c_ra, c_dec, 46.0, 22.0)
 
     key_stars = [
-        (14.18, 60.72, 'Navi (γ Cas)\nmag 2.15', 0.4, 0.4, 9.5, 'bold'),
-        (20.30, 60.23, 'Ruchbah (δ Cas)\nmag 2.66', 0.4, 0.5, 9.5, 'bold'),
-        (26.68, 63.67, 'Segin (ε Cas)\nmag 3.35', -0.5, 0.4, 8.5, 'normal'),
-        (51.08, 49.86, 'Mirfak (α Per)\nmag 1.79', -0.6, -0.6, 9.5, 'bold'),
-        (43.34, 53.51, 'γ Per\nmag 2.91', -0.4, 0.4, 8.5, 'normal')
+        (14.18, 60.72, 'Navi (γ Cas)\nmag 2.15', 0.4, -0.6, 7.8, 'bold'),
+        (20.30, 60.23, 'Ruchbah (δ Cas)\nmag 2.66', -0.6, 0.5, 7.8, 'bold'),
+        (26.68, 63.67, 'Segin (ε Cas)\nmag 3.35', -0.5, 0.4, 7.2, 'normal'),
+        (51.08, 49.86, 'Mirfak (α Per)\nmag 1.79', -0.6, -0.6, 7.8, 'bold'),
+        (43.34, 53.51, 'γ Per\nmag 2.91', -0.4, 0.4, 7.2, 'normal')
     ]
     for s_ra, s_dec, lbl, ox, oy, fsz, fweight in key_stars:
         x = d_ra(s_ra, c_ra) * math.cos(math.radians(s_dec))
@@ -764,25 +799,27 @@ def make_chart_5(charts_dir):
     r_x = d_ra(20.30, c_ra) * math.cos(math.radians(60.23))
     r_y = 60.23 - c_dec
 
-    arrow1 = FancyArrowPatch((g_x, g_y), (r_x, r_y), arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.6, zorder=6)
+    arrow1 = FancyArrowPatch((g_x, g_y), (r_x, r_y), arrowstyle='->', mutation_scale=12, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow1)
-    arrow2 = FancyArrowPatch((r_x, r_y), (dc_x, dc_y), arrowstyle='->', mutation_scale=16, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow2 = FancyArrowPatch((r_x, r_y), (dc_x, dc_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow2)
-    ax_wide.text((r_x+dc_x)/2 - 0.2, (r_y+dc_y)/2 - 1.0, "[STEP 1] Extend γ through δ Cas\nby ~6° Southeast into Perseus", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text((r_x+dc_x)/2 - 0.2, (r_y+dc_y)/2 - 1.0, "[STEP 1] Extend γ through δ Cas\nby ~6° Southeast into Perseus", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
     draw_telrad_reticle(ax_wide, dc_x, dc_y, (2.1, 1.8))
     draw_target_marker(ax_wide, dc_x, dc_y)
-    ax_wide.text(dc_x - 0.5, dc_y - 1.2, "DOUBLE CLUSTER (NGC 869 / 884)\n(Visible to Naked Eye in Bortle 4!)", fontsize=9, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffffff', edgecolor='#000000', linewidth=1.4), zorder=15)
+    ax_wide.text(dc_x - 0.5, dc_y - 1.2, "DOUBLE CLUSTER (NGC 869 / 884)\n(Visible to Naked Eye in Bortle 4!)", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
     # VIEWPORT B: TELESCOPE EYEPIECE SIMULATION
-    fig.text(0.65, 0.895, "VIEWPORT B: TELESCOPE EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_eye = fig.add_axes([0.65, 0.49, 0.31, 0.39])
+    fig.text(0.545, 0.898, "VIEWPORT B: EYEPIECE SIMULATION (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_eye = fig.add_axes([0.58, 0.485, 0.35, 0.395])
     ax_eye.set_facecolor('white')
     fov_deg = 0.83
-    ax_eye.set_xlim(-fov_deg/2, fov_deg/2); ax_eye.set_ylim(-fov_deg/2, fov_deg/2); ax_eye.set_aspect('equal')
-    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=2.0, zorder=1))
+    ax_eye.set_xlim(-fov_deg/2 - 0.03, fov_deg/2 + 0.03)
+    ax_eye.set_ylim(-fov_deg/2 - 0.04, fov_deg/2 + 0.03)
+    ax_eye.set_aspect('equal')
+    ax_eye.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
     ax_eye.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
     ax_eye.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
 
@@ -807,21 +844,21 @@ def make_chart_5(charts_dir):
         ax_eye.scatter(cx + r_c*np.cos(th_c), cy + r_c*np.sin(th_c), s=np.random.uniform(1.8, 9.0, n_c), color='#000000', alpha=0.9, zorder=13)
 
     for rx, ry in [(c2_x+0.02, c2_y+0.02), (c2_x-0.03, c2_y-0.01), (c2_x+0.01, c2_y-0.04)]:
-        ax_eye.plot(rx, ry, 'o', color='#000000', markersize=5.0, zorder=15)
-        ax_eye.plot(rx, ry, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.2, markersize=10.0, zorder=15)
-    ax_eye.text(c2_x, c2_y-0.12, "Carbon Supergiants\n(Open Circles in NGC 884)", fontsize=7.5, color='#000000', ha='center', fontstyle='italic', zorder=25)
+        ax_eye.plot(rx, ry, 'o', color='#000000', markersize=4.5, zorder=15)
+        ax_eye.plot(rx, ry, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.1, markersize=9.5, zorder=15)
+    ax_eye.text(c2_x, c2_y-0.12, "Carbon Supergiants\n(Open Circles in NGC 884)", fontsize=7.0, color='#000000', ha='center', fontstyle='italic', zorder=25)
 
-    ax_eye.text(c1_x, c1_y+0.12, "NGC 869", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax_eye.text(c2_x, c2_y+0.12, "NGC 884", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(c1_x, c1_y+0.12, "NGC 869", fontsize=7.8, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(c2_x, c2_y+0.12, "NGC 884", fontsize=7.8, color='#000000', fontweight='bold', ha='center', zorder=25)
 
-    ax_eye.text(0, -fov_deg/2 + 0.045, "↓ N (Inverted)", fontsize=8.5, color='#000000', fontweight='bold', ha='center', zorder=25)
-    ax_eye.text(fov_deg/2 - 0.045, 0, "E →", fontsize=8.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
-    ax_eye.text(0, -fov_deg/2 - 0.026, "20mm Eyepiece (60× Magnification, 50' True FOV)", fontsize=8.5, color='#000000', ha='center')
+    ax_eye.text(0, -fov_deg/2 + 0.045, "↓ N (Inverted)", fontsize=7.5, color='#000000', fontweight='bold', ha='center', zorder=25)
+    ax_eye.text(fov_deg/2 - 0.045, 0, "E →", fontsize=7.5, color='#000000', fontweight='bold', va='center', ha='right', zorder=25)
+    ax_eye.text(0, -fov_deg/2 - 0.022, "20mm Eyepiece (60× Magnification, 50' True FOV)", fontsize=7.5, color='#000000', ha='center')
     ax_eye.axis('off')
 
     # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.65, 0.455, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.65, 0.07, 0.31, 0.37])
+    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
     ax_info.axis('off')
     dossier_text = (
         "OBJECT DOSSIER: NGC 869 & NGC 884 (CALDWELL 14)\n"
@@ -848,30 +885,32 @@ def make_chart_5(charts_dir):
         "4. An unmistakable glowing mist is visible naked-eye;\n"
         "   center Telrad or finder scope directly on it!"
     )
-    ax_info.text(0.0, 0.98, dossier_text, fontsize=8.0, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+    ax_info.text(0.0, 0.98, dossier_text, fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight')
+    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Chart 5 saved.")
+    print("Chart 5 saved (A4 Landscape).")
 
 def make_chart_6(charts_dir):
-    print("Generating Chart 6: M11 & Saturn (Toner-Saver Negative)...")
-    fig = plt.figure(figsize=(16, 10), facecolor='white', dpi=300)
-    fig.text(0.04, 0.966, "STAR-HOPPING FINDER CHART 6: M11 (WILD DUCK CLUSTER) & SATURN — SCUTUM / AQUARIUS", fontsize=15, fontweight='bold', color='#000000')
-    fig.text(0.04, 0.942, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=10, color='#333333')
+    print("Generating Chart 6: M11 & Saturn (A4 Landscape, Toner-Saver Negative)...")
+    fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
+    fig.text(0.035, 0.963, "STAR-HOPPING FINDER CHART 6: M11 (WILD DUCK CLUSTER) & SATURN — SCUTUM / AQUARIUS", fontsize=11.5, fontweight='bold', color='#000000')
+    fig.text(0.035, 0.936, "Location: Dvigrad (Bortle 4, SQM 21.0) | Sep 12, 2026 • 21:15 CEST | Sky-Watcher 200P Dobsonian (8\" f/6, 1200mm FL) | B/W Toner-Saver Edition", fontsize=7.8, color='#333333')
 
-    fig.text(0.04, 0.895, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder Orientation: N ↑, E ←)", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_wide = fig.add_axes([0.04, 0.07, 0.58, 0.81])
+    # VIEWPORT A
+    fig.text(0.035, 0.898, "VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART (Upright Naked-Eye / Finder: N ↑, E ←)", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_wide = fig.add_axes([0.035, 0.045, 0.485, 0.835])
     c_ra, c_dec = 288.0, 2.0
     setup_wide_field(ax_wide, c_ra, c_dec, 24.0, 24.0)
 
     key_stars = [
-        (297.70, 8.87, 'Altair (α Aql)\nmag 0.77', 0.5, 0.4, 10, 'bold'),
-        (286.55, -4.88, 'λ Aql (Spine Base)\nmag 3.43', 0.4, -0.6, 9, 'bold'),
-        (280.93, -4.75, 'β Sct\nmag 4.22', -0.4, 0.4, 8.5, 'normal'),
-        (281.29, -8.24, 'α Sct\nmag 3.85', -0.4, -0.6, 8.5, 'normal')
+        (297.70, 8.87, 'Altair (α Aql)\nmag 0.77', 0.4, -0.6, 8.5, 'bold'),
+        (286.55, -4.88, 'λ Aql (Spine Base)\nmag 3.43', -0.8, 0.4, 7.8, 'bold'),
+        (280.93, -4.75, 'β Sct\nmag 4.22', -0.4, 0.4, 7.2, 'normal'),
+        (281.29, -8.24, 'α Sct\nmag 3.85', -0.4, -0.6, 7.2, 'normal')
     ]
     for s_ra, s_dec, lbl, ox, oy, fsz, fweight in key_stars:
         x = d_ra(s_ra, c_ra) * math.cos(math.radians(s_dec))
@@ -887,31 +926,34 @@ def make_chart_6(charts_dir):
     m11_x = d_ra(m11_ra, c_ra) * math.cos(math.radians(m11_dec))
     m11_y = m11_dec - c_dec
 
-    arrow1 = FancyArrowPatch((alt_x, alt_y), (lam_x, lam_y), arrowstyle='->', mutation_scale=14, color='#000000', linestyle='--', linewidth=1.5, zorder=6)
+    arrow1 = FancyArrowPatch((alt_x, alt_y), (lam_x, lam_y), arrowstyle='->', mutation_scale=12, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow1)
-    ax_wide.text((alt_x+lam_x)/2 + 0.6, (alt_y+lam_y)/2, "[STEP 1] Follow Aquila spine\n14° South to λ Aql", fontsize=8.5, fontweight='bold', color='#000000',
+    ax_wide.text((alt_x+lam_x)/2 + 0.6, (alt_y+lam_y)/2, "[STEP 1] Follow Aquila spine\n14° South to λ Aql", fontsize=7.2, fontweight='bold', color='#000000',
                  bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=10)
 
-    arrow2 = FancyArrowPatch((lam_x, lam_y), (m11_x, m11_y), arrowstyle='->', mutation_scale=16, color='#000000', linestyle='--', linewidth=1.8, zorder=6)
+    arrow2 = FancyArrowPatch((lam_x, lam_y), (m11_x, m11_y), arrowstyle='->', mutation_scale=13, color='#000000', linestyle='--', linewidth=1.4, zorder=6)
     ax_wide.add_patch(arrow2)
-    ax_wide.text((lam_x+m11_x)/2 + 0.2, (lam_y+m11_y)/2 + 1.1, "[STEP 2] Slew 4.5° WSW\ninto Scutum Star Cloud", fontsize=8.5, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0), zorder=10)
+    ax_wide.text((lam_x+m11_x)/2 + 0.2, (lam_y+m11_y)/2 + 1.1, "[STEP 2] Slew 4.5° WSW\ninto Scutum Star Cloud", fontsize=7.2, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9), zorder=10)
 
-    draw_telrad_reticle(ax_wide, m11_x, m11_y, (2.1, 1.8))
+    draw_telrad_reticle(ax_wide, m11_x, m11_y, (2.0, -1.8))
     draw_target_marker(ax_wide, m11_x, m11_y)
-    ax_wide.text(m11_x - 0.6, m11_y - 0.9, "M11 WILD DUCK CLUSTER", fontsize=9, fontweight='bold', color='#000000',
-                 bbox=dict(boxstyle='round,pad=0.3', facecolor='#ffffff', edgecolor='#000000', linewidth=1.4), zorder=15)
+    ax_wide.text(m11_x - 0.5, m11_y - 1.2, "M11 WILD DUCK CLUSTER", fontsize=7.8, fontweight='bold', color='#000000',
+                 bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2), zorder=15)
 
-    # VIEWPORT B: TWO INSETS
-    fig.text(0.65, 0.895, "VIEWPORT B: TELESCOPE SIMULATIONS (Negative Inverted 180°: N ↓, E →)", fontsize=9.5, fontweight='bold', color='#000000')
+    # VIEWPORT B: TWO INSETS (M11 + SATURN)
+    fig.text(0.545, 0.898, "VIEWPORT B: TELESCOPE SIMULATIONS (Negative Inverted 180°: N ↓, E →)", fontsize=8.2, fontweight='bold', color='#000000')
 
-    ax_eye1 = fig.add_axes([0.65, 0.52, 0.15, 0.36])
+    # Inset B1: M11
+    ax_eye1 = fig.add_axes([0.550, 0.495, 0.185, 0.380])
     ax_eye1.set_facecolor('white')
     fov_deg = 0.52
-    ax_eye1.set_xlim(-fov_deg/2, fov_deg/2); ax_eye1.set_ylim(-fov_deg/2, fov_deg/2); ax_eye1.set_aspect('equal')
-    ax_eye1.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
-    ax_eye1.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
-    ax_eye1.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.8, zorder=2)
+    ax_eye1.set_xlim(-fov_deg/2 - 0.015, fov_deg/2 + 0.015)
+    ax_eye1.set_ylim(-fov_deg/2 - 0.030, fov_deg/2 + 0.025)
+    ax_eye1.set_aspect('equal')
+    ax_eye1.add_patch(Circle((0, 0), fov_deg/2, facecolor='#ffffff', edgecolor='#000000', linewidth=1.6, zorder=1))
+    ax_eye1.plot([0, 0], [-fov_deg/2, fov_deg/2], color='#e2e8f0', linestyle=':', linewidth=0.7, zorder=2)
+    ax_eye1.plot([-fov_deg/2, fov_deg/2], [0, 0], color='#e2e8f0', linestyle=':', linewidth=0.7, zorder=2)
 
     m11_field = load_field('m11')
     for st in m11_field:
@@ -928,31 +970,32 @@ def make_chart_6(charts_dir):
     r_m11 = np.random.exponential(0.04, n_m11)
     th_m11 = np.random.uniform(np.pi/4, 5*np.pi/4, n_m11)
     ax_eye1.scatter(r_m11*np.cos(th_m11), r_m11*np.sin(th_m11), s=np.random.uniform(1.5, 7.0, n_m11), color='#000000', alpha=0.9, zorder=13)
-    ax_eye1.plot(0.015, -0.01, 'o', color='#000000', markersize=5.0, zorder=16)
-    ax_eye1.plot(0.015, -0.01, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.0, markersize=10.0, zorder=16)
+    ax_eye1.plot(0.015, -0.01, 'o', color='#000000', markersize=4.5, zorder=16)
+    ax_eye1.plot(0.015, -0.01, 'o', color='none', markeredgecolor='#000000', markeredgewidth=1.0, markersize=9.0, zorder=16)
 
-    ax_eye1.text(0, fov_deg/2 + 0.025, "B1: M11 (12.5mm / 96×)", fontsize=8.5, fontweight='bold', color='#000000', ha='center')
-    ax_eye1.text(0, -fov_deg/2 - 0.025, "Inverted 180° View", fontsize=7.5, color='#333333', ha='center')
+    ax_eye1.text(0, fov_deg/2 + 0.020, "B1: M11 (12.5mm / 96×)", fontsize=7.5, fontweight='bold', color='#000000', ha='center')
+    ax_eye1.text(0, -fov_deg/2 - 0.022, "Inverted 180° View", fontsize=6.8, color='#333333', ha='center')
     ax_eye1.axis('off')
 
-    ax_eye2 = fig.add_axes([0.81, 0.52, 0.15, 0.36])
+    # Inset B2: Saturn
+    ax_eye2 = fig.add_axes([0.765, 0.495, 0.185, 0.380])
     ax_eye2.set_facecolor('white')
-    ax_eye2.set_xlim(-0.06, 0.06); ax_eye2.set_ylim(-0.06, 0.06); ax_eye2.set_aspect('equal')
-    ax_eye2.add_patch(Circle((0, 0), 0.06, facecolor='#ffffff', edgecolor='#000000', linewidth=1.8, zorder=1))
+    ax_eye2.set_xlim(-0.065, 0.065); ax_eye2.set_ylim(-0.075, 0.075); ax_eye2.set_aspect('equal')
+    ax_eye2.add_patch(Circle((0, 0), 0.06, facecolor='#ffffff', edgecolor='#000000', linewidth=1.6, zorder=1))
 
-    ax_eye2.add_patch(Circle((0, 0), 0.014, facecolor='#f8fafc', edgecolor='#000000', linewidth=1.2, zorder=12))
-    ax_eye2.plot([-0.013, 0.013], [-0.002, -0.002], color='#475569', linewidth=1.1, alpha=0.8, zorder=13)
-    ax_eye2.add_patch(Ellipse((0, 0), 0.065, 0.006, angle=-12, facecolor='#ffffff', edgecolor='#000000', linewidth=1.2, zorder=14))
-    ax_eye2.plot(0.042, 0.018, 'o', color='#000000', markersize=4.0, zorder=15)
-    ax_eye2.text(0.042, 0.024, "Titan (mag 8.5)", fontsize=7, color='#000000', fontweight='bold', ha='center', zorder=20)
+    ax_eye2.add_patch(Circle((0, 0), 0.014, facecolor='#f8fafc', edgecolor='#000000', linewidth=1.1, zorder=12))
+    ax_eye2.plot([-0.013, 0.013], [-0.002, -0.002], color='#475569', linewidth=1.0, alpha=0.8, zorder=13)
+    ax_eye2.add_patch(Ellipse((0, 0), 0.065, 0.006, angle=-12, facecolor='#ffffff', edgecolor='#000000', linewidth=1.1, zorder=14))
+    ax_eye2.plot(0.042, 0.018, 'o', color='#000000', markersize=3.5, zorder=15)
+    ax_eye2.text(0.042, 0.024, "Titan (mag 8.5)", fontsize=6.8, color='#000000', fontweight='bold', ha='center', zorder=20)
 
-    ax_eye2.text(0, 0.065, "B2: SATURN (12.5mm / 96×)", fontsize=8.5, fontweight='bold', color='#000000', ha='center')
-    ax_eye2.text(0, -0.072, "Shallow Rings & Titan", fontsize=7.5, color='#333333', ha='center')
+    ax_eye2.text(0, 0.065, "B2: SATURN (12.5mm / 96×)", fontsize=7.5, fontweight='bold', color='#000000', ha='center')
+    ax_eye2.text(0, -0.072, "Shallow Rings & Titan", fontsize=6.8, color='#333333', ha='center')
     ax_eye2.axis('off')
 
     # VIEWPORT C: DOSSIER & INSTRUCTIONS
-    fig.text(0.65, 0.455, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=9.5, fontweight='bold', color='#000000')
-    ax_info = fig.add_axes([0.65, 0.07, 0.31, 0.37])
+    fig.text(0.545, 0.448, "VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS", fontsize=8.2, fontweight='bold', color='#000000')
+    ax_info = fig.add_axes([0.545, 0.045, 0.420, 0.390])
     ax_info.axis('off')
     dossier_text = (
         "OBJECT DOSSIER: M11 & SATURN\n"
@@ -980,13 +1023,14 @@ def make_chart_6(charts_dir):
         "2. Saturn: Look low in the ESE after 21:40 CEST. Identify the\n"
         "   brightest golden non-twinkling object below Pegasus!"
     )
-    ax_info.text(0.0, 0.98, dossier_text, fontsize=7.8, color='#000000', fontfamily='monospace', va='top',
-                 bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
+    ax_info.text(0.0, 0.98, dossier_text, fontsize=6.8, color='#000000', fontfamily='monospace', va='top',
+                 bbox=dict(boxstyle='round,pad=0.45', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1))
 
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.png'), dpi=300, facecolor='white', bbox_inches='tight')
-    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.pdf'), dpi=300, facecolor='white', bbox_inches='tight')
+    # Exact A4 page export (NO bbox_inches='tight')
+    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.png'), dpi=300, facecolor='white')
+    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn.pdf'), dpi=300, facecolor='white')
     plt.close()
-    print("Chart 6 saved.")
+    print("Chart 6 saved (A4 Landscape).")
 
 def generate_all_charts(output_dir=None):
     if output_dir is None:

@@ -61,12 +61,15 @@ All stargazing assets and sessions are organized into structured directories:
 ### Rule 2.4: Observation Session Packaging
 - Store all outputs in `observations/<location-slug>-<YYYY-MM-DD>/`.
 - **Master Guide Plan (`STARGAZING_PLAN.pdf`)**:
-  - Format strictly as a **2-page document** (printable on **1 single double-sided A4 sheet**).
+  - Format strictly as a **2-page document** in **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`, printable on **1 single double-sided A4 sheet**).
   - Page 1: Header, site profile box, optical config box, moon status banner, timeline Gantt chart, twilight schedule table.
   - Page 2: Curated target catalog table, practical field protocols box, sky charts directory table.
   - **No Star-Hopping Text Duplication**: Omit step-by-step hopping text from the master guide; all hopping steps live on the charts.
+- **All-Sky Planisphere (`full_sky_map.pdf`)**:
+  - Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
 - **Finder Charts (Toner-Saver Negative B/W Edition)**:
-  - Generate high-resolution PDF and PNG charts for every primary target.
+  - Generate high-resolution PDF and PNG charts for every primary target formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`).
+  - **Zero Auto-Cropping (`bbox_inches='tight'` prohibited)**: Never use `bbox_inches='tight'` when saving PDF charts in Matplotlib; it alters the bounding box and breaks A4 standard dimensions. Use explicit subplots with safe 10–12 mm margins.
   - **Viewport A**: Wide-Field Star-Hopping Chart (Upright naked-eye / finder: N ↑, E ←).
   - **Viewport B**: Telescope Eyepiece Simulation in **Toner-Saver Negative** (pure white background `#ffffff`, black stars, grey DSO contours, pre-inverted 180°: N ↓, E →).
   - **Viewport C**: Target Dossier & Star-Hopping Instructions.

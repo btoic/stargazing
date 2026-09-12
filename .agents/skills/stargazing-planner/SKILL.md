@@ -93,10 +93,13 @@ Select 8 to 12 showpiece objects meeting these criteria:
 - Format observation schedules as Mermaid `gantt` charts or `flowchart LR` process pipelines. Quote labels containing parentheses or brackets.
 
 ### Master Plan PDF (`STARGAZING_PLAN.pdf`)
-- Must fit onto **exactly 2 pages** (for 1 single double-sided A4 sheet):
+- Must fit onto **exactly 2 pages** in **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`, for 1 single double-sided A4 sheet):
   - **Page 1**: Title, location profile box, telescope configuration box, moon verdict banner, observation timeline Gantt chart, twilight schedule table.
   - **Page 2**: Curated Target Catalog table (referencing charts), Practical Field Protocols box, and Sky Charts Directory table.
   - **Zero Step-by-Step Hop Duplication**: Omit detailed hop text from the master plan—star-hopping instructions live on the dedicated charts.
+
+### All-Sky Planisphere (`full_sky_map.pdf`)
+- Format strictly as **Standard A4 Portrait** (`210 × 297 mm` / `595.28 × 841.89 pt`).
 
 ### Standalone E-Reader Field Book (`STARGAZING_FIELD_GUIDE.epub`)
 - Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book.
@@ -105,7 +108,9 @@ Select 8 to 12 showpiece objects meeting these criteria:
 - **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (Kindle, Kobo, Boox, Tolino, PocketBook).
 
 ### Finder Charts (Toner-Saver Negative B/W Edition)
-Every finder chart (`charts/chart_<N>_<name>.pdf` and `.png`) must have three distinct, labeled viewports:
+Every finder chart (`charts/chart_<N>_<name>.pdf` and `.png`) must be formatted strictly as **Standard A4 Landscape** (`297 × 210 mm` / `841.89 × 595.28 pt`):
+- **Zero Auto-Cropping (`bbox_inches='tight'` prohibited)**: Never pass `bbox_inches='tight'` to `plt.savefig()` when exporting printable PDF charts. Matplotlib's tight bounding box calculation alters the MediaBox dimensions and ruins 100% scale A4 printing. Use explicit subplots within safe margins (`x: 0.035..0.965`, `y: 0.045..0.880`).
+- Every chart features three distinct, labeled viewports:
 1. **`VIEWPORT A: WIDE-FIELD STAR-HOPPING CHART`**:
    - Upright naked-eye / finder orientation (N ↑, E ←).
    - High-contrast black stars, constellation guide lines, Telrad concentric rings (solid 0.5°, dashed 2.0°, dash-dot 4.0°, dotted 5.0° finder circle), and numbered step badges (`[STEP 1]`, `[STEP 2]`).

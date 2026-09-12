@@ -5,10 +5,11 @@ fully indexed, high-contrast EPUB e-book optimized for e-ink e-readers (specific
 Kindle, Kobo, Boox) and red-light nighttime viewing.
 
 Key PocketBook Era Features:
-- Multi-page target navigation:
+- Multi-page target navigation (Natural 4-Page Zero-Blank-Page Flow):
   1. Eyepiece Simulation & Target Dossier side-by-side (Viewport B + C)
-  2. Full-screen Wide-Field Star Hopping Chart (Viewport A, stars to mag 10.3, Telrad rings, magnitude key)
-  3. Text-based Step-by-Step Star-Hopping Narrative
+  2. Constellation Context & Orientation Chart (surrounding constellations, naked-eye stars to mag 6.2, next-page finder viewport boundary)
+  3. Full-screen Wide-Field Star Hopping Chart (Viewport A, stars to mag 10.3, Telrad rings, magnitude key)
+  4. Text-based Step-by-Step Star-Hopping Narrative
 - Dynamic series metadata (Calibre series and EPUB 3 collection tags) incremented per observation
 - Dynamic naming matching the observation session directory (<location>-<date>.epub)
 """
@@ -73,16 +74,22 @@ def build_epub(session_dir=None, output_path=None):
         "timeline_gantt.png": os.path.join(session_dir, "timeline_gantt.png"),
         # Screen-optimized PocketBook Era assets
         "chart_1_lyra_m57_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_eyepiece_dossier.png"),
+        "chart_1_lyra_m57_context.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_context.png"),
         "chart_1_lyra_m57_widefield.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_widefield.png"),
         "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png"),
+        "chart_2_vulpecula_m27_albireo_context.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_context.png"),
         "chart_2_vulpecula_m27_albireo_widefield.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_widefield.png"),
         "chart_3_hercules_m13_m92_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_eyepiece_dossier.png"),
+        "chart_3_hercules_m13_m92_context.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_context.png"),
         "chart_3_hercules_m13_m92_widefield.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_widefield.png"),
         "chart_4_andromeda_m31_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_eyepiece_dossier.png"),
+        "chart_4_andromeda_m31_context.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_context.png"),
         "chart_4_andromeda_m31_widefield.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_widefield.png"),
         "chart_5_perseus_double_cluster_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_eyepiece_dossier.png"),
+        "chart_5_perseus_double_cluster_context.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_context.png"),
         "chart_5_perseus_double_cluster_widefield.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_widefield.png"),
         "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png"),
+        "chart_6_scutum_m11_and_saturn_context.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_context.png"),
         "chart_6_scutum_m11_and_saturn_widefield.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_widefield.png"),
         # Collimation tutorial figures
         "collimation_hardware_controls.png": os.path.join(REPO_ROOT, "tutorials", "images", "collimation_hardware_controls.png"),
@@ -299,7 +306,7 @@ ol.hop-list li {
         <p><b>Coordinates:</b> 45.12637° N, 13.81296° E | Elevation: 143 m</p>
         <p><b>Telescope:</b> Sky-Watcher Skyliner 200P Dobsonian (8" f/6 Newtonian)</p>
         <p><b>Display Profile:</b> PocketBook Era E-Reader (Carta 1200, 300 ppi)</p>
-        <p><b>Display Optimization:</b> 12px Font Zoom / Screen-Fitted 3-Page Flow</p>
+        <p><b>Display Optimization:</b> 12px Font Zoom / Screen-Fitted 4-Page Flow</p>
         <hr style="border: 1px dashed #666666; margin: 1.0em 0;"/>
         <p style="font-size: 11px; color: #444444;">PocketBook Era Screen-Fitted Flow (Optimized for 12px Font Zoom)<br/>Toner-Saver Negative B/W Star Charts (Stars to Mag 10.3)</p>
         <p style="margin-top: 1.2em;"><a href="toc.xhtml" style="font-family: sans-serif; font-weight: bold; text-decoration: none; border: 2px solid #000; padding: 5px 12px; background: #eee; color: #000;">OPEN TABLE OF CONTENTS →</a></p>
@@ -649,7 +656,7 @@ ol.hop-list li {
 
 
     # ==============================================================================
-    # TARGET 1: M57 RING NEBULA (Unified 3-Page Flow)
+    # TARGET 1: M57 RING NEBULA (Unified 4-Page Flow)
     # ==============================================================================
     c1_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -671,12 +678,17 @@ ol.hop-list li {
 
     <img src="images/chart_1_lyra_m57_eyepiece_dossier.png" class="chart-img-side" alt="M57 Eyepiece Simulation and Target Dossier"/>
 
-    <!-- SCREEN 2: Fullscreen Wide-Field Star-Hopping Chart -->
+    <!-- SCREEN 2: Constellation Context Orientation Chart -->
+    <div class="chart-page">
+        <img src="images/chart_1_lyra_m57_context.png" class="chart-img-wide" alt="M57 Constellation Context Orientation Chart"/>
+    </div>
+
+    <!-- SCREEN 3: Fullscreen Wide-Field Star-Hopping Chart -->
     <div class="chart-page">
         <img src="images/chart_1_lyra_m57_widefield.png" class="chart-img-wide" alt="M57 Wide-Field Star-Hopping Chart"/>
     </div>
 
-    <!-- SCREEN 3: Step-by-Step Star-Hopping Guide -->
+    <!-- SCREEN 4: Step-by-Step Star-Hopping Guide -->
     <div class="instructions-page">
         <h2>Target 1: Step-by-Step Star-Hopping Guide</h2>
         <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
@@ -700,7 +712,7 @@ ol.hop-list li {
 
 
     # ==============================================================================
-    # TARGET 2: M27 DUMBBELL NEBULA & ALBIREO (Unified 3-Page Flow)
+    # TARGET 2: M27 DUMBBELL NEBULA & ALBIREO (Unified 4-Page Flow)
     # ==============================================================================
     c2_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -723,12 +735,17 @@ ol.hop-list li {
 
     <img src="images/chart_2_vulpecula_m27_albireo_eyepiece_dossier.png" class="chart-img-side" alt="M27 Eyepiece Simulation and Target Dossier"/>
 
-    <!-- SCREEN 2: Fullscreen Wide-Field Star-Hopping Chart -->
+    <!-- SCREEN 2: Constellation Context Orientation Chart -->
+    <div class="chart-page">
+        <img src="images/chart_2_vulpecula_m27_albireo_context.png" class="chart-img-wide" alt="M27 and Albireo Constellation Context Orientation Chart"/>
+    </div>
+
+    <!-- SCREEN 3: Fullscreen Wide-Field Star-Hopping Chart -->
     <div class="chart-page">
         <img src="images/chart_2_vulpecula_m27_albireo_widefield.png" class="chart-img-wide" alt="M27 Wide-Field Star-Hopping Chart"/>
     </div>
 
-    <!-- SCREEN 3: Step-by-Step Star-Hopping Guide -->
+    <!-- SCREEN 4: Step-by-Step Star-Hopping Guide -->
     <div class="instructions-page">
         <h2>Target 2: Step-by-Step Star-Hopping Guide</h2>
         <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
@@ -752,7 +769,7 @@ ol.hop-list li {
 
 
     # ==============================================================================
-    # TARGET 3: HERCULES GLOBULARS M13 & M92 (Unified 3-Page Flow)
+    # TARGET 3: HERCULES GLOBULARS M13 & M92 (Unified 4-Page Flow)
     # ==============================================================================
     c3_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -775,12 +792,17 @@ ol.hop-list li {
 
     <img src="images/chart_3_hercules_m13_m92_eyepiece_dossier.png" class="chart-img-side" alt="Hercules M13 Eyepiece Simulation and Target Dossier"/>
 
-    <!-- SCREEN 2: Fullscreen Wide-Field Star-Hopping Chart -->
+    <!-- SCREEN 2: Constellation Context Orientation Chart -->
+    <div class="chart-page">
+        <img src="images/chart_3_hercules_m13_m92_context.png" class="chart-img-wide" alt="Hercules Globulars Constellation Context Orientation Chart"/>
+    </div>
+
+    <!-- SCREEN 3: Fullscreen Wide-Field Star-Hopping Chart -->
     <div class="chart-page">
         <img src="images/chart_3_hercules_m13_m92_widefield.png" class="chart-img-wide" alt="Hercules Wide-Field Star-Hopping Chart"/>
     </div>
 
-    <!-- SCREEN 3: Step-by-Step Star-Hopping Guide -->
+    <!-- SCREEN 4: Step-by-Step Star-Hopping Guide -->
     <div class="instructions-page">
         <h2>Target 3: Step-by-Step Star-Hopping Guide</h2>
         <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
@@ -805,7 +827,7 @@ ol.hop-list li {
 
 
     # ==============================================================================
-    # TARGET 4: M31 ANDROMEDA GALAXY (Unified 3-Page Flow)
+    # TARGET 4: M31 ANDROMEDA GALAXY (Unified 4-Page Flow)
     # ==============================================================================
     c4_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -828,12 +850,17 @@ ol.hop-list li {
 
     <img src="images/chart_4_andromeda_m31_eyepiece_dossier.png" class="chart-img-side" alt="M31 Eyepiece Simulation and Target Dossier"/>
 
-    <!-- SCREEN 2: Fullscreen Wide-Field Star-Hopping Chart -->
+    <!-- SCREEN 2: Constellation Context Orientation Chart -->
+    <div class="chart-page">
+        <img src="images/chart_4_andromeda_m31_context.png" class="chart-img-wide" alt="Andromeda Galaxy Constellation Context Orientation Chart"/>
+    </div>
+
+    <!-- SCREEN 3: Fullscreen Wide-Field Star-Hopping Chart -->
     <div class="chart-page">
         <img src="images/chart_4_andromeda_m31_widefield.png" class="chart-img-wide" alt="Andromeda Wide-Field Star-Hopping Chart"/>
     </div>
 
-    <!-- SCREEN 3: Step-by-Step Star-Hopping Guide -->
+    <!-- SCREEN 4: Step-by-Step Star-Hopping Guide -->
     <div class="instructions-page">
         <h2>Target 4: Step-by-Step Star-Hopping Guide</h2>
         <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
@@ -858,7 +885,7 @@ ol.hop-list li {
 
 
     # ==============================================================================
-    # TARGET 5: PERSEUS DOUBLE CLUSTER (Unified 3-Page Flow)
+    # TARGET 5: PERSEUS DOUBLE CLUSTER (Unified 4-Page Flow)
     # ==============================================================================
     c5_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -881,12 +908,17 @@ ol.hop-list li {
 
     <img src="images/chart_5_perseus_double_cluster_eyepiece_dossier.png" class="chart-img-side" alt="Double Cluster Eyepiece Simulation and Target Dossier"/>
 
-    <!-- SCREEN 2: Fullscreen Wide-Field Star-Hopping Chart -->
+    <!-- SCREEN 2: Constellation Context Orientation Chart -->
+    <div class="chart-page">
+        <img src="images/chart_5_perseus_double_cluster_context.png" class="chart-img-wide" alt="Double Cluster Constellation Context Orientation Chart"/>
+    </div>
+
+    <!-- SCREEN 3: Fullscreen Wide-Field Star-Hopping Chart -->
     <div class="chart-page">
         <img src="images/chart_5_perseus_double_cluster_widefield.png" class="chart-img-wide" alt="Double Cluster Wide-Field Star-Hopping Chart"/>
     </div>
 
-    <!-- SCREEN 3: Step-by-Step Star-Hopping Guide -->
+    <!-- SCREEN 4: Step-by-Step Star-Hopping Guide -->
     <div class="instructions-page">
         <h2>Target 5: Step-by-Step Star-Hopping Guide</h2>
         <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
@@ -911,7 +943,7 @@ ol.hop-list li {
 
 
     # ==============================================================================
-    # TARGET 6: M11 WILD DUCK CLUSTER & SATURN (Unified 3-Page Flow)
+    # TARGET 6: M11 WILD DUCK CLUSTER & SATURN (Unified 4-Page Flow)
     # ==============================================================================
     c6_html = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
@@ -934,12 +966,17 @@ ol.hop-list li {
 
     <img src="images/chart_6_scutum_m11_and_saturn_eyepiece_dossier.png" class="chart-img-side" alt="M11 and Saturn Eyepiece Simulations and Target Dossier"/>
 
-    <!-- SCREEN 2: Fullscreen Wide-Field Star-Hopping Chart -->
+    <!-- SCREEN 2: Constellation Context Orientation Chart -->
+    <div class="chart-page">
+        <img src="images/chart_6_scutum_m11_and_saturn_context.png" class="chart-img-wide" alt="M11 and Saturn Constellation Context Orientation Chart"/>
+    </div>
+
+    <!-- SCREEN 3: Fullscreen Wide-Field Star-Hopping Chart -->
     <div class="chart-page">
         <img src="images/chart_6_scutum_m11_and_saturn_widefield.png" class="chart-img-wide" alt="M11 and Saturn Wide-Field Star-Hopping Chart"/>
     </div>
 
-    <!-- SCREEN 3: Step-by-Step Star-Hopping Guide -->
+    <!-- SCREEN 4: Step-by-Step Star-Hopping Guide -->
     <div class="instructions-page">
         <h2>Target 6: Step-by-Step Star-Hopping Guide</h2>
         <div class="subtitle">Field Navigation &amp; Eyepiece Acquisition Strategy</div>
@@ -1137,8 +1174,8 @@ ol.hop-list li {
     <meta name="pocketbook:font-size" content="12px"/>
     <meta name="pocketbook:optimized-zoom" content="12px"/>
     <meta property="schema:accessibilityFeature">readingOrder</meta>
-    <meta property="schema:accessibilitySummary">Optimized for PocketBook Era at 12px font zoom with screen-fitted finder charts and natural 3-page target pagination.</meta>
-    <dc:description>Stargazing observation guide and toner-saver finder charts for {html.escape(session_folder)}. Optimized for PocketBook Era at 12px font zoom with natural 3-page target flow.</dc:description>
+    <meta property="schema:accessibilitySummary">Optimized for PocketBook Era at 12px font zoom with screen-fitted finder charts and natural 4-page target pagination.</meta>
+    <dc:description>Stargazing observation guide and toner-saver finder charts for {html.escape(session_folder)}. Optimized for PocketBook Era at 12px font zoom with natural 4-page target flow.</dc:description>
   </metadata>
   <manifest>
     {manifest_content}

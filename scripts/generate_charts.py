@@ -163,6 +163,135 @@ def setup_wide_field(ax, c_ra, c_dec, span_ra, span_dec, max_mag=10.3, show_lege
     ax.set_xticks([]); ax.set_yticks([])
     return x_min, x_max, y_min, y_max
 
+def setup_context_field(ax, c_ra, c_dec, span_ra, span_dec,
+                        vp_c_ra, vp_c_dec, vp_span_ra, vp_span_dec,
+                        constel_labels, star_labels=None, target_coords=None,
+                        extra_fn=None):
+    """Sets up a zoomed-out regional constellation context chart showing naked-eye stars,
+    neighboring constellation outlines, and a dashed box marking the next-page finder viewport.
+    """
+    ax.set_facecolor('#ffffff')
+    cos_dec = math.cos(math.radians(c_dec))
+    x_min, x_max = -(span_ra / 2.0) * cos_dec, (span_ra / 2.0) * cos_dec
+    y_min, y_max = -(span_dec / 2.0), (span_dec / 2.0)
+    ax.set_xlim(x_max, x_min)
+    ax.set_ylim(y_min, y_max)
+    ax.set_aspect('equal')
+
+    # 1. Constellation lines - high contrast dark charcoal
+    for feat in lines_data['features']:
+        for seg in feat['geometry']['coordinates']:
+            for i in range(len(seg)-1):
+                p1, p2 = seg[i], seg[i+1]
+                ra1, dec1 = norm_ra(p1[0]), p1[1]
+                ra2, dec2 = norm_ra(p2[0]), p2[1]
+                dra1, dra2 = d_ra(ra1, c_ra), d_ra(ra2, c_ra)
+                if abs(dra1 - dra2) < 35.0 and abs(dra1) < span_ra*0.75 and abs(dec1 - c_dec) < span_dec*0.75 and \
+                   abs(dra2) < span_ra*0.75 and abs(dec2 - c_dec) < span_dec*0.75:
+                    x1 = dra1 * math.cos(math.radians(dec1))
+                    y1 = dec1 - c_dec
+                    x2 = dra2 * math.cos(math.radians(dec2))
+                    y2 = dec2 - c_dec
+                    ax.plot([x1, x2], [y1, y2], color='#475569', linewidth=1.1, linestyle='-', alpha=0.85, zorder=2)
+
+    # 2. Naked-eye stars (mag <= 6.2)
+    max_mag = 6.2
+    for f in stars_data['features']:
+        mag = f['properties']['mag']
+        if mag > max_mag:
+            continue
+        ra = norm_ra(f['geometry']['coordinates'][0])
+        dec = f['geometry']['coordinates'][1]
+        dra = d_ra(ra, c_ra)
+        if abs(dra) < span_ra*0.65 and abs(dec - c_dec) < span_dec*0.65:
+            x = dra * math.cos(math.radians(dec))
+            y = dec - c_dec
+            ms = max(1.0, round((max_mag + 0.5 - mag)**1.8 * 0.45 + 0.8, 2))
+            ax.plot(x, y, 'o', color='#000000', markersize=ms, zorder=5)
+
+    # 3. Viewport Boundary Box
+    ra_left = vp_c_ra + vp_span_ra / 2.0
+    ra_right = vp_c_ra - vp_span_ra / 2.0
+    dec_bot = vp_c_dec - vp_span_dec / 2.0
+    dec_top = vp_c_dec + vp_span_dec / 2.0
+
+    corners = [
+        (ra_left, dec_bot),
+        (ra_right, dec_bot),
+        (ra_right, dec_top),
+        (ra_left, dec_top)
+    ]
+    corners_xy = []
+    for r, d in corners:
+        x_pt = d_ra(r, c_ra) * math.cos(math.radians(d))
+        y_pt = d - c_dec
+        corners_xy.append((x_pt, y_pt))
+
+    vp_poly = Polygon(corners_xy, closed=True, facecolor='#f8fafc', edgecolor='#000000',
+                      linestyle='--', linewidth=1.8, alpha=0.4, zorder=6)
+    ax.add_patch(vp_poly)
+    bx = [pt[0] for pt in corners_xy] + [corners_xy[0][0]]
+    by = [pt[1] for pt in corners_xy] + [corners_xy[0][1]]
+    ax.plot(bx, by, color='#000000', linestyle='--', linewidth=1.8, zorder=7)
+
+    # Badge for Viewport
+    center_x = d_ra(vp_c_ra, c_ra) * math.cos(math.radians(vp_c_dec))
+    max_y = max(pt[1] for pt in corners_xy)
+    badge_y = max_y + 1.2 if (max_y + 2.0) < y_max else max_y - 1.5
+    ax.text(center_x, badge_y, "[NEXT PAGE FINDER VIEWPORT]", fontsize=7.8, fontweight='bold',
+            color='#000000', ha='center', va='center',
+            bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.1),
+            zorder=20)
+
+    # 4. Target marker(s)
+    if target_coords:
+        for t_name, t_ra, t_dec, ox, oy in target_coords:
+            tx = d_ra(t_ra, c_ra) * math.cos(math.radians(t_dec))
+            ty = t_dec - c_dec
+            draw_target_marker(ax, tx, ty)
+            ax.text(tx + ox, ty + oy, f"Target: {t_name}", fontsize=7.6, fontweight='bold', color='#000000',
+                    bbox=dict(boxstyle='round,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.9),
+                    zorder=22)
+
+    # 5. Constellation Labels
+    for c_name, c_ra_lbl, c_dec_lbl in constel_labels:
+        dra = d_ra(c_ra_lbl, c_ra)
+        x = dra * math.cos(math.radians(c_dec_lbl))
+        y = c_dec_lbl - c_dec
+        ax.text(x, y, c_name.upper(), fontsize=9.0, fontweight='bold', color='#0f172a',
+                ha='center', va='center',
+                bbox=dict(boxstyle='square,pad=0.22', facecolor='#ffffff', edgecolor='#94a3b8', linewidth=0.8, alpha=0.9),
+                zorder=12)
+
+    # 6. Star Labels
+    if star_labels:
+        for s_name, s_ra, s_dec, ox, oy, fsz, fweight in star_labels:
+            dra = d_ra(s_ra, c_ra)
+            x = dra * math.cos(math.radians(s_dec))
+            y = s_dec - c_dec
+            ax.text(x + ox, y + oy, s_name, fontsize=fsz, fontweight=fweight, color='#000000',
+                    bbox=dict(boxstyle='round,pad=0.15', facecolor='#ffffff', edgecolor='none', alpha=0.8),
+                    zorder=14)
+
+    # 7. Extra annotations
+    if extra_fn:
+        extra_fn(ax)
+
+    # 8. Orientation Box (N ↑, ← E)
+    ax.text(0.035, 0.955, "N ↑\\n← E", transform=ax.transAxes, fontsize=8.5, fontweight='bold', color='#000000',
+            va='top', ha='left', bbox=dict(boxstyle='square,pad=0.2', facecolor='#ffffff', edgecolor='#000000', linewidth=0.8), zorder=25)
+
+    # 9. Naked-Eye Magnitude Note
+    ax.text(0.965, 0.035, "Naked-Eye Stars to Mag 6.2\\nBortle 4 Dvigrad Threshold", transform=ax.transAxes,
+            fontsize=6.8, color='#333333', ha='right', va='bottom',
+            bbox=dict(boxstyle='square,pad=0.25', facecolor='#ffffff', edgecolor='#666666', linewidth=0.8), zorder=25)
+
+    for spine in ax.spines.values():
+        spine.set_color('#000000')
+        spine.set_linewidth(1.1)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
 def draw_telrad_reticle(ax, cx, cy, label_pos=(2.1, 1.8)):
     """Draws standardized B/W Telrad & 5-deg Optical Finder rings."""
     ax.add_patch(Circle((cx, cy), 0.25, facecolor='none', edgecolor='#000000', linestyle='-', linewidth=1.1, zorder=8))
@@ -401,6 +530,25 @@ def get_chart_1_dossier(include_hop=True):
         )
     return txt
 
+def draw_chart_1_context(ax):
+    constels = [
+        ("Lyra", 281.5, 36.5),
+        ("Cygnus", 305.0, 42.0),
+        ("Hercules", 262.0, 34.0),
+        ("Vulpecula", 298.0, 24.5),
+        ("Draco", 274.0, 52.0)
+    ]
+    stars = [
+        ("Vega (mag 0.03)", 279.23, 38.78, 0.6, 0.6, 8.5, 'bold'),
+        ("Deneb (mag 1.25)", 310.36, 45.28, 0.6, 0.6, 8.0, 'bold'),
+        ("Albireo", 292.68, 27.96, -0.6, -0.6, 7.5, 'normal'),
+        ("Eltanin (γ Dra)", 269.15, 51.49, 0.6, 0.4, 7.5, 'normal')
+    ]
+    targets = [("M57 (Ring)", 283.396, 33.029, 0.5, -1.0)]
+    setup_context_field(ax, 285.0, 36.0, 52.0, 48.0,
+                        283.0, 36.0, 18.0, 18.0,
+                        constels, stars, targets)
+
 def make_chart_1(charts_dir):
     print("Generating Chart 1: M57 (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
@@ -441,6 +589,16 @@ def make_chart_1(charts_dir):
     plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57_eyepiece_dossier.png'), dpi=200, facecolor='white')
     plt.close(fig_side)
 
+    # Screen 2: Constellation Context Orientation Chart
+    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+    fig_ctx.text(0.05, 0.965, "M57 RING NEBULA — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+    draw_chart_1_context(ax_ctx)
+    plt.savefig(os.path.join(charts_dir, 'chart_1_lyra_m57_context.png'), dpi=200, facecolor='white')
+    plt.close(fig_ctx)
+
+    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M57 RING NEBULA — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
     fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
@@ -552,6 +710,29 @@ def get_chart_2_dossier(include_hop=True):
         )
     return txt
 
+def draw_chart_2_context(ax):
+    constels = [
+        ("Vulpecula", 302.0, 25.5),
+        ("Sagitta", 296.5, 17.5),
+        ("Cygnus", 306.0, 41.0),
+        ("Lyra", 281.0, 38.0),
+        ("Delphinus", 309.0, 15.0),
+        ("Aquila", 294.0, 4.5)
+    ]
+    stars = [
+        ("Vega", 279.23, 38.78, 0.6, 0.6, 8.2, 'bold'),
+        ("Deneb", 310.36, 45.28, 0.6, 0.6, 8.0, 'bold'),
+        ("Altair", 297.70, 8.87, -0.6, 0.4, 8.2, 'bold'),
+        ("Albireo (β Cyg)", 292.68, 27.96, -0.8, 0.4, 7.8, 'bold')
+    ]
+    targets = [
+        ("M27 (Dumbbell)", 299.901, 22.721, 0.5, 0.8),
+        ("Albireo", 292.68, 27.96, -0.5, -0.8)
+    ]
+    setup_context_field(ax, 298.0, 25.0, 54.0, 48.0,
+                        296.0, 24.0, 18.0, 18.0,
+                        constels, stars, targets)
+
 def make_chart_2(charts_dir):
     print("Generating Chart 2: M27 & Albireo (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
@@ -592,6 +773,16 @@ def make_chart_2(charts_dir):
     plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo_eyepiece_dossier.png'), dpi=200, facecolor='white')
     plt.close(fig_side)
 
+    # Screen 2: Constellation Context Orientation Chart
+    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+    fig_ctx.text(0.05, 0.965, "M27 DUMBBELL & ALBIREO — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+    draw_chart_2_context(ax_ctx)
+    plt.savefig(os.path.join(charts_dir, 'chart_2_vulpecula_m27_albireo_context.png'), dpi=200, facecolor='white')
+    plt.close(fig_ctx)
+
+    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M27 & ALBIREO — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
     fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
@@ -726,6 +917,28 @@ def get_chart_3_dossier(include_hop=True):
         )
     return txt
 
+def draw_chart_3_context(ax):
+    constels = [
+        ("Hercules", 253.0, 32.0),
+        ("Corona Borealis", 235.0, 28.5),
+        ("Lyra", 280.0, 38.5),
+        ("Draco", 267.0, 52.0),
+        ("Ophiuchus", 263.0, 14.5)
+    ]
+    stars = [
+        ("Vega", 279.23, 38.78, 0.6, 0.6, 8.2, 'bold'),
+        ("Alphecca", 233.67, 26.71, -0.6, 0.4, 7.8, 'bold'),
+        ("Rasalhague", 263.73, 12.56, 0.6, -0.6, 7.8, 'bold'),
+        ("Rastaban", 262.66, 52.30, 0.6, 0.4, 7.5, 'normal')
+    ]
+    targets = [
+        ("M13", 250.42, 36.46, -0.5, 0.7),
+        ("M92", 258.28, 43.14, 0.5, 0.7)
+    ]
+    setup_context_field(ax, 255.0, 35.0, 56.0, 48.0,
+                        256.0, 38.0, 20.0, 20.0,
+                        constels, stars, targets)
+
 def make_chart_3(charts_dir):
     print("Generating Chart 3: M13 & M92 (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
@@ -766,6 +979,16 @@ def make_chart_3(charts_dir):
     plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92_eyepiece_dossier.png'), dpi=200, facecolor='white')
     plt.close(fig_side)
 
+    # Screen 2: Constellation Context Orientation Chart
+    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+    fig_ctx.text(0.05, 0.965, "HERCULES GLOBULARS M13 & M92 — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+    draw_chart_3_context(ax_ctx)
+    plt.savefig(os.path.join(charts_dir, 'chart_3_hercules_m13_m92_context.png'), dpi=200, facecolor='white')
+    plt.close(fig_ctx)
+
+    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "HERCULES M13 & M92 — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
     fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
@@ -892,6 +1115,27 @@ def get_chart_4_dossier(include_hop=True):
         )
     return txt
 
+def draw_chart_4_context(ax):
+    constels = [
+        ("Andromeda", 8.0, 33.0),
+        ("Pegasus", 350.0, 22.0),
+        ("Cassiopeia", 12.0, 58.0),
+        ("Triangulum", 31.0, 33.0),
+        ("Perseus", 44.0, 42.0),
+        ("Pisces", 8.0, 12.0)
+    ]
+    stars = [
+        ("Alpheratz", 2.10, 29.09, -0.6, -0.6, 7.8, 'bold'),
+        ("Mirach", 17.43, 35.62, 0.6, -0.6, 7.8, 'bold'),
+        ("Almach", 30.97, 42.33, 0.6, 0.4, 7.5, 'normal'),
+        ("Scheat (β Peg)", 346.0, 28.08, -0.6, 0.4, 7.5, 'normal'),
+        ("Navi (γ Cas)", 14.18, 60.72, 0.6, -0.8, 7.5, 'normal')
+    ]
+    targets = [("M31 Andromeda", 10.685, 41.269, 0.5, 0.8)]
+    setup_context_field(ax, 10.0, 35.0, 62.0, 52.0,
+                        12.0, 36.0, 26.0, 24.0,
+                        constels, stars, targets)
+
 def make_chart_4(charts_dir):
     print("Generating Chart 4: M31 Andromeda (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
@@ -932,6 +1176,16 @@ def make_chart_4(charts_dir):
     plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31_eyepiece_dossier.png'), dpi=200, facecolor='white')
     plt.close(fig_side)
 
+    # Screen 2: Constellation Context Orientation Chart
+    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+    fig_ctx.text(0.05, 0.965, "M31 ANDROMEDA GALAXY — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+    draw_chart_4_context(ax_ctx)
+    plt.savefig(os.path.join(charts_dir, 'chart_4_andromeda_m31_context.png'), dpi=200, facecolor='white')
+    plt.close(fig_ctx)
+
+    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M31 ANDROMEDA GALAXY — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
     fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
@@ -1055,6 +1309,25 @@ def get_chart_5_dossier(include_hop=True):
         )
     return txt
 
+def draw_chart_5_context(ax):
+    constels = [
+        ("Perseus", 48.0, 43.0),
+        ("Cassiopeia", 10.0, 56.5),
+        ("Andromeda", 22.0, 40.0),
+        ("Triangulum", 31.0, 32.5),
+        ("Camelopardalis", 60.0, 68.0)
+    ]
+    stars = [
+        ("Mirfak (α Per)", 51.08, 49.86, 0.6, -0.6, 7.8, 'bold'),
+        ("Algol (β Per)", 46.5, 40.9, 0.6, -0.6, 7.5, 'normal'),
+        ("Ruchbah (δ Cas)", 20.30, 60.23, -0.6, -0.6, 7.5, 'normal'),
+        ("Navi (γ Cas)", 14.18, 60.72, -0.6, 0.6, 7.5, 'normal')
+    ]
+    targets = [("Double Cluster", 35.15, 57.15, 0.5, 0.8)]
+    setup_context_field(ax, 38.0, 52.0, 65.0, 52.0,
+                        32.0, 55.0, 46.0, 22.0,
+                        constels, stars, targets)
+
 def make_chart_5(charts_dir):
     print("Generating Chart 5: Double Cluster (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
@@ -1095,6 +1368,16 @@ def make_chart_5(charts_dir):
     plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster_eyepiece_dossier.png'), dpi=200, facecolor='white')
     plt.close(fig_side)
 
+    # Screen 2: Constellation Context Orientation Chart
+    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+    fig_ctx.text(0.05, 0.965, "PERSEUS DOUBLE CLUSTER — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+    draw_chart_5_context(ax_ctx)
+    plt.savefig(os.path.join(charts_dir, 'chart_5_perseus_double_cluster_context.png'), dpi=200, facecolor='white')
+    plt.close(fig_ctx)
+
+    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "PERSEUS DOUBLE CLUSTER — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
     fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')
@@ -1226,6 +1509,32 @@ def get_chart_6_dossier(include_hop=True):
         )
     return txt
 
+def draw_chart_6_context(ax):
+    constels = [
+        ("Aquila", 293.0, 3.5),
+        ("Scutum", 280.0, -12.0),
+        ("Sagitta", 297.0, 18.5),
+        ("Delphinus", 309.0, 15.0),
+        ("Serpens Cauda", 272.0, -4.0),
+        ("Ophiuchus", 265.0, 5.0),
+        ("Sagittarius", 285.0, -22.0),
+        ("Capricornus", 312.0, -18.0)
+    ]
+    stars = [
+        ("Altair (mag 0.77)", 297.70, 8.87, 0.6, 0.4, 8.5, 'bold'),
+        ("λ Aquilae", 286.55, -4.88, -0.8, -0.6, 7.8, 'bold'),
+        ("Tarazed", 296.5, 10.6, -0.6, 0.4, 7.5, 'normal')
+    ]
+    targets = [("M11 Wild Duck", 282.775, -6.267, 0.5, -0.9)]
+    def extra_chart_6(ax_in):
+        ax_in.annotate("→ Saturn Rising in Aquarius\n(Observe after 21:40 CEST)",
+                       xy=(0.04, 0.45), xycoords='axes fraction', fontsize=7.2, fontweight='bold', color='#000000',
+                       bbox=dict(boxstyle='round,pad=0.25', facecolor='#ffffff', edgecolor='#000000', linewidth=1.0),
+                       zorder=25)
+    setup_context_field(ax, 292.0, 0.0, 62.0, 50.0,
+                        288.0, 2.0, 24.0, 24.0,
+                        constels, stars, targets, extra_fn=extra_chart_6)
+
 def make_chart_6(charts_dir):
     print("Generating Chart 6: M11 & Saturn (A4 Landscape, Toner-Saver Negative)...")
     fig = plt.figure(figsize=A4_LANDSCAPE, facecolor='white', dpi=300)
@@ -1270,6 +1579,16 @@ def make_chart_6(charts_dir):
     plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn_eyepiece_dossier.png'), dpi=200, facecolor='white')
     plt.close(fig_side)
 
+    # Screen 2: Constellation Context Orientation Chart
+    fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
+    fig_ctx.text(0.05, 0.965, "M11 WILD DUCK & SATURN — CONSTELLATION CONTEXT & ORIENTATION", fontsize=11, fontweight='bold', color='#000000')
+    fig_ctx.text(0.05, 0.942, "Naked-Eye Sky (N ↑, E ←) | Constellation Lines & Next-Page Finder Viewport", fontsize=7.8, color='#333333')
+    ax_ctx = fig_ctx.add_axes([0.05, 0.04, 0.90, 0.88])
+    draw_chart_6_context(ax_ctx)
+    plt.savefig(os.path.join(charts_dir, 'chart_6_scutum_m11_and_saturn_context.png'), dpi=200, facecolor='white')
+    plt.close(fig_ctx)
+
+    # Screen 3: Zoomed-in Wide-Field Star-Hopping Chart
     fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
     fig_wide.text(0.05, 0.965, "M11 & SATURN — WIDE-FIELD STAR-HOPPING CHART", fontsize=11, fontweight='bold', color='#000000')
     fig_wide.text(0.05, 0.942, "Upright Naked-Eye / Finder (N ↑, E ←) | Stars to Mag 10.3 | Telrad Reticle", fontsize=7.8, color='#333333')

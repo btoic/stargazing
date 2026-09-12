@@ -106,10 +106,11 @@ Select 8 to 12 showpiece objects meeting these criteria:
 - **PocketBook Era Hardware & 12px Zoom Optimization**: Optimized for 7.0" E-Ink Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 portrait aspect ratio) at **12px font zoom**.
 - **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, and `pocketbook:font-size="12px"`.
 - **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp toner-saver negative charts, and responsive styling.
-- **Natural 3-Page Target Pagination (Zero Blank Pages)**: Each target is stored in a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
+- **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target is stored in a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
   1. **Page 1 (Eyepiece & Dossier)**: Viewport B (Eyepiece simulation, inverted 180°) and Viewport C (Target Dossier) rendered side-by-side in landscape 4:3 ratio (`_eyepiece_dossier.png`). Eyepiece quick reference notes are integrated directly inside the dossier graphic, eliminating trailing HTML callouts.
-  2. **Page 2 (Wide-Field Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to **telescope visual limiting magnitude minus 3.0** (e.g., mag 10.3 for an 8" Dobsonian), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
-  3. **Page 3 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target or catalog.
+  2. **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.2`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
+  3. **Page 3 (Wide-Field Finder Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to **telescope visual limiting magnitude minus 3.0** (e.g., mag 10.3 for an 8" Dobsonian), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
+  4. **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target or catalog.
 - **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (PocketBook, Kindle, Kobo, Boox, Tolino).
 
 ### Finder Charts (Toner-Saver Negative B/W Edition)
@@ -123,6 +124,7 @@ Finder charts are generated in dual formats:
      - **`VIEWPORT C: TARGET DOSSIER & STAR-HOPPING INSTRUCTIONS`**: Monospaced technical dossier with ephemeris, recommended eyepieces, and complete step-by-step hopping text.
 2. **E-Reader Screen-Optimized Charts**:
    - `charts/chart_<N>_<name>_eyepiece_dossier.png`: 4:3 landscape figure pairing Viewport B and Viewport C (hop narrative omitted for spacious dossier layout).
+   - `charts/chart_<N>_<name>_context.png`: 3:4 portrait figure showing surrounding constellations, naked-eye stars to mag 6.2, and the dashed next-page finder viewport bounding box.
    - `charts/chart_<N>_<name>_widefield.png`: 3:4 portrait figure of Viewport A with deep stars down to magnitude (limiting mag − 3.0, e.g. 10.3) and visual magnitude legend.
 
 ---

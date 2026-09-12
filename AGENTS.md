@@ -77,10 +77,11 @@ All stargazing assets and sessions are organized into structured directories:
 - **Standalone E-Reader Field Book (`<session-folder>.epub` / `STARGAZING_FIELD_GUIDE.epub`)**:
   - Compiles the entire session (site profile, twilight schedule, full-sky planisphere, target catalog, all finder charts, and optical appendices) into a single, fully indexed EPUB.
   - **PocketBook Era Hardware & 12px Zoom Optimization**: Calibrated for 7.0" Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 aspect ratio) at **12px font zoom**.
-  - **Natural 3-Page Target Pagination (Zero Blank Pages)**: Each target lives in a single document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`.chart-page`, `.instructions-page` using `break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
+  - **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target lives in a single document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`.chart-page`, `.instructions-page` using `break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
     - **Page 1 (Eyepiece & Dossier)**: Side-by-side Viewport B (eyepiece simulation, inverted 180°) and Viewport C (target dossier with eyepiece quick reference integrated directly inside graphic, omitting trailing HTML callouts).
-    - **Page 2 (Wide-Field Chart)**: Screen-fitted Viewport A wide-field chart with deep stars (to mag 10.3), Telrad rings, hop badges, and magnitude key. Redundant intermediate headers and tips are dropped so the chart fills the entire screen.
-    - **Page 3 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target.
+    - **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.2`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
+    - **Page 3 (Wide-Field Finder Chart)**: Screen-fitted Viewport A wide-field chart with deep stars (to mag 10.3), Telrad rings, hop badges, and magnitude key. Redundant intermediate headers and tips are dropped so the chart fills the entire screen.
+    - **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target.
   - **Dynamic Naming & Series Metadata**:
     - Named after the observation directory (e.g. `dvigrad-2026-09-12.epub`), with backward-compatible symlink to `STARGAZING_FIELD_GUIDE.epub`.
     - Auto-discovers past sessions in `observations/` to calculate and increment the series index (`calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, `pocketbook:font-size="12px"`).

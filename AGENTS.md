@@ -121,6 +121,10 @@ All stargazing assets and sessions are organized into structured directories:
   - For `gantt` charts, ensure time formats and milestone syntax strictly adhere to Mermaid specs so GitHub renders them smoothly without parser warnings.
   - Never use plain ASCII diagrams or external proprietary chart embeds when a Mermaid diagram can represent the structure.
 
+### Rule 2.7: Repository-Relative Markdown Links
+- All links, references, and image embeds across all markdown (`.md`) files in the repository must use repository-relative or folder-relative paths (e.g. `[Chart 2](charts/chart_2_*.png)`, `[Targets](../../targets.md)`).
+- Absolute local filesystem paths (`file:///...` or `/home/branko/...`) are strictly prohibited in all documentation, guides, and plan files to ensure they resolve seamlessly on GitHub web and mobile previews.
+
 ---
 
 ## 3. Python Environment & Script Execution

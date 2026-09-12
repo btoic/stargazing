@@ -90,7 +90,8 @@ def run():
     cmd_epub = [
         python_bin,
         os.path.join(SCRIPT_DIR, "build_session_epub.py"),
-        "--session-dir", output_dir
+        "--session-dir", output_dir,
+        "--equipment", args.equipment
     ]
     subprocess.run(cmd_epub, env=env, check=True)
 

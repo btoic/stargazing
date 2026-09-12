@@ -1,6 +1,6 @@
 # Tutorial: Newtonian Dobsonian Mirror Collimation Guide
 **Instrument**: Sky-Watcher Skyliner Classic 200P Dobsonian (200 mm / 8" Newtonian Reflector, $f/6$, 1200 mm FL)  
-**Printable Field Guide**: [dobsonian-mirror-collimation.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/dobsonian-mirror-collimation.pdf) (Publication-Quality 3-Page PDF)
+**Printable Field Guide**: [dobsonian-mirror-collimation.pdf](dobsonian-mirror-collimation.pdf) (Publication-Quality 3-Page PDF)
 
 ---
 
@@ -43,7 +43,7 @@ flowchart LR
 
 On the Sky-Watcher Skyliner 200P Dobsonian, collimation adjustments are split between the **secondary spider hub** (top of tube) and the **primary rear cell** (bottom of tube).
 
-![Collimation Hardware Controls](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/images/collimation_hardware_controls.png)
+![Collimation Hardware Controls](images/collimation_hardware_controls.png)
 
 ### 3.1 Secondary Mirror Spider & Hub (Front View)
 - **Center Hub Screw (Phillips / Slotted)**: Controls the axial position (depth) of the secondary mirror holder along the length of the optical tube, and allows rotation of the holder face toward the focuser.
@@ -60,7 +60,7 @@ On the Sky-Watcher Skyliner 200P Dobsonian, collimation adjustments are split be
 
 Follow these three steps in strict sequence. Looking through a **Cheshire Eyepiece** or **Collimation Cap**, observe the circular reflections down the drawtube:
 
-![Collimation View Progression](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/images/collimation_steps_view.png)
+![Collimation View Progression](images/collimation_steps_view.png)
 
 ```mermaid
 flowchart TD
@@ -121,7 +121,7 @@ flowchart TD
 
 The optical star test is the ultimate, real-sky verification of telescope collimation. It tests the complete optical train including thermal and mechanical effects.
 
-![Star Test Diffraction Patterns](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/images/star_test_patterns.png)
+![Star Test Diffraction Patterns](images/star_test_patterns.png)
 
 ### 5.1 How to Conduct the Star Test
 1. **Acclimate Primary Mirror**: Allow the 200 mm glass mirror to cool outdoors for at least 30–45 minutes.
@@ -169,7 +169,7 @@ If diffraction ring diagrams feel abstract, watching live video footage through 
 
 ## 6. Pre-Observation Field Checklist
 
-Print out the [3-Page Collimation Guide PDF](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/dobsonian-mirror-collimation.pdf) and follow this rapid 2-minute checklist before each observing session:
+Print out the [3-Page Collimation Guide PDF](dobsonian-mirror-collimation.pdf) and follow this rapid 2-minute checklist before each observing session:
 
 - [ ] **Safety Check**: Tube tilted 20°–30° above horizontal before inserting Allen keys.
 - [ ] **Secondary Check**: Look through Collimation Cap / Cheshire. Confirm all 3 primary mirror clips are visible.

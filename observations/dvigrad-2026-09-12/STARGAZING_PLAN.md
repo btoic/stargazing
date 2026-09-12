@@ -94,20 +94,20 @@ flowchart LR
 
 ## 4. Curated Target Catalog
 
-Target difficulty ratings are calibrated according to the [Messier Difficulty Ratings](file:///home/branko/Documents/repos/github.com/btoic/stargazing/catalogs/messier_difficulty_ratings.md) from Michael Swanson's *NexStar User Guide II*:
+Target difficulty ratings are calibrated according to the [Messier Difficulty Ratings](../../catalogs/messier_difficulty_ratings.md) from Michael Swanson's *NexStar User Guide II*:
 
 | # | Target Name | Constellation | Type | Mag | Size | Difficulty | Chart Reference | Recommended Eyepiece |
 | :-: | :--- | :--- | :--- | :-: | :-: | :-: | :--- | :--- |
-| **1** | **Albireo ($\beta$ Cygni)** | Cygnus | Double Star | 3.1 / 5.1 | 34.3" sep | **Very Easy** | [Chart 2](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.png) | 20mm & 12.5mm |
-| **2** | **M22 (NGC 6656)** | Sagittarius | Globular Cl. | 5.1 | 32.0' | **Easy** | [Full Sky Map](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/full_sky_map.png) *(Observe early!)* | 20mm $\rightarrow$ 12.5mm |
-| **3** | **M13 (Great Globular)** | Hercules | Globular Cl. | 5.8 | 20.0' | **Easy** | [Chart 3](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.png) | 12.5mm (96×) |
-| **4** | **M92 (NGC 6341)** | Hercules | Globular Cl. | 6.3 | 14.0' | **Easy** | [Chart 3](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.png) | 12.5mm (96×) |
-| **5** | **M11 (Wild Duck Cluster)** | Scutum | Open Cluster | 5.8 | 14.0' | **Easy** | [Chart 6](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.png) | 20mm & 12.5mm |
-| **6** | **M57 (Ring Nebula)** | Lyra | Planetary Neb. | 8.8 | 1.4' × 1.0' | **Easy** | [Chart 1](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_1_lyra_m57.png) | 12.5mm (96×) |
-| **7** | **M27 (Dumbbell Nebula)** | Vulpecula | Planetary Neb. | 7.4 | 8.0' × 5.6' | **Medium** | [Chart 2](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.png) | 20mm (60×) |
-| **8** | **Double Cluster (NGC 869/884)** | Perseus | Dual Open Cl. | 3.7 / 3.8 | 60.0' | **Easy** | [Chart 5](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_5_perseus_double_cluster.png) | 20mm (60×) |
-| **9** | **M31 (Andromeda Galaxy)** | Andromeda | Spiral Galaxy | 3.4 | 190' × 60' | **Easy** | [Chart 4](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_4_andromeda_m31.png) | 20mm (60×) |
-| **10** | **Saturn & Titan** | Aquarius | Planet & Rings | +0.6 | 19.2" (disk) | **Very Easy** | [Chart 6](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.png) | 12.5mm (96×) |
+| **1** | **Albireo ($\beta$ Cygni)** | Cygnus | Double Star | 3.1 / 5.1 | 34.3" sep | **Very Easy** | [Chart 2](charts/chart_2_vulpecula_m27_albireo.png) | 20mm & 12.5mm |
+| **2** | **M22 (NGC 6656)** | Sagittarius | Globular Cl. | 5.1 | 32.0' | **Easy** | [Full Sky Map](full_sky_map.png) *(Observe early!)* | 20mm $\rightarrow$ 12.5mm |
+| **3** | **M13 (Great Globular)** | Hercules | Globular Cl. | 5.8 | 20.0' | **Easy** | [Chart 3](charts/chart_3_hercules_m13_m92.png) | 12.5mm (96×) |
+| **4** | **M92 (NGC 6341)** | Hercules | Globular Cl. | 6.3 | 14.0' | **Easy** | [Chart 3](charts/chart_3_hercules_m13_m92.png) | 12.5mm (96×) |
+| **5** | **M11 (Wild Duck Cluster)** | Scutum | Open Cluster | 5.8 | 14.0' | **Easy** | [Chart 6](charts/chart_6_scutum_m11_and_saturn.png) | 20mm & 12.5mm |
+| **6** | **M57 (Ring Nebula)** | Lyra | Planetary Neb. | 8.8 | 1.4' × 1.0' | **Easy** | [Chart 1](charts/chart_1_lyra_m57.png) | 12.5mm (96×) |
+| **7** | **M27 (Dumbbell Nebula)** | Vulpecula | Planetary Neb. | 7.4 | 8.0' × 5.6' | **Medium** | [Chart 2](charts/chart_2_vulpecula_m27_albireo.png) | 20mm (60×) |
+| **8** | **Double Cluster (NGC 869/884)** | Perseus | Dual Open Cl. | 3.7 / 3.8 | 60.0' | **Easy** | [Chart 5](charts/chart_5_perseus_double_cluster.png) | 20mm (60×) |
+| **9** | **M31 (Andromeda Galaxy)** | Andromeda | Spiral Galaxy | 3.4 | 190' × 60' | **Easy** | [Chart 4](charts/chart_4_andromeda_m31.png) | 20mm (60×) |
+| **10** | **Saturn & Titan** | Aquarius | Planet & Rings | +0.6 | 19.2" (disk) | **Very Easy** | [Chart 6](charts/chart_6_scutum_m11_and_saturn.png) | 12.5mm (96×) |
 
 > [!TIP]
 > **Bonus Neighbor Targets**: When targeted on these primary showpieces, sweep these adjacent gems in the same constellation field:
@@ -116,7 +116,7 @@ Target difficulty ratings are calibrated according to the [Messier Difficulty Ra
 > - **Near Double Cluster (Cassiopeia/Perseus)**: **M103** (Open Cl., mag 7.4, Easy) 1° NE of hop-star Ruchbah ($\delta$ Cas); **NGC 457** ("Owl / ET Cluster", mag 6.4, Easy) 2° south.
 > - **Near M11 (Scutum)**: **M26** (Open Cl., mag 8.0, Medium) 3.5° SSW.
 > 
-> See [tutorials/session-target-budgeting-and-hopping.md](file:///home/branko/Documents/repos/github.com/btoic/stargazing/tutorials/session-target-budgeting-and-hopping.md) for full dwell-time budgeting and neighbor clustering strategies.
+> See [tutorials/session-target-budgeting-and-hopping.md](../../tutorials/session-target-budgeting-and-hopping.md) for full dwell-time budgeting and neighbor clustering strategies.
 
 ---
 
@@ -148,20 +148,20 @@ Dvigrad lies at the floor of the Draga valley, where nocturnal cold-air drainage
 All maps and finder charts are generated in high-resolution vector PDF, PNG, and e-reader EPUB formats:
 
 - 📱 **Standalone E-Reader Field Book (EPUB)**:  
-  [dvigrad-2026-09-12.epub](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/dvigrad-2026-09-12.epub) *(Interactive, cross-linked e-book for PocketBook, Kindle, Kobo, Boox & tablets)*
+  [dvigrad-2026-09-12.epub](dvigrad-2026-09-12.epub) *(Interactive, cross-linked e-book for PocketBook, Kindle, Kobo, Boox & tablets)*
 - 📄 **Printable 2-Page Master Field Guide (PDF)**:  
-  [STARGAZING_PLAN.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/STARGAZING_PLAN.pdf) *(Formatted for 1 single double-sided A4 sheet)*
+  [STARGAZING_PLAN.pdf](STARGAZING_PLAN.pdf) *(Formatted for 1 single double-sided A4 sheet)*
 - 🗺️ **Full Night Sky Planisphere (All Horizons & Constellations)**:  
-  [full_sky_map.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/full_sky_map.pdf) | [full_sky_map.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/full_sky_map.png)
+  [full_sky_map.pdf](full_sky_map.pdf) | [full_sky_map.png](full_sky_map.png)
 - 🔭 **Chart 1: M57 Ring Nebula in Lyra**:  
-  [chart_1_lyra_m57.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_1_lyra_m57.pdf) | [chart_1_lyra_m57.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_1_lyra_m57.png)
+  [chart_1_lyra_m57.pdf](charts/chart_1_lyra_m57.pdf) | [chart_1_lyra_m57.png](charts/chart_1_lyra_m57.png)
 - 🔭 **Chart 2: M27 Dumbbell Nebula & Albireo in Vulpecula / Cygnus**:  
-  [chart_2_vulpecula_m27_albireo.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.pdf) | [chart_2_vulpecula_m27_albireo.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_2_vulpecula_m27_albireo.png)
+  [chart_2_vulpecula_m27_albireo.pdf](charts/chart_2_vulpecula_m27_albireo.pdf) | [chart_2_vulpecula_m27_albireo.png](charts/chart_2_vulpecula_m27_albireo.png)
 - 🔭 **Chart 3: M13 & M92 Globular Clusters in Hercules**:  
-  [chart_3_hercules_m13_m92.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.pdf) | [chart_3_hercules_m13_m92.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_3_hercules_m13_m92.png)
+  [chart_3_hercules_m13_m92.pdf](charts/chart_3_hercules_m13_m92.pdf) | [chart_3_hercules_m13_m92.png](charts/chart_3_hercules_m13_m92.png)
 - 🔭 **Chart 4: M31 Andromeda Galaxy, M32 & M110**:  
-  [chart_4_andromeda_m31.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_4_andromeda_m31.pdf) | [chart_4_andromeda_m31.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_4_andromeda_m31.png)
+  [chart_4_andromeda_m31.pdf](charts/chart_4_andromeda_m31.pdf) | [chart_4_andromeda_m31.png](charts/chart_4_andromeda_m31.png)
 - 🔭 **Chart 5: Double Cluster (NGC 869 / 884) in Perseus**:  
-  [chart_5_perseus_double_cluster.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_5_perseus_double_cluster.pdf) | [chart_5_perseus_double_cluster.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_5_perseus_double_cluster.png)
+  [chart_5_perseus_double_cluster.pdf](charts/chart_5_perseus_double_cluster.pdf) | [chart_5_perseus_double_cluster.png](charts/chart_5_perseus_double_cluster.png)
 - 🔭 **Chart 6: M11 Wild Duck Cluster & Saturn in Scutum / Aquarius**:  
-  [chart_6_scutum_m11_and_saturn.pdf](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.pdf) | [chart_6_scutum_m11_and_saturn.png](file:///home/branko/Documents/repos/github.com/btoic/stargazing/observations/dvigrad-2026-09-12/charts/chart_6_scutum_m11_and_saturn.png)
+  [chart_6_scutum_m11_and_saturn.pdf](charts/chart_6_scutum_m11_and_saturn.pdf) | [chart_6_scutum_m11_and_saturn.png](charts/chart_6_scutum_m11_and_saturn.png)

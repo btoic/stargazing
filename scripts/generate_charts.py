@@ -563,10 +563,8 @@ def make_cached_standard_chart(charts_dir, obj_slug, chart_prefix,
 
     # 1. Constellation Context Orientation Chart (Generic across all equipment & locations)
     shared_ctx = os.path.join(shared_obj_dir, "context.png")
-    dest_ctx = os.path.join(charts_dir, f"{chart_prefix}_context.png")
     if os.path.exists(shared_ctx) and not force:
         print(f"  [CACHE HIT] Context: shared/{obj_slug}/context.png")
-        shutil.copyfile(shared_ctx, dest_ctx)
     else:
         print(f"  [RENDERING] Context: shared/{obj_slug}/context.png")
         fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
@@ -576,14 +574,11 @@ def make_cached_standard_chart(charts_dir, obj_slug, chart_prefix,
         draw_context_fn(ax_ctx)
         plt.savefig(shared_ctx, dpi=200, facecolor='white')
         plt.close(fig_ctx)
-        shutil.copyfile(shared_ctx, dest_ctx)
 
     # 2. Wide-Field Star-Hopping Chart (with equipment suffix)
     shared_wf = os.path.join(shared_obj_dir, f"widefield_{equipment_slug}.png")
-    dest_wf = os.path.join(charts_dir, f"{chart_prefix}_widefield.png")
     if os.path.exists(shared_wf) and not force:
         print(f"  [CACHE HIT] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
-        shutil.copyfile(shared_wf, dest_wf)
     else:
         print(f"  [RENDERING] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
         fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
@@ -593,14 +588,11 @@ def make_cached_standard_chart(charts_dir, obj_slug, chart_prefix,
         draw_widefield_fn(ax_wide_era)
         plt.savefig(shared_wf, dpi=200, facecolor='white')
         plt.close(fig_wide)
-        shutil.copyfile(shared_wf, dest_wf)
 
     # 3. Eyepiece Simulation & Target Dossier (with equipment suffix)
     shared_ed = os.path.join(shared_obj_dir, f"eyepiece_dossier_{equipment_slug}.png")
-    dest_ed = os.path.join(charts_dir, f"{chart_prefix}_eyepiece_dossier.png")
     if os.path.exists(shared_ed) and not force:
         print(f"  [CACHE HIT] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
-        shutil.copyfile(shared_ed, dest_ed)
     else:
         print(f"  [RENDERING] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
         fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
@@ -614,7 +606,6 @@ def make_cached_standard_chart(charts_dir, obj_slug, chart_prefix,
                           bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
         plt.savefig(shared_ed, dpi=200, facecolor='white')
         plt.close(fig_side)
-        shutil.copyfile(shared_ed, dest_ed)
 
     # 4. Master A4 Landscape Chart (Viewport A + B + C)
     shared_master_png = os.path.join(shared_obj_dir, f"chart_{equipment_slug}.png")
@@ -1440,10 +1431,8 @@ def make_chart_6(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_p
 
     # 1. Constellation Context Orientation Chart
     shared_ctx = os.path.join(shared_obj_dir, "context.png")
-    dest_ctx = os.path.join(charts_dir, f"{chart_prefix}_context.png")
     if os.path.exists(shared_ctx) and not force:
         print(f"  [CACHE HIT] Context: shared/{obj_slug}/context.png")
-        shutil.copyfile(shared_ctx, dest_ctx)
     else:
         print(f"  [RENDERING] Context: shared/{obj_slug}/context.png")
         fig_ctx = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
@@ -1453,14 +1442,11 @@ def make_chart_6(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_p
         draw_chart_6_context(ax_ctx)
         plt.savefig(shared_ctx, dpi=200, facecolor='white')
         plt.close(fig_ctx)
-        shutil.copyfile(shared_ctx, dest_ctx)
 
     # 2. Wide-Field Star-Hopping Chart (with equipment suffix)
     shared_wf = os.path.join(shared_obj_dir, f"widefield_{equipment_slug}.png")
-    dest_wf = os.path.join(charts_dir, f"{chart_prefix}_widefield.png")
     if os.path.exists(shared_wf) and not force:
         print(f"  [CACHE HIT] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
-        shutil.copyfile(shared_wf, dest_wf)
     else:
         print(f"  [RENDERING] Widefield: shared/{obj_slug}/widefield_{equipment_slug}.png")
         fig_wide = plt.figure(figsize=ERA_PORTRAIT_FIGSIZE, facecolor='white', dpi=200)
@@ -1470,14 +1456,11 @@ def make_chart_6(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_p
         draw_chart_6_widefield(ax_wide_era)
         plt.savefig(shared_wf, dpi=200, facecolor='white')
         plt.close(fig_wide)
-        shutil.copyfile(shared_wf, dest_wf)
 
     # 3. Eyepiece Simulations (M11 + Saturn) & Target Dossier
     shared_ed = os.path.join(shared_obj_dir, f"eyepiece_dossier_{equipment_slug}.png")
-    dest_ed = os.path.join(charts_dir, f"{chart_prefix}_eyepiece_dossier.png")
     if os.path.exists(shared_ed) and not force:
         print(f"  [CACHE HIT] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
-        shutil.copyfile(shared_ed, dest_ed)
     else:
         print(f"  [RENDERING] Eyepiece & Dossier: shared/{obj_slug}/eyepiece_dossier_{equipment_slug}.png")
         fig_side = plt.figure(figsize=ERA_SIDEBYSIDE_FIGSIZE, facecolor='white', dpi=200)
@@ -1493,7 +1476,6 @@ def make_chart_6(charts_dir, equipment_slug='skywatcher-skyliner-200p', export_p
                           bbox=dict(boxstyle='round,pad=0.5', facecolor='#ffffff', edgecolor='#000000', linewidth=1.2))
         plt.savefig(shared_ed, dpi=200, facecolor='white')
         plt.close(fig_side)
-        shutil.copyfile(shared_ed, dest_ed)
 
     # 4. Master A4 Landscape Chart
     shared_master_png = os.path.join(shared_obj_dir, f"chart_{equipment_slug}.png")

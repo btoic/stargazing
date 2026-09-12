@@ -47,7 +47,7 @@ def get_series_info(session_dir):
 
     return series_name, series_index
 
-def build_epub(session_dir=None, output_path=None):
+def build_epub(session_dir=None, output_path=None, equipment_slug="skywatcher-skyliner-200p"):
     if session_dir is None:
         session_dir = os.path.join(REPO_ROOT, "observations", "dvigrad-2026-09-12")
     session_dir = os.path.abspath(session_dir)
@@ -78,30 +78,61 @@ def build_epub(session_dir=None, output_path=None):
     print(f"Output:       {output_path}")
     print(f"=======================================================\n")
 
-    # Image source paths
-    img_sources = {
-        "full_sky_map.png": os.path.join(session_dir, "full_sky_map.png"),
-        "timeline_gantt.png": os.path.join(session_dir, "timeline_gantt.png"),
-        # Screen-optimized PocketBook Era assets
-        "chart_1_lyra_m57_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_eyepiece_dossier.png"),
-        "chart_1_lyra_m57_context.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_context.png"),
-        "chart_1_lyra_m57_widefield.png": os.path.join(session_dir, "charts", "chart_1_lyra_m57_widefield.png"),
-        "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png"),
-        "chart_2_vulpecula_m27_albireo_context.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_context.png"),
-        "chart_2_vulpecula_m27_albireo_widefield.png": os.path.join(session_dir, "charts", "chart_2_vulpecula_m27_albireo_widefield.png"),
-        "chart_3_hercules_m13_m92_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_eyepiece_dossier.png"),
-        "chart_3_hercules_m13_m92_context.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_context.png"),
-        "chart_3_hercules_m13_m92_widefield.png": os.path.join(session_dir, "charts", "chart_3_hercules_m13_m92_widefield.png"),
-        "chart_4_andromeda_m31_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_eyepiece_dossier.png"),
-        "chart_4_andromeda_m31_context.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_context.png"),
-        "chart_4_andromeda_m31_widefield.png": os.path.join(session_dir, "charts", "chart_4_andromeda_m31_widefield.png"),
-        "chart_5_perseus_double_cluster_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_eyepiece_dossier.png"),
-        "chart_5_perseus_double_cluster_context.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_context.png"),
-        "chart_5_perseus_double_cluster_widefield.png": os.path.join(session_dir, "charts", "chart_5_perseus_double_cluster_widefield.png"),
-        "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png"),
-        "chart_6_scutum_m11_and_saturn_context.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_context.png"),
-        "chart_6_scutum_m11_and_saturn_widefield.png": os.path.join(session_dir, "charts", "chart_6_scutum_m11_and_saturn_widefield.png"),
+    # Map chart prefixes to shared object slugs
+    target_obj_map = {
+        "chart_1_lyra_m57": "m57",
+        "chart_2_vulpecula_m27_albireo": "m27",
+        "chart_3_hercules_m13_m92": "m13",
+        "chart_4_andromeda_m31": "m31",
+        "chart_5_perseus_double_cluster": "double_cluster",
+        "chart_6_scutum_m11_and_saturn": "m11",
     }
+
+    def resolve_asset(img_name):
+        if img_name in ("full_sky_map.png", "timeline_gantt.png"):
+            return os.path.join(session_dir, img_name)
+        for prefix, obj_slug in target_obj_map.items():
+            if img_name.startswith(prefix):
+                suffix = img_name[len(prefix) + 1:]  # e.g. "context.png", "widefield.png", "eyepiece_dossier.png"
+                shared_dir = os.path.join(REPO_ROOT, "shared", obj_slug)
+                if suffix == "context.png":
+                    candidate = os.path.join(shared_dir, "context.png")
+                elif suffix == "widefield.png":
+                    candidate = os.path.join(shared_dir, f"widefield_{equipment_slug}.png")
+                elif suffix == "eyepiece_dossier.png":
+                    candidate = os.path.join(shared_dir, f"eyepiece_dossier_{equipment_slug}.png")
+                else:
+                    candidate = None
+                if candidate and os.path.exists(candidate):
+                    return candidate
+                break
+        return os.path.join(session_dir, "charts", img_name)
+
+    # Image source paths
+    image_names = [
+        "full_sky_map.png",
+        "timeline_gantt.png",
+        # Screen-optimized PocketBook Era assets
+        "chart_1_lyra_m57_eyepiece_dossier.png",
+        "chart_1_lyra_m57_context.png",
+        "chart_1_lyra_m57_widefield.png",
+        "chart_2_vulpecula_m27_albireo_eyepiece_dossier.png",
+        "chart_2_vulpecula_m27_albireo_context.png",
+        "chart_2_vulpecula_m27_albireo_widefield.png",
+        "chart_3_hercules_m13_m92_eyepiece_dossier.png",
+        "chart_3_hercules_m13_m92_context.png",
+        "chart_3_hercules_m13_m92_widefield.png",
+        "chart_4_andromeda_m31_eyepiece_dossier.png",
+        "chart_4_andromeda_m31_context.png",
+        "chart_4_andromeda_m31_widefield.png",
+        "chart_5_perseus_double_cluster_eyepiece_dossier.png",
+        "chart_5_perseus_double_cluster_context.png",
+        "chart_5_perseus_double_cluster_widefield.png",
+        "chart_6_scutum_m11_and_saturn_eyepiece_dossier.png",
+        "chart_6_scutum_m11_and_saturn_context.png",
+        "chart_6_scutum_m11_and_saturn_widefield.png",
+    ]
+    img_sources = {name: resolve_asset(name) for name in image_names}
 
     # Verify required images exist
     for name, path in img_sources.items():
@@ -1147,6 +1178,7 @@ ol.hop-list li {
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compile Stargazing Session into an E-Reader EPUB")
     parser.add_argument("--session-dir", type=str, default=None, help="Path to observations/<session-folder>")
+    parser.add_argument("--equipment", type=str, default="skywatcher-skyliner-200p", help="Equipment slug")
     parser.add_argument("--output", type=str, default=None, help="Output .epub file path")
     args = parser.parse_args()
-    build_epub(args.session_dir, args.output)
+    build_epub(args.session_dir, args.output, equipment_slug=args.equipment)

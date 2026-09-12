@@ -32,54 +32,6 @@ The toolkit computes exact solar/lunar ephemerides, curates high-impact observin
 
 ---
 
-## 📂 Repository Layout
-
-```text
-├── README.md                   # Repository overview, quickstart & LLM guide
-├── AGENTS.md                   # Core invariants & operational rules for AI coding agents
-├── requirements.txt            # Python dependencies
-├── locations/
-│   └── dvigrad.md              # Observing site profiles (coordinates, Bortle, obstruction)
-├── equipment/
-│   ├── skywatcher-skyliner-200p.md # Telescope optical profiles (aperture, FL, eyepieces)
-│   └── pocketbook-era.md       # E-reader display hardware specifications
-├── catalogs/
-│   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog
-├── shared/                     # Cross-session reusable charts cache
-│   └── <object-slug>/          # e.g. m57, m27, m13, m31, double_cluster, m11
-│       ├── context.png         # Naked-eye constellation orientation chart (mag <= 6.5)
-│       ├── widefield_<equip>.png # Wide-field star hop chart (mag <= 8.5)
-│       ├── eyepiece_dossier_<equip>.png # Eyepiece view & dossier graphic
-│       └── chart_<equip>.png   # Full A4 master finder chart (and .pdf)
-├── observations/
-│   └── <location>-<YYYY-MM-DD>/# Observation session packages (e.g. dvigrad-2026-09-12)
-│       ├── targets.md          # Plain text target manifest for fast regeneration
-│       ├── STARGAZING_PLAN.md  # Complete observation guide (Primary deliverable)
-│       ├── <location>-<date>.epub # Standalone E-Reader Field Book (Primary deliverable)
-│       ├── full_sky_map.png    # High-resolution planisphere image
-│       ├── charts/             # Session master finder charts (PNG + optional PDF)
-│       │   ├── chart_1_lyra_m57.png
-│       │   └── ...
-│       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (On-demand via --pdf)
-│       └── full_sky_map.pdf    # All-sky planisphere vector PDF (On-demand via --pdf)
-├── tutorials/                  # Standalone astronomy guides, field craft & optical tutorials
-│   ├── dobsonian-mirror-collimation.md
-│   ├── session-target-budgeting-and-hopping.md
-│   ├── star-hopping-fundamentals.md
-│   ├── dobsonian-field-craft.md
-│   └── astronomical-darkness-and-ephemeris.md
-├── .agents/skills/
-│   └── stargazing-planner/     # Automated planning skill for AI coding agents
-└── scripts/
-    ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
-    ├── generate_charts.py      # Planisphere & finder chart generator with shared caching
-    ├── build_plan_pdf.py       # Two-page master guide PDF builder
-    ├── build_session_epub.py   # Standalone EPUB e-reader book builder
-    └── run_observation_planner.py # End-to-end observation planner pipeline
-```
-
----
-
 ## 🚀 Quickstart Guide
 
 ### 1. Installation
@@ -195,3 +147,52 @@ The agent will:
 - 🧭 **[Star-Hopping Fundamentals](tutorials/star-hopping-fundamentals.md)**: Finder scope vs. naked-eye orientation, Telrad reticle geometry, and field alignment.
 - 🌌 **[Astronomical Darkness & Ephemeris Guide](tutorials/astronomical-darkness-and-ephemeris.md)**: Civil, nautical, and astronomical twilight definitions, lunar phase interference, and airmass limits.
 - 🛡️ **[Dobsonian Field Craft & Night Logistics](tutorials/dobsonian-field-craft.md)**: Thermal acclimation, dew management, red-light etiquette, and dark adaptation.
+
+---
+
+## 📂 Repository Layout
+
+```text
+├── README.md                   # Repository overview, quickstart & LLM guide
+├── AGENTS.md                   # Core invariants & operational rules for AI coding agents
+├── requirements.txt            # Python dependencies
+├── locations/
+│   └── dvigrad.md              # Observing site profiles (coordinates, Bortle, obstruction)
+├── equipment/
+│   ├── skywatcher-skyliner-200p.md # Telescope optical profiles (aperture, FL, eyepieces)
+│   └── pocketbook-era.md       # E-reader display hardware specifications
+├── catalogs/
+│   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog
+├── shared/                     # Cross-session reusable charts cache
+│   └── <object-slug>/          # e.g. m57, m27, m13, m31, double_cluster, m11
+│       ├── context.png         # Naked-eye constellation orientation chart (mag <= 6.5)
+│       ├── widefield_<equip>.png # Wide-field star hop chart (mag <= 8.5)
+│       ├── eyepiece_dossier_<equip>.png # Eyepiece view & dossier graphic
+│       └── chart_<equip>.png   # Full A4 master finder chart (and .pdf)
+├── observations/
+│   └── <location>-<YYYY-MM-DD>/# Observation session packages (e.g. dvigrad-2026-09-12)
+│       ├── targets.md          # Plain text target manifest for fast regeneration
+│       ├── STARGAZING_PLAN.md  # Complete observation guide (Primary deliverable)
+│       ├── <location>-<date>.epub # Standalone E-Reader Field Book (Primary deliverable)
+│       ├── full_sky_map.png    # High-resolution planisphere image
+│       ├── charts/             # Session master finder charts (PNG + optional PDF)
+│       │   ├── chart_1_lyra_m57.png
+│       │   └── ...
+│       ├── STARGAZING_PLAN.pdf # Print-optimized 2-page Master Plan (On-demand via --pdf)
+│       └── full_sky_map.pdf    # All-sky planisphere vector PDF (On-demand via --pdf)
+├── tutorials/                  # Standalone astronomy guides, field craft & optical tutorials
+│   ├── dobsonian-mirror-collimation.md
+│   ├── session-target-budgeting-and-hopping.md
+│   ├── star-hopping-fundamentals.md
+│   ├── dobsonian-field-craft.md
+│   └── astronomical-darkness-and-ephemeris.md
+├── .agents/skills/
+│   └── stargazing-planner/     # Automated planning skill for AI coding agents
+└── scripts/
+    ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
+    ├── generate_charts.py      # Planisphere & finder chart generator with shared caching
+    ├── build_plan_pdf.py       # Two-page master guide PDF builder
+    ├── build_session_epub.py   # Standalone EPUB e-reader book builder
+    └── run_observation_planner.py # End-to-end observation planner pipeline
+```
+

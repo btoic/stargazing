@@ -47,7 +47,147 @@ def get_series_info(session_dir):
 
     return series_name, series_index
 
-def build_epub(session_dir=None, output_path=None, equipment_slug="skywatcher-skyliner-200p"):
+DEVICE_PROFILES = {
+    "pocketbook-era": {
+        "slug": "pocketbook-era",
+        "name": "PocketBook Era (PB700)",
+        "display_profile_desc": "PocketBook Era E-Reader (Carta 1200, 300 ppi)",
+        "display_opt_desc": "12px Font Zoom / Screen-Fitted 4-Page Flow",
+        "display_badge_desc": "PocketBook Era Screen-Fitted Flow (Optimized for 12px Font Zoom)",
+        "page_margin": "8px 10px",
+        "font_family": "sans-serif",
+        "base_font_size": "12px",
+        "chart_side_max_height": "84vh",
+        "chart_wide_max_height": "98vh",
+        "field_protocols_title": "PocketBook Era Field Protocols",
+        "field_protocols_html": """    <div class="callout">
+        <b>1. SMARTLIGHT NIGHT-VISION CALIBRATION</b><br/>
+        Set SMARTlight frontlight to <b>100% warm amber</b> (zero blue light emission) and set overall brightness to minimum legibility (5%–15%) to prevent pupil constriction and preserve scotopic vision.
+    </div>
+
+    <div class="callout">
+        <b>2. SCREEN-FITTED PINCH-TO-ZOOM</b><br/>
+        All wide-field star charts in Part II are formatted for the PocketBook Era's 3:4 screen ratio. Use a two-finger pinch gesture on the touchscreen to zoom directly into dense field star clusters.
+    </div>
+
+    <div class="callout">
+        <b>3. DEW RESISTANCE (IPX8) &amp; PHYSICAL BUTTONS</b><br/>
+        The PocketBook Era is IPX8 waterproof. Heavy nocturnal condensation will not harm the device. Use the physical side buttons to turn pages if moist fingers cause capacitive touch resistance.
+    </div>""",
+        "metadata_tags": [
+            '<meta name="pocketbook:font-size" content="12px"/>',
+            '<meta name="pocketbook:optimized-zoom" content="12px"/>',
+            '<meta property="schema:accessibilityFeature">readingOrder</meta>',
+            '<meta property="schema:accessibilitySummary">Optimized for PocketBook Era at 12px font zoom with screen-fitted finder charts and natural 4-page target pagination.</meta>',
+        ],
+        "description_suffix": "Optimized for PocketBook Era at 12px font zoom with natural 4-page target flow.",
+        "extra_css": "",
+    },
+    "amazon-kindle": {
+        "slug": "amazon-kindle",
+        "name": "Amazon Kindle (Paperwhite / Oasis / Scribe)",
+        "display_profile_desc": "Amazon Kindle (Carta 1200, 300 ppi)",
+        "display_opt_desc": "Kindle KF8 Safe Viewports / Screen-Fitted 4-Page Flow",
+        "display_badge_desc": "Amazon Kindle Screen-Fitted Flow (KF8 Safe Viewport Optimization)",
+        "page_margin": "0",
+        "font_family": "sans-serif",
+        "base_font_size": "1.0rem",
+        "chart_side_max_height": "78vh",
+        "chart_wide_max_height": "88vh",
+        "field_protocols_title": "Amazon Kindle Field Protocols",
+        "field_protocols_html": """    <div class="callout">
+        <b>1. ADJUSTABLE WARM LIGHT CALIBRATION</b><br/>
+        Slide the Kindle Warmth control to <b>Level 24 (Maximum Amber)</b> and dial down brightness to lowest legible level (3–8) to eliminate blue-spectrum photons and preserve dark-adapted rod cells.
+    </div>
+
+    <div class="callout">
+        <b>2. PINCH-TO-ZOOM &amp; KF8 FULL-SCREEN CHARTS</b><br/>
+        Finder charts are formatted to Kindle's 3:4 screen aspect ratio and constrained to prevent blank page insertions. Double-tap or pinch-to-zoom on chart graphics to inspect faint field stars down to magnitude 8.5.
+    </div>
+
+    <div class="callout">
+        <b>3. WATER RESISTANCE (IPX8)</b><br/>
+        Kindle Paperwhite (11th Gen) and Oasis feature IPX8 waterproofing. Condensation, valley dew, and light mist will not harm the device. Keep a microfiber cloth handy to wipe the glass if moisture affects touch response.
+    </div>""",
+        "metadata_tags": [
+            '<meta property="rendition:layout">reflowable</meta>',
+            '<meta property="rendition:orientation">portrait</meta>',
+            '<meta property="schema:accessibilityFeature">readingOrder</meta>',
+            '<meta property="schema:accessibilitySummary">Optimized for Amazon Kindle displays with KF8-safe viewport bounds and natural 4-page target pagination.</meta>',
+        ],
+        "description_suffix": "Optimized for Amazon Kindle displays with KF8-safe viewport bounds and natural 4-page target flow.",
+        "extra_css": """
+/* Amazon Kindle KF8 Safe Viewport Bounds */
+.chart-img-wide {
+    max-height: 88vh !important;
+}
+.chart-img-side {
+    max-height: 78vh !important;
+}
+.chart-page {
+    page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+}
+table {
+    table-layout: fixed;
+    word-wrap: break-word;
+}
+""",
+    },
+    "generic": {
+        "slug": "generic",
+        "name": "Standard E-Reader (Reflowable)",
+        "display_profile_desc": "Standard E-Ink Display (Carta 300 ppi)",
+        "display_opt_desc": "Universal Screen-Fitted 4-Page Flow",
+        "display_badge_desc": "Universal E-Reader Screen-Fitted Flow",
+        "page_margin": "6px 8px",
+        "font_family": "sans-serif",
+        "base_font_size": "1.0rem",
+        "chart_side_max_height": "80vh",
+        "chart_wide_max_height": "92vh",
+        "field_protocols_title": "E-Reader Field Protocols",
+        "field_protocols_html": """    <div class="callout">
+        <b>1. NIGHT-VISION WARM LIGHT CALIBRATION</b><br/>
+        Shift frontlight color temperature to maximum warm amber/orange and keep brightness minimal to protect rhodopsin in dark-adapted eyes.
+    </div>
+
+    <div class="callout">
+        <b>2. ZOOM &amp; FIELD NAVIGATION</b><br/>
+        Use pinch-to-zoom or double-tap to examine dense star clusters and Telrad reticles on the wide-field charts.
+    </div>
+
+    <div class="callout">
+        <b>3. DEW MITIGATION</b><br/>
+        Protect non-waterproof e-readers with a clear zip bag or wipe moisture frequently with a clean red-light microfiber cloth.
+    </div>""",
+        "metadata_tags": [
+            '<meta property="rendition:layout">reflowable</meta>',
+            '<meta property="rendition:orientation">portrait</meta>',
+            '<meta property="schema:accessibilityFeature">readingOrder</meta>',
+        ],
+        "description_suffix": "Formatted for standard E-Ink e-readers with natural 4-page target flow.",
+        "extra_css": "",
+    }
+}
+
+def resolve_device_profile(device_slug):
+    if not device_slug:
+        return DEVICE_PROFILES["pocketbook-era"]
+    slug = device_slug.lower().strip().replace("_", "-")
+    if slug in ("pocketbook", "pocketbook-era", "pb", "pb700", "era"):
+        return DEVICE_PROFILES["pocketbook-era"]
+    elif slug in ("kindle", "amazon-kindle", "kindle-paperwhite", "paperwhite", "oasis", "scribe", "kfx"):
+        return DEVICE_PROFILES["amazon-kindle"]
+    elif slug in DEVICE_PROFILES:
+        return DEVICE_PROFILES[slug]
+    else:
+        if "kindle" in slug:
+            return DEVICE_PROFILES["amazon-kindle"]
+        elif "pocketbook" in slug:
+            return DEVICE_PROFILES["pocketbook-era"]
+        return DEVICE_PROFILES["generic"]
+
+def build_epub(session_dir=None, output_path=None, equipment_slug="skywatcher-skyliner-200p", device_slug="pocketbook-era"):
     if session_dir is None:
         session_dir = os.path.join(REPO_ROOT, "observations", "dvigrad-2026-09-12")
     session_dir = os.path.abspath(session_dir)
@@ -56,6 +196,7 @@ def build_epub(session_dir=None, output_path=None, equipment_slug="skywatcher-sk
         print(f"Error: Session directory '{session_dir}' does not exist.")
         sys.exit(1)
 
+    device_info = resolve_device_profile(device_slug)
     session_folder = os.path.basename(os.path.abspath(session_dir))
     series_name, series_index = get_series_info(session_dir)
 
@@ -72,10 +213,11 @@ def build_epub(session_dir=None, output_path=None, equipment_slug="skywatcher-sk
         except OSError:
             pass
 
-    print(f"Session:      {session_dir}")
-    print(f"Folder Name:  {session_folder}")
-    print(f"Series:       {series_name} (Issue #{series_index})")
-    print(f"Output:       {output_path}")
+    print(f"Session:        {session_dir}")
+    print(f"Folder Name:    {session_folder}")
+    print(f"Series:         {series_name} (Issue #{series_index})")
+    print(f"Device Profile: {device_info['name']}")
+    print(f"Output:         {output_path}")
     print(f"=======================================================\n")
 
     # Map chart prefixes to shared object slugs
@@ -139,14 +281,14 @@ def build_epub(session_dir=None, output_path=None, equipment_slug="skywatcher-sk
         if not os.path.exists(path):
             print(f"Warning: Image {name} not found at {path}")
 
-    # CSS Content (Optimized for PocketBook Era 12px Zoom)
-    css_content = """/* Stargazing E-Reader Optimized Stylesheet (PocketBook Era 12px Zoom) */
+    # CSS Content
+    css_content = """/* Stargazing E-Reader Optimized Stylesheet (__DEVICE_NAME__) */
 @page {
-    margin: 8px 10px;
+    margin: __PAGE_MARGIN__;
 }
 html, body {
-    font-family: sans-serif;
-    font-size: 12px;
+    font-family: __FONT_FAMILY__;
+    font-size: __FONT_SIZE__;
     line-height: 1.35;
     color: #000000;
     background-color: #ffffff;
@@ -264,7 +406,7 @@ tr:nth-child(even) td {
 }
 .chart-img-side {
     max-width: 100%;
-    max-height: 84vh;
+    max-height: __CHART_SIDE_MAX_HEIGHT__;
     height: auto;
     display: block;
     margin: 0.2em auto;
@@ -272,7 +414,7 @@ tr:nth-child(even) td {
 }
 .chart-img-wide {
     max-width: 100%;
-    max-height: 98vh;
+    max-height: __CHART_WIDE_MAX_HEIGHT__;
     height: auto;
     display: block;
     margin: 0 auto;
@@ -320,7 +462,18 @@ ol.hop-list li {
     color: #555555;
     margin-bottom: 0.4em;
 }
+__EXTRA_CSS__
 """
+    css_content = (
+        css_content
+        .replace("__DEVICE_NAME__", device_info["name"])
+        .replace("__PAGE_MARGIN__", device_info["page_margin"])
+        .replace("__FONT_FAMILY__", device_info["font_family"])
+        .replace("__FONT_SIZE__", device_info["base_font_size"])
+        .replace("__CHART_SIDE_MAX_HEIGHT__", device_info["chart_side_max_height"])
+        .replace("__CHART_WIDE_MAX_HEIGHT__", device_info["chart_wide_max_height"])
+        .replace("__EXTRA_CSS__", device_info["extra_css"])
+    )
 
     chapters = []
 
@@ -342,10 +495,10 @@ ol.hop-list li {
         <p><b>Date:</b> Saturday, September 12, 2026 (20:00 – 22:30 CEST)</p>
         <p><b>Coordinates:</b> 45.12637° N, 13.81296° E | Elevation: 143 m</p>
         <p><b>Telescope:</b> Sky-Watcher Skyliner 200P Dobsonian (8" f/6 Newtonian)</p>
-        <p><b>Display Profile:</b> PocketBook Era E-Reader (Carta 1200, 300 ppi)</p>
-        <p><b>Display Optimization:</b> 12px Font Zoom / Screen-Fitted 4-Page Flow</p>
+        <p><b>Display Profile:</b> {html.escape(device_info['display_profile_desc'])}</p>
+        <p><b>Display Optimization:</b> {html.escape(device_info['display_opt_desc'])}</p>
         <hr style="border: 1px dashed #666666; margin: 1.0em 0;"/>
-        <p style="font-size: 11px; color: #444444;">PocketBook Era Screen-Fitted Flow (Optimized for 12px Font Zoom)<br/>Toner-Saver Negative B/W Star Charts (Stars to Mag 8.5)</p>
+        <p style="font-size: 11px; color: #444444;">{html.escape(device_info['display_badge_desc'])}<br/>Toner-Saver Negative B/W Star Charts (Stars to Mag 8.5)</p>
         <p style="margin-top: 1.2em;"><a href="toc.xhtml" style="font-family: sans-serif; font-weight: bold; text-decoration: none; border: 2px solid #000; padding: 5px 12px; background: #eee; color: #000;">OPEN TABLE OF CONTENTS →</a></p>
     </div>
 </body>
@@ -362,13 +515,13 @@ ol.hop-list li {
 </head>
 <body>
     <h1>Table of Contents</h1>
-    <div class="subtitle">{html.escape(session_folder)} — {html.escape(series_name)} #{series_index} (Optimized for 12px Zoom)</div>
+    <div class="subtitle">{html.escape(session_folder)} — {html.escape(series_name)} #{series_index} ({html.escape(device_info['display_opt_desc'])})</div>
 
     <h2>Part I: Field Protocols &amp; Sky Overview</h2>
     <ul>
         <li><a href="01_site_profile.xhtml">1. Location &amp; Dark Sky Profile (Dvigrad Bortle 4)</a></li>
         <li><a href="02_ephemeris.xhtml">2. Twilight Phases &amp; Astronomical Timeline</a></li>
-        <li><a href="03_optics_and_fieldcraft.xhtml">3. Sky-Watcher 200P &amp; PocketBook Era Field Craft</a></li>
+        <li><a href="03_optics_and_fieldcraft.xhtml">3. Telescope Optics &amp; {html.escape(device_info['name'])} Field Craft</a></li>
         <li><a href="04_target_catalog.xhtml">4. Curated Target Catalog (Interactive Index)</a></li>
         <li><a href="05_full_sky_map.xhtml">5. All-Sky Planisphere (Full Night Sky Map)</a></li>
     </ul>
@@ -470,7 +623,7 @@ ol.hop-list li {
     chapters.append(("02_ephemeris.xhtml", "2. Twilight & Timeline", eph_html))
 
     # 5. Optics & Field Craft
-    optics_html = """<?xml version="1.0" encoding="UTF-8"?>
+    optics_html = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
@@ -485,7 +638,7 @@ ol.hop-list li {
     </div>
 
     <h1>3. Telescope Optics &amp; Field Craft</h1>
-    <div class="subtitle">Sky-Watcher 200P Dobsonian &amp; PocketBook Era Field Configuration</div>
+    <div class="subtitle">Sky-Watcher 200P Dobsonian &amp; {html.escape(device_info['name'])} Configuration</div>
 
     <h2>Telescope Optical Specifications</h2>
     <table>
@@ -503,21 +656,8 @@ ol.hop-list li {
         <tr><td><b>12.5 mm</b></td><td><b>96×</b></td><td>2.08 mm</td><td><b>~31' (0.52°)</b></td><td>Resolution: M13 &amp; M92 core stars, M57 Ring hole, Saturn rings.</td></tr>
     </table>
 
-    <h2>PocketBook Era Field Protocols</h2>
-    <div class="callout">
-        <b>1. SMARTLIGHT NIGHT-VISION CALIBRATION</b><br/>
-        Set SMARTlight frontlight to <b>100% warm amber</b> (zero blue light emission) and set overall brightness to minimum legibility (5%–15%) to prevent pupil constriction and preserve scotopic vision.
-    </div>
-
-    <div class="callout">
-        <b>2. SCREEN-FITTED PINCH-TO-ZOOM</b><br/>
-        All wide-field star charts in Part II are formatted for the PocketBook Era's 3:4 screen ratio. Use a two-finger pinch gesture on the touchscreen to zoom directly into dense field star clusters.
-    </div>
-
-    <div class="callout">
-        <b>3. DEW RESISTANCE (IPX8)</b><br/>
-        The PocketBook Era is IPX8 waterproof. Heavy Lim Valley condensation will not harm the device. Use the physical edge buttons to turn pages if moist fingers cause capacitive touch resistance.
-    </div>
+    <h2>{html.escape(device_info['field_protocols_title'])}</h2>
+{device_info['field_protocols_html']}
 </body>
 </html>"""
     chapters.append(("03_optics_and_fieldcraft.xhtml", "3. Optics & Field Craft", optics_html))
@@ -1129,6 +1269,8 @@ ol.hop-list li {
         manifest_content = "\n    ".join(manifest_items)
         spine_content = "\n    ".join(spine_items)
 
+        device_metadata = "\n    ".join(device_info['metadata_tags'])
+
         opf_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="pub-id" version="3.0">
   <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
@@ -1145,12 +1287,9 @@ ol.hop-list li {
     <meta property="belongs-to-collection" id="series-01">{html.escape(series_name)}</meta>
     <meta refines="#series-01" property="collection-type">series</meta>
     <meta refines="#series-01" property="group-position">{series_index}</meta>
-    <!-- PocketBook Era Display Optimization Metadata -->
-    <meta name="pocketbook:font-size" content="12px"/>
-    <meta name="pocketbook:optimized-zoom" content="12px"/>
-    <meta property="schema:accessibilityFeature">readingOrder</meta>
-    <meta property="schema:accessibilitySummary">Optimized for PocketBook Era at 12px font zoom with screen-fitted finder charts and natural 4-page target pagination.</meta>
-    <dc:description>Stargazing observation guide and toner-saver finder charts for {html.escape(session_folder)}. Optimized for PocketBook Era at 12px font zoom with natural 4-page target flow.</dc:description>
+    <!-- Device Display Optimization Metadata -->
+    {device_metadata}
+    <dc:description>Stargazing observation guide and toner-saver finder charts for {html.escape(session_folder)}. {html.escape(device_info['description_suffix'])}</dc:description>
   </metadata>
   <manifest>
     {manifest_content}
@@ -1173,12 +1312,13 @@ ol.hop-list li {
     print(f"Series:   {series_name} #{series_index}")
     print(f"Chapters: {len(chapters)}")
     print(f"Images:   {len(img_sources)}")
-    print(f"=======================================================\n")
+    print(f"=======================================================")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compile Stargazing Session into an E-Reader EPUB")
     parser.add_argument("--session-dir", type=str, default=None, help="Path to observations/<session-folder>")
     parser.add_argument("--equipment", type=str, default="skywatcher-skyliner-200p", help="Equipment slug")
+    parser.add_argument("--device", type=str, default="pocketbook-era", help="E-reader device profile (e.g. pocketbook-era, amazon-kindle, kindle-paperwhite, generic)")
     parser.add_argument("--output", type=str, default=None, help="Output .epub file path")
     args = parser.parse_args()
-    build_epub(args.session_dir, args.output, equipment_slug=args.equipment)
+    build_epub(args.session_dir, args.output, equipment_slug=args.equipment, device_slug=args.device)

@@ -16,7 +16,9 @@ All stargazing assets and sessions are organized into structured directories:
 ├── locations/
 │   └── <location-slug>.md      # Reusable observing site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
-│   └── <equipment-slug>.md     # Reusable optical equipment profiles (aperture, FL, eyepieces)
+│   ├── <equipment-slug>.md     # Reusable optical equipment profiles (aperture, FL, eyepieces)
+│   ├── pocketbook-era.md       # PocketBook Era hardware & display specifications
+│   └── amazon-kindle-paperwhite.md # Amazon Kindle Paperwhite display & KF8 rendering profile
 ├── shared/
 │   └── <object-slug>/          # Shared, cross-session reusable charts cache (All 110 Messier objects: m1-m110)
 │       ├── context.png         # Universal constellation orientation chart (mag <= 6.5)
@@ -105,7 +107,10 @@ All stargazing assets and sessions are organized into structured directories:
   - Full B/W printer compatibility with solid, dashed, and dash-dot Telrad reticles.
 - **Standalone E-Reader Field Book (`<session-folder>.epub`)**:
   - Compiles the entire session into a single, fully indexed EPUB.
-  - **PocketBook Era Hardware & 12px Zoom Optimization**: Calibrated for 7.0" Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 aspect ratio) at **12px font zoom**.
+  - **Modular E-Reader Display Profiles (`--device`)**:
+    - **`pocketbook-era` (Default)**: Calibrated for 7.0" Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 aspect ratio) at **12px font zoom** (`pocketbook:font-size="12px"`, 84vh/98vh chart viewports).
+    - **`amazon-kindle` / `kindle-paperwhite`**: Tailored for Kindle Paperwhite (6.8"), Oasis (7.0"), and Scribe (10.2") running the KF8/KFX engine. Features zero `@page` margins, scalable `1.0rem` typography, and safe 78vh/88vh viewport caps to prevent phantom blank page flips.
+    - **`generic`**: Universal standard reflowable layout for Kobo, Onyx Boox, and tablet e-readers.
   - **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target lives in a single document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`.chart-page`, `.instructions-page` using `break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
     - **Page 1 (Eyepiece & Dossier)**: Side-by-side Viewport B (eyepiece simulation, inverted 180°) and Viewport C (target dossier with eyepiece quick reference integrated directly inside graphic, omitting trailing HTML callouts).
     - **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.5`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
@@ -153,11 +158,20 @@ Dependencies are specified in `requirements.txt`:
 pip install -r requirements.txt
 ```
 
-To run the complete observation planning pipeline (defaults to EPUB and Markdown deliverables):
+To run the complete observation planning pipeline (defaults to PocketBook Era EPUB and Markdown deliverables):
 ```bash
 python3 scripts/run_observation_planner.py \
   --location dvigrad \
   --equipment skywatcher-skyliner-200p \
+  --device pocketbook-era \
+  --date YYYY-MM-DD
+```
+To compile with an Amazon Kindle profile (`amazon-kindle` / `kindle-paperwhite`):
+```bash
+python3 scripts/run_observation_planner.py \
+  --location dvigrad \
+  --equipment skywatcher-skyliner-200p \
+  --device amazon-kindle \
   --date YYYY-MM-DD
 ```
 To additionally generate printable A4 master and chart PDFs, add the `--pdf` flag:
@@ -165,6 +179,7 @@ To additionally generate printable A4 master and chart PDFs, add the `--pdf` fla
 python3 scripts/run_observation_planner.py \
   --location dvigrad \
   --equipment skywatcher-skyliner-200p \
+  --device pocketbook-era \
   --date YYYY-MM-DD \
   --pdf
 ```

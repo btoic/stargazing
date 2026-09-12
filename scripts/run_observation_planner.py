@@ -22,6 +22,7 @@ def run():
     parser.add_argument("--output-dir", type=str, default=None, help="Output directory (defaults to observations/<location>-<date>)")
     parser.add_argument("--force", action="store_true", default=False, help="Force regenerate shared cached charts")
     parser.add_argument("--pdf", action="store_true", default=False, help="Generate printable PDF outputs (STARGAZING_PLAN.pdf and chart PDFs). Default is False (EPUB and Markdown only).")
+    parser.add_argument("--device", type=str, default="pocketbook-era", help="E-reader display device profile for EPUB compilation (e.g. pocketbook-era, amazon-kindle, kindle-paperwhite, generic)")
 
     args = parser.parse_args()
 
@@ -45,6 +46,7 @@ def run():
     print(f"STARGAZING OBSERVATION PLANNER")
     print(f"Location:  {args.location}")
     print(f"Equipment: {args.equipment}")
+    print(f"Device:    {args.device}")
     print(f"Date:      {args.date}")
     print(f"Output:    {output_dir}")
     print(f"PDF Mode:  {'Enabled (--pdf)' if args.pdf else 'Disabled (EPUB & Markdown primary)'}")
@@ -86,12 +88,13 @@ def run():
         print(">>> Step 3: PDF export skipped (use --pdf to compile printable A4 Master Plan PDF)")
 
     # Step 4: Build EPUB Field Guide for E-Readers
-    print(">>> Step 4: Compiling E-Reader EPUB Field Guide...")
+    print(f">>> Step 4: Compiling E-Reader EPUB Field Guide ({args.device})...")
     cmd_epub = [
         python_bin,
         os.path.join(SCRIPT_DIR, "build_session_epub.py"),
         "--session-dir", output_dir,
-        "--equipment", args.equipment
+        "--equipment", args.equipment,
+        "--device", args.device
     ]
     subprocess.run(cmd_epub, env=env, check=True)
 

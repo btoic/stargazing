@@ -24,7 +24,9 @@ All session assets follow a standardized repository layout:
 ├── locations/
 │   └── <location-slug>.md      # Reusable site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
-│   └── <equipment-slug>.md     # Reusable optics profiles (aperture, FL, eyepieces, inversion)
+│   ├── <equipment-slug>.md     # Reusable optics profiles (aperture, FL, eyepieces, inversion)
+│   ├── pocketbook-era.md       # PocketBook Era hardware & display specifications
+│   └── amazon-kindle-paperwhite.md # Amazon Kindle Paperwhite display & KF8 rendering profile
 ├── shared/
 │   └── <object-slug>/          # Shared, cross-session reusable charts cache (m1 through m110)
 │       ├── context.png         # Universal constellation orientation chart (mag <= 6.5)
@@ -118,13 +120,16 @@ Target Curation Criteria:
    - Format observation schedules as Mermaid `gantt` charts or `flowchart LR` process pipelines. Quote labels containing parentheses or brackets.
 2. **Standalone E-Reader Field Book (`<session-slug>.epub`)**:
    - Compiles the entire session into a single, fully indexed, cross-linked EPUB e-book named dynamically after the session folder (e.g. `dvigrad-2026-09-12.epub`). Do not generate redundant duplicate EPUB files.
-   - **PocketBook Era Hardware & 12px Zoom Optimization**: Optimized for 7.0" E-Ink Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 portrait aspect ratio) at **12px font zoom**.
-   - **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, and `pocketbook:font-size="12px"`.
+   - **Modular E-Reader Display Profiles (`--device`)**:
+     - **`pocketbook-era` (Default)**: Calibrated for 7.0" E-Ink Carta 1200 (`1264 × 1680`, 300 ppi, 3:4 portrait aspect ratio) at **12px font zoom** (`pocketbook:font-size="12px"`, 84vh/98vh chart viewports).
+     - **`amazon-kindle` / `kindle-paperwhite`**: Tailored for Kindle Paperwhite (6.8"), Oasis (7.0"), and Scribe (10.2") running the Amazon KF8/KFX engine. Features zero `@page` margins, scalable `1.0rem` typography, and safe 78vh/88vh viewport caps to prevent phantom blank page flips.
+     - **`generic`**: Standard reflowable layout for Kobo, Boox, and other E-Ink readers.
+   - **Calibre & EPUB 3 Series Metadata**: Automatically discovers past observation sessions in `observations/`, registers series title `"Stargazing Observations"`, and assigns incrementing sequence numbers via `calibre:series`, `calibre:series_index`, EPUB 3 `belongs-to-collection`, and device-specific rendering metadata.
    - **E-Ink High Contrast**: Pure white background (`#ffffff`), dark typography, crisp toner-saver negative charts, and responsive styling.
    - **Natural 4-Page Target Pagination (Zero Blank Pages)**: Each target is stored in a single unified document (`chart_<N>_<slug>.xhtml`) with strict CSS page-break controls (`break-before: page`), eliminating artificial sub-chapter breaks and empty page flips:
      1. **Page 1 (Eyepiece & Dossier)**: Viewport B (Eyepiece simulation, inverted 180°) and Viewport C (Target Dossier) rendered side-by-side in landscape 4:3 ratio (`_eyepiece_dossier.png`). Eyepiece quick reference notes are integrated directly inside the dossier graphic, eliminating trailing HTML callouts.
      2. **Page 2 (Constellation Context Orientation Chart)**: Moderately wide field of view (~50°–65°) displaying naked-eye stars (`mag <= 6.5`), surrounding constellation stick lines and labels, and a prominent dashed bounding box marking the field of view covered by the next-page finder chart (`"[NEXT PAGE FINDER VIEWPORT]"`).
-     3. **Page 3 (Wide-Field Finder Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the PocketBook Era display. Star density is rendered down to visual **magnitude 8.5** (cutting out noise and clutter), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
+     3. **Page 3 (Wide-Field Finder Chart)**: Viewport A rendered full-screen in portrait 3:4 ratio (`_widefield.png`) matching the e-reader display. Star density is rendered down to visual **magnitude 8.5** (cutting out noise and clutter), complete with Telrad rings, hop badges, and a dot size vs. magnitude legend. Redundant intermediate headers and tips are omitted so the chart fills the entire screen.
      4. **Page 4 (Step-by-Step Hop Narrative)**: Reflowable text-based star-hopping guide with direct bottom navigation to the next target or catalog.
    - **E-Reader Catalog Ergonomics**: In the curated target catalog table, place the `Finder Chart` link column inward (before `Recommended Eyepiece`) rather than on the right edge, preventing accidental page-turn touch gestures on e-readers. Replace coordinate columns with difficulty ratings.
    - **Dual Compatibility**: Implements both EPUB 3 (`nav.xhtml`) and EPUB 2 (`toc.ncx`) navigation for compatibility across all e-readers (PocketBook, Kindle, Kobo, Boox, Tolino).
@@ -177,11 +182,20 @@ Dependencies are specified in `requirements.txt`:
 pip install -r requirements.txt
 ```
 
-To run the complete observation planning pipeline (defaults to EPUB and Markdown deliverables):
+To run the complete observation planning pipeline (defaults to PocketBook Era EPUB and Markdown deliverables):
 ```bash
 python3 scripts/run_observation_planner.py \
   --location <location-slug> \
   --equipment <equipment-slug> \
+  --device pocketbook-era \
+  --date <YYYY-MM-DD>
+```
+To compile with an Amazon Kindle profile (`amazon-kindle` / `kindle-paperwhite`):
+```bash
+python3 scripts/run_observation_planner.py \
+  --location <location-slug> \
+  --equipment <equipment-slug> \
+  --device amazon-kindle \
   --date <YYYY-MM-DD>
 ```
 To additionally generate printable A4 master and chart PDFs, pass `--pdf`:
@@ -189,6 +203,7 @@ To additionally generate printable A4 master and chart PDFs, pass `--pdf`:
 python3 scripts/run_observation_planner.py \
   --location <location-slug> \
   --equipment <equipment-slug> \
+  --device pocketbook-era \
   --date <YYYY-MM-DD> \
   --pdf
 ```

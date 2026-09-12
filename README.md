@@ -54,12 +54,23 @@ Key libraries used:
 
 ### 2. Running the Complete Planning Pipeline
 
-Run the end-to-end observation planner for an observing site and date:
+Run the end-to-end observation planner for an observing site and date (defaults to `pocketbook-era`):
 
 ```bash
 python3 scripts/run_observation_planner.py \
   --location dvigrad \
   --equipment skywatcher-skyliner-200p \
+  --device pocketbook-era \
+  --date 2026-09-12
+```
+
+To compile with an Amazon Kindle profile (`amazon-kindle` / `kindle-paperwhite`):
+
+```bash
+python3 scripts/run_observation_planner.py \
+  --location dvigrad \
+  --equipment skywatcher-skyliner-200p \
+  --device amazon-kindle \
   --date 2026-09-12
 ```
 
@@ -68,7 +79,7 @@ By default, this generates:
 2. `observations/<session>/STARGAZING_PLAN.md` (Master markdown plan)
 3. `observations/<session>/full_sky_map.png` (Planisphere)
 4. `observations/<session>/charts/*.png` (Master finder charts, leveraging `shared/` cache)
-5. `observations/<session>/<session>.epub` (Standalone PocketBook Era field book)
+5. `observations/<session>/<session>.epub` (Standalone screen-optimized e-reader field book)
 
 ### 3. Compiling On-Demand Printable PDFs
 
@@ -173,7 +184,8 @@ The agent will:
 │   └── dvigrad.md              # Observing site profiles (coordinates, Bortle, obstruction)
 ├── equipment/
 │   ├── skywatcher-skyliner-200p.md # Telescope optical profiles (aperture, FL, eyepieces)
-│   └── pocketbook-era.md       # E-reader display hardware specifications
+│   ├── pocketbook-era.md       # PocketBook Era display hardware specifications
+│   └── amazon-kindle-paperwhite.md # Amazon Kindle Paperwhite display & KF8 rendering profile
 ├── catalogs/
 │   ├── messier_catalog.json    # Complete 110 Messier objects catalog with coordinates, optics & Swanson ratings
 │   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog

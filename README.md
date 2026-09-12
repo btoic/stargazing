@@ -162,12 +162,13 @@ The agent will:
 │   ├── skywatcher-skyliner-200p.md # Telescope optical profiles (aperture, FL, eyepieces)
 │   └── pocketbook-era.md       # E-reader display hardware specifications
 ├── catalogs/
+│   ├── messier_catalog.json    # Complete 110 Messier objects catalog with coordinates, optics & Swanson ratings
 │   └── messier_difficulty_ratings.md # Swanson Messier difficulty reference catalog
-├── shared/                     # Cross-session reusable charts cache
-│   └── <object-slug>/          # e.g. m57, m27, m13, m31, double_cluster, m11
+├── shared/                     # Universal cross-session reusable charts cache (All 110 Messier objects!)
+│   └── m<N>/                   # m1 through m110 pre-rendered assets
 │       ├── context.png         # Naked-eye constellation orientation chart (mag <= 6.5)
 │       ├── widefield_<equip>.png # Wide-field star hop chart (mag <= 8.5)
-│       ├── eyepiece_dossier_<equip>.png # Eyepiece view & dossier graphic
+│       ├── eyepiece_dossier_<equip>.png # Eyepiece simulation & dossier graphic
 │       └── chart_<equip>.png   # Full A4 master finder chart (and .pdf)
 ├── observations/
 │   └── <location>-<YYYY-MM-DD>/# Observation session packages (e.g. dvigrad-2026-09-12)
@@ -189,6 +190,8 @@ The agent will:
 ├── .agents/skills/
 │   └── stargazing-planner/     # Automated planning skill for AI coding agents
 └── scripts/
+    ├── build_messier_catalog.py # Compiles unified 110 Messier astronomical dataset
+    ├── generate_all_messier_shared.py # Parallel batch pre-renderer for all 110 Messier shared assets
     ├── calculate_ephemeris.py  # Solar/lunar twilight and target visibility calculator
     ├── generate_charts.py      # Planisphere & finder chart generator with shared caching
     ├── build_plan_pdf.py       # Two-page master guide PDF builder
